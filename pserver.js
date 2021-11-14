@@ -13,7 +13,7 @@ const broker = new Broker(
     dataProcessor
 );
 
-broker.startTracking('BTCUSDT','5m','300');
+broker.startTracking('BTCUSDT','1m','300');
 
 const io = new Server({
     cors: {
@@ -29,7 +29,7 @@ io.on("connection", (socket) => {
 
     socket.on("give_data", (arg) => {
         console.log('sending data to client '+arg)
-        let data = dataProcessor.getChart('BTCUSDT-5m');
+        let data = dataProcessor.getChart('BTCUSDT-1m');
         socket.emit("chart", data);
     });
 

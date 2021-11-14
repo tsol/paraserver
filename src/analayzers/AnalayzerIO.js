@@ -4,7 +4,12 @@ class AnalayzerIO {
         this.flags = [];
     }
 
+    /* analyze new completed candle */
     addCandle(candle, flags) {
+    }
+
+    /* rotation. we must remove all events/flags with time equal or below */
+    forgetBefore(time) {
     }
     
     resetFlags() {

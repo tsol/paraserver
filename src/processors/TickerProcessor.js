@@ -49,9 +49,43 @@ class TickerProcessor {
                 this.checkCandleConsistent(candle,prevCandle);
             }
 
+            while (this.candles.length > this.limit) {
+                this.forgetFirstCandle();
+            }
+
             this.processCandle(candle);
         }
     }
+
+    forgetFirstCandle() {
+        const firstCandle = this.candles.shift();
+        
+        this.analyzers.forEach( (analayzer) => {
+            analayzer.forgetBefore(firstCandle.openTime);
+        });
+
+    }
+
+    processCandle(candle) {
+        
+        console.log('TP: ('+this.getId()+') process candle:');
+        console.log(candle);
+
+        let combinedFlags = [];
+
+        this.analyzers.forEach( (analayzer) => {
+            analayzer.addCandle(candle, combinedFlags);
+            let flags = analayzer.getFlags();
+            combinedFlags = { ...combinedFlags, ...flags};
+        });
+
+        if (Object.keys(combinedFlags).length > 0) {
+            console.log(combinedFlags);
+        }
+
+        this.currentFlags = combinedFlags;
+    }    
+
 
     isBatchLoaded() {
         return this.batchLoaded;
@@ -96,25 +130,6 @@ class TickerProcessor {
         this.analyzers.forEach( analayzer => analayzer.reset() );
     }
 
-    processCandle(candle) {
-        
-        console.log('TP: ('+this.getId()+') process candle:');
-        console.log(candle);
-
-        let combinedFlags = [];
-
-        this.analyzers.forEach( (analayzer) => {
-            analayzer.addCandle(candle, combinedFlags);
-            let flags = analayzer.getFlags();
-            combinedFlags = { ...combinedFlags, ...flags};
-        });
-
-        if (Object.keys(combinedFlags).length > 0) {
-            console.log(combinedFlags);
-        }
-
-        this.currentFlags = combinedFlags;
-    }    
 
     /* Now this is totally inapropriate check for non 24h brokers, because
     every GAP will fail this check. Also even binance closes on maintanence.

@@ -17,17 +17,23 @@ class AnLevels extends AnalayzerIO {
         addCandle(candle,flags) {
             super.addCandle(candle,flags)
             CDB.setSource('levels');
-            
+
             this.acquireValueCandles(flags);
 
             this.checkCandleTouch(candle);
 
         }
 
+        forgetBefore(time) {
+            let countBefore = this.valueAreas.length;
+            this.valueAreas = this.valueAreas.filter( (v) => v.candle.openTime > time );
+            console.log('AnLevels.forget before='+countBefore+', after='+
+                this.valueAreas.length);
+        }
+
         checkCandleTouch(candle) {
 
         }
-
 
         /* searching for flags from HLTrend analyzer about highs and lows */
         acquireValueCandles(flags)
