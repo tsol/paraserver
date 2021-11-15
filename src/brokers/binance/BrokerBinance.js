@@ -178,7 +178,7 @@ class BrokerBinance {
     {
         this.client = new Spot( apiKey, secretKey );
         this.dataProcessor = dataProcessor;
-        this.streams = [];
+        this.streams = {};
     }
 
     startTracking(symbol, timeframe, limit)

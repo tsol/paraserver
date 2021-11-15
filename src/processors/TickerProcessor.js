@@ -30,6 +30,17 @@ class TickerProcessor {
         return this.symbol+'-'+this.timeframe;
     }
 
+    getState() {
+       return {
+            'id': this.getId(),
+            'symbol': this.symbol,
+            'timeframe': this.timeframe,
+            'limit': this.limit,
+            'batchLoaded': this.batchLoaded,
+            'flags': this.currentFlags
+       };
+    }
+
     reset() {
         console.log('TP: full reset');
         this.candles = [];

@@ -4,7 +4,7 @@ const TickerProcessor = require('./TickerProcessor.js');
 class DataProcessor {
 
     constructor() {
-        this.tickers = [];
+        this.tickers = {};
     }
 
     addTicker(symbol,timeframe,limit)
@@ -18,6 +18,10 @@ class DataProcessor {
 
     getChart(tickerId) {
         return this.tickers[tickerId].getChart();
+    }
+
+    getState() {
+        return Object.keys(this.tickers).map( t => this.tickers[t].getState() );
     }
     
 

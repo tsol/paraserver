@@ -13,7 +13,9 @@ const broker = new Broker(
     dataProcessor
 );
 
-broker.startTracking('BTCUSDT','1m','300');
+broker.startTracking('BTCUSDT','1m','50');
+broker.startTracking('BTCUSDT','15m','50');
+broker.startTracking('BTCUSDT','1h','50');
 
 const io = new Server({
     cors: {
@@ -27,10 +29,15 @@ const io = new Server({
 io.on("connection", (socket) => {
     console.log('client connected')
 
-    socket.on("give_data", (arg) => {
-        console.log('sending data to client '+arg)
-        let data = dataProcessor.getChart('BTCUSDT-1m');
+    socket.on("get_chart", (arg) => {
+        let data = dataProcessor.getChart(arg);
         socket.emit("chart", data);
+    });
+
+    socket.on("list_tickers", (arg) => {
+        let data = dataProcessor.getState();
+        //console.log('SENDING_TICKERS: '+JSON.stringify(data))
+        socket.emit("tickers", data);
     });
 
 });
