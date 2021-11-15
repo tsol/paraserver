@@ -4,6 +4,7 @@ const AnLevels = require('../analayzers/AnLevels.js');
 const AnATR = require('../analayzers/AnATR.js');
 const AnMA = require('../analayzers/AnMA.js');
 const AnCandlePatterns = require('../analayzers/AnCandlePatterns.js');
+const AnDoubleBottom = require('../analayzers/AnDoubleBottom.js');
 
 class TickerProcessor {
 
@@ -19,10 +20,12 @@ class TickerProcessor {
         this.analyzers = [];
         this.analyzers.push(new AnExtremum());
         this.analyzers.push(new AnHLTrend());
-        this.analyzers.push(new AnLevels());
         this.analyzers.push(new AnATR(14));
+        this.analyzers.push(new AnLevels());
         this.analyzers.push(new AnMA('c',9));
         this.analyzers.push(new AnCandlePatterns());
+        this.analyzers.push(new AnDoubleBottom());
+        
         
     }
 

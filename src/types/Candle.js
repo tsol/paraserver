@@ -14,6 +14,22 @@ class Candle {
     isRed() {
         return this.open > this.close;
     }
+    
+    isGreen() {
+        return this.open > this.close;
+    }
+
+    bodySize(candle) {
+        return Math.abs(this.open-this.close);
+    }
+
+    lowerTailSize() {
+        return (Math.min(this.open,this.close)-this.low);
+    }
+
+    upperTailSize() {
+        return (this.high - Math.max(this.open,this.close));
+    }
 
     tailAbove(candle) {
         return (this.high > candle.high);

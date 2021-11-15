@@ -40,11 +40,15 @@ class AnLevels extends AnalayzerIO {
         {
             let candle;
             if ( candle = flags['hl_trend.new.high'] ) {
-                this.addBounceLevel(false, candle);
+                if (candle.upperTailSize() < flags['atr14']) {
+                    this.addBounceLevel(false, candle);
+                }
             }
 
             if ( candle = flags['hl_trend.new.low'] ) {
-                this.addBounceLevel(true, candle);
+                if (candle.lowerTailSize() < flags['atr14']) {
+                    this.addBounceLevel(true, candle);
+                }
             }
             
         }

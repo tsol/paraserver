@@ -13,9 +13,9 @@ const broker = new Broker(
     dataProcessor
 );
 
-broker.startTracking('BTCUSDT','1m','50');
-broker.startTracking('BTCUSDT','15m','50');
-broker.startTracking('BTCUSDT','1h','50');
+broker.startTracking('BTCUSDT','1m','1000');
+broker.startTracking('BTCUSDT','15m','500');
+broker.startTracking('BTCUSDT','1h','500');
 
 const io = new Server({
     cors: {
