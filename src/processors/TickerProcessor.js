@@ -1,10 +1,12 @@
 const AnExtremum = require('../analayzers/AnExtremum.js');
 const AnHLTrend = require('../analayzers/AnHLTrend.js');
 const AnLevels = require('../analayzers/AnLevels.js');
+const AnVLevels = require('../analayzers/AnVLevels.js');
 const AnATR = require('../analayzers/AnATR.js');
 const AnMA = require('../analayzers/AnMA.js');
 const AnCandlePatterns = require('../analayzers/AnCandlePatterns.js');
 const AnDoubleBottom = require('../analayzers/AnDoubleBottom.js');
+const AnHills = require('../analayzers/AnHills.js');
 
 class TickerProcessor {
 
@@ -21,8 +23,9 @@ class TickerProcessor {
         this.analyzers.push(new AnExtremum());
         this.analyzers.push(new AnHLTrend());
         this.analyzers.push(new AnATR(14));
-        this.analyzers.push(new AnLevels());
-        this.analyzers.push(new AnMA('c',9));
+        this.analyzers.push(new AnMA('c',20));
+        this.analyzers.push(new AnHills());
+        this.analyzers.push(new AnVLevels(limit));
         this.analyzers.push(new AnCandlePatterns());
         this.analyzers.push(new AnDoubleBottom());
         
@@ -82,8 +85,8 @@ class TickerProcessor {
 
     processCandle(candle) {
         
-        console.log('TP: ('+this.getId()+') process candle:');
-        console.log(candle);
+        //console.log('TP: ('+this.getId()+') process candle:');
+        //console.log(candle);
 
         let combinedFlags = [];
 
@@ -93,9 +96,11 @@ class TickerProcessor {
             combinedFlags = { ...combinedFlags, ...flags};
         });
 
+        /*
         if (Object.keys(combinedFlags).length > 0) {
             console.log(combinedFlags);
         }
+        */
 
         this.currentFlags = combinedFlags;
     }    

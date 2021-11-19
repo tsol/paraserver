@@ -37,7 +37,7 @@ class AnDoubleBottom extends AnalayzerIO {
         }
 
         if (this.candleBelowZone(candle)) {
-            CDB.labelBottom(candle,'xBEL')
+            CDB.labelBottom(candle,'xB')
             this.resetFinder();
             this.checkFirstBottom(flags);
             return;
@@ -56,7 +56,7 @@ class AnDoubleBottom extends AnalayzerIO {
             this.totalCount++;
 
             if (this.totalCount > 25) {
-                CDB.labelBottom(candle,'xLEN')
+                CDB.labelBottom(candle,'xL')
                 this.resetFinder();
                 return;
             }
@@ -71,7 +71,7 @@ class AnDoubleBottom extends AnalayzerIO {
         // we have second bottom and a green candle
 
         if (this.secondBottom && ! candle.isRed() ) {
-            CDB.labelTop(candle,'ENT');
+            CDB.labelTop(candle,'EN');
             this.setFlag('dblbottom.new.entry', candle);
             CDB.circleLow(this.firstBottom, { radius: 2, color: 'yellow' });
             CDB.circleLow(this.secondBottom, { radius: 2, color: 'yellow' });
@@ -92,7 +92,7 @@ class AnDoubleBottom extends AnalayzerIO {
 
         this.firstBottom = possibleBottom;
         this.firstZoneUpperLevel = Math.min(possibleBottom.open, possibleBottom.close);
-        CDB.labelBottom(possibleBottom,'B1?');
+        CDB.labelBottom(possibleBottom,'B1');
         return true;
     }
 
