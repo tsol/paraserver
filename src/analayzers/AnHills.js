@@ -23,17 +23,17 @@ class AnHills extends AnalayzerIO {
 
     addCandle(candle, flags) {
         super.addCandle(candle, flags);
-        this.resetFlags();
+        
         CDB.setSource('hills');
 
-        const currentMac = flags[this.followMac];
-        const atr = flags['atr14'];
+        const currentMac = flags.get(this.followMac);
+        const atr = flags.get('atr14');
 
         if (this.deltaSwitchLevel == undefined) {
             this.deltaSwitchLevel = currentMac;
         }
 
-        const extrem = flags['extremum'];
+        const extrem = flags.get('extremum');
 
         if (extrem && extrem.high) {
                 if (this.prevTopCandle == undefined) {
@@ -73,7 +73,7 @@ class AnHills extends AnalayzerIO {
                 if (direction < 0) {
                     if (this.prevTopCandle) {
                         CDB.circleHigh( this.prevTopCandle, { radius: 2, color: 'pink' } );
-                        this.setFlag('hills.new.high', this.prevTopCandle);
+                        flags.set('hills.new.high', this.prevTopCandle);
                     }
                     this.prevTopCandle = undefined;
                     this.prevBottomCandle = undefined;
@@ -81,7 +81,7 @@ class AnHills extends AnalayzerIO {
                 else if (direction > 0) {
                     if (this.prevBottomCandle) {
                         CDB.circleLow( this.prevBottomCandle, { radius: 2, color: 'pink' } );
-                        this.setFlag('hills.new.low', this.prevBottomCandle);
+                        flags.set('hills.new.low', this.prevBottomCandle);
                     }
                     this.prevBottomCandle = undefined;
                     this.prevTopCandle = undefined;

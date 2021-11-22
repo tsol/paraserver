@@ -13,10 +13,21 @@ const broker = new Broker(
     dataProcessor
 );
 
-broker.startTracking('BTCUSDT','1m','1000');
-broker.startTracking('BTCUSDT','15m','750');
-broker.startTracking('BTCUSDT','1h','500');
 broker.startTracking('BTCUSDT','1d','300');
+broker.startTracking('BTCUSDT','1h','500');
+broker.startTracking('BTCUSDT','15m','750');
+broker.startTracking('BTCUSDT','1m','1000');
+
+broker.startTracking('SOLUSDT','1d','300');
+broker.startTracking('SOLUSDT','1h','500');
+broker.startTracking('SOLUSDT','15m','750');
+broker.startTracking('SOLUSDT','1m','1000');
+
+broker.startTracking('MANAUSDT','1d','300');
+broker.startTracking('MANAUSDT','1h','500');
+broker.startTracking('MANAUSDT','15m','750');
+broker.startTracking('MANAUSDT','1m','1000');
+
 
 const io = new Server({
     cors: {

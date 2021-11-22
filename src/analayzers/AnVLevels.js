@@ -40,7 +40,7 @@ class Level {
         this.recalcLevel();
     }
 
-    getJSON() {
+    toJSON() {
         return {
             y0: this.resY0,
             y1: this.resY1,
@@ -138,58 +138,53 @@ class AnVLevels extends AnalayzerIO {
             super.addCandle(candle,flags)
             CDB.setSource('vlevels');
 
-            const extremum = flags['extremum'];            
-            const atr = flags['atr14'];
-            let wasUpdate = false;
-
-            const hillLow = flags['hills.new.low'];
+            const extremum = flags.get('extremum');            
+            const atr = flags.get('atr14');
+            
+            const hillLow = flags.get('hills.new.low');
             if (hillLow) {
                 this.addBounceLevel(true,
                     hillLow.openTime,
                     hillLow.low,
                     atr,
                     30);
-                wasUpdate = true;
             }
 
-            const hillHigh = flags['hills.new.high'];
+            const hillHigh = flags.get('hills.new.high');
             if (hillHigh) {
                 this.addBounceLevel(false,
                     hillHigh.openTime,
                     hillHigh.high,
                     atr,
                     30);
-                wasUpdate = true;
             }
 
-            let extremumCandle = flags['hl_trend.new.high'];
+            let extremumCandle = flags.get('hl_trend.new.high');
             if ( extremumCandle ) {
                 this.addBounceLevel(false,
                      extremumCandle.openTime,
                      extremumCandle.high,
                      atr, 10);
-                wasUpdate = true;
             }
 
-            extremumCandle = flags['hl_trend.new.low'];
+            extremumCandle = flags.get('hl_trend.new.low');
             if ( extremumCandle ) {
                 this.addBounceLevel(true,
                      extremumCandle.openTime,
                      extremumCandle.low,
                      atr, 10);
-                wasUpdate = true;
             }
 
-            if (wasUpdate) {
-                this.setFlag('vlevels', this.getJSON() );
-            }
+            flags.set('vlevels', this);
+            flags.set('vlevels_high', flags.getHTF('vlevels'));
+            
         }
 
-        getJSON() {
+        toJSON() {
             let levels = [];
             this.levels.forEach( (l) => {
                 if (l.isWorthy()) {
-                    levels.push(l.getJSON())
+                    levels.push(l.toJSON())
                 }
             });
             return levels;
@@ -215,9 +210,6 @@ class AnVLevels extends AnalayzerIO {
         forgetBefore(time) {
             const countBefore = this.levels.length;
             this.levels = this.levels.filter( (l) => l.forgetBefore(time) );
-            if (countBefore > this.levels.length) {
-                this.setFlag('vlevels', this.getJSON() );
-            }
         }
 
 }

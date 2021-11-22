@@ -1,6 +1,5 @@
 const AnExtremum = require('../analayzers/AnExtremum.js');
 const AnHLTrend = require('../analayzers/AnHLTrend.js');
-const AnLevels = require('../analayzers/AnLevels.js');
 const AnVLevels = require('../analayzers/AnVLevels.js');
 const AnATR = require('../analayzers/AnATR.js');
 const AnMA = require('../analayzers/AnMA.js');
@@ -10,15 +9,16 @@ const AnHills = require('../analayzers/AnHills.js');
 
 class TickerProcessor {
 
-    constructor(symbol,timeframe,limit) {
+    constructor(symbol,timeframe,limit,flags) {
     
+        this.flags = flags;
+
         this.candles = [];
         this.symbol = symbol;
         this.timeframe = timeframe;
         this.limit = limit;
         this.batchLoaded = false;
-        this.currentFlags = [];
-
+   
         this.analyzers = [];
         this.analyzers.push(new AnExtremum());
         this.analyzers.push(new AnHLTrend());
@@ -43,7 +43,7 @@ class TickerProcessor {
             'timeframe': this.timeframe,
             'limit': this.limit,
             'batchLoaded': this.batchLoaded,
-            'flags': this.currentFlags
+            'flags': this.flags.allFlags(this.getId())
        };
     }
 
@@ -60,16 +60,9 @@ class TickerProcessor {
     addCandle(candle) {
         this.candles.push(candle);
         if (this.batchLoaded) {
-
-            if (this.candles.length > 1) {
-                let prevCandle = this.candles[ this.candles.length - 2];
-                this.checkCandleConsistent(candle,prevCandle);
-            }
-
             while (this.candles.length > this.limit) {
                 this.forgetFirstCandle();
             }
-
             this.processCandle(candle);
         }
     }
@@ -85,24 +78,13 @@ class TickerProcessor {
 
     processCandle(candle) {
         
-        //console.log('TP: ('+this.getId()+') process candle:');
-        //console.log(candle);
-
-        let combinedFlags = [];
+        this.flags.start(this.symbol, this.timeframe);
 
         this.analyzers.forEach( (analayzer) => {
-            analayzer.addCandle(candle, combinedFlags);
-            let flags = analayzer.getFlags();
-            combinedFlags = { ...combinedFlags, ...flags};
+            analayzer.addCandle(candle, this.flags);
+            //this.flags.merge( analayzer.getFlags() );
         });
 
-        /*
-        if (Object.keys(combinedFlags).length > 0) {
-            console.log(combinedFlags);
-        }
-        */
-
-        this.currentFlags = combinedFlags;
     }    
 
 
@@ -138,7 +120,6 @@ class TickerProcessor {
 
         /* process all candles */
         this.candles = candles;
-        this.timeConsistancyCheckAllCandles();
         this.candles.forEach( candle => this.processCandle(candle) );
 
         /* set flag, so all new added candles will be processed automatically */
@@ -148,7 +129,6 @@ class TickerProcessor {
     resetAnalyzers() {
         this.analyzers.forEach( analayzer => analayzer.reset() );
     }
-
 
     /* Now this is totally inapropriate check for non 24h brokers, because
     every GAP will fail this check. Also even binance closes on maintanence.

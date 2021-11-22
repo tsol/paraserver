@@ -38,7 +38,8 @@ class AnATR extends AnalayzerIO {
             //console.log(this.ranges);
             //console.log('ATR: len='+this.ranges.length+' sum='+sumRanges+' atr='+atr)
             
-            this.setFlag(this.name, atr);
+            flags.set(this.name, atr);
+            
             CDB.offChart(candle,this.name,atr);
             this.prevCandle = candle;
         }

@@ -30,10 +30,9 @@ class AnMA extends AnalayzerIO {
             const sum = this.values.reduce( (a,b) => a + b, 0 );
             const result = sum / this.values.length;
      
-            this.setFlag(this.name, result);
+            flags.set(this.name, result);
             CDB.onChart(candle, this.name, result);
         }
-
 
         getDataFromCandle(sourceCode, candle) {
             let data = undefined;

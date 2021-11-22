@@ -23,12 +23,9 @@ class AnDoubleBottom extends AnalayzerIO {
         this.totalCount = 0;
     }
 
-
-
-
     addCandle(candle, flags) {
         super.addCandle(candle, flags);
-        this.resetFlags();
+        
         CDB.setSource('dblbottom');    
 
         if (this.firstBottom == undefined) {
@@ -72,7 +69,8 @@ class AnDoubleBottom extends AnalayzerIO {
 
         if (this.secondBottom && ! candle.isRed() ) {
             CDB.labelTop(candle,'EN');
-            this.setFlag('dblbottom.new.entry', candle);
+            flags.set('dblbottom.new.entry', candle);
+
             CDB.circleLow(this.firstBottom, { radius: 2, color: 'yellow' });
             CDB.circleLow(this.secondBottom, { radius: 2, color: 'yellow' });
             this.resetFinder();
@@ -81,12 +79,12 @@ class AnDoubleBottom extends AnalayzerIO {
     }
 
     checkFirstBottom(flags) {
-        const possibleBottom = flags['hl_trend.new.low']; 
+        const possibleBottom = flags.get('hl_trend.new.low'); 
         if (! possibleBottom )
             { return false; }
 
         const wick = possibleBottom.lowerTailSize();
-        if (wick > (flags['atr14'])) {
+        if (wick > (flags.get('atr14'))) {
             return false;
         }
 
