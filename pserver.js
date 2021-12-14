@@ -5,6 +5,7 @@ const DataProcessor = require('./src/processors/DataProcessor.js');
 
 const dataProcessor = new DataProcessor();
 
+/*
 const broker = new Broker(
     {
         apiKey:     'Sx012YCUR2rFGGINH8N6CdT7tSRP0ATqxbxOGzpniI7pgHeb70sUGeXIuz1runwF',
@@ -12,7 +13,33 @@ const broker = new Broker(
     },
     dataProcessor
 );
+*/
 
+// katya 
+const broker = new Broker(
+    {
+        apiKey:     'q0xkezU4Pcp1VcTxIT8VrR5Z8Q81Clt40HA8NqFCFVdLnHMjiKoupOtQwogCnNgF',
+        secretKey:  'nlcSYGg1VgGQFbxqm0FoYNdnwk3MZY5V4L0rl5VE4oWNtrGflDq6ohYd8JUwbqu6'
+    },
+    dataProcessor
+);
+
+broker.updateAccountInfo();
+
+broker.updateOpenOrders().then(() => {
+    
+    console.log(broker.getOpenOrders());
+
+    broker.getOpenOrders().forEach( (order) => {
+        broker.startTracking(order.symbol,'1d','300');
+        broker.startTracking(order.symbol,'1h','300');
+        broker.startTracking(order.symbol,'15m','300');
+        broker.startTracking(order.symbol,'1m','300');
+    });
+
+});
+
+/*
 broker.startTracking('BTCUSDT','1d','300');
 broker.startTracking('BTCUSDT','1h','500');
 broker.startTracking('BTCUSDT','15m','750');
@@ -27,7 +54,7 @@ broker.startTracking('MANAUSDT','1d','300');
 broker.startTracking('MANAUSDT','1h','500');
 broker.startTracking('MANAUSDT','15m','750');
 broker.startTracking('MANAUSDT','1m','1000');
-
+*/
 
 const io = new Server({
     cors: {

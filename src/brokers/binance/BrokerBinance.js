@@ -179,6 +179,10 @@ class BrokerBinance {
         this.client = new Spot( apiKey, secretKey );
         this.dataProcessor = dataProcessor;
         this.streams = {};
+        
+        this.accountInfo = undefined;
+        this.openOrders = [];
+
     }
 
     startTracking(symbol, timeframe, limit)
@@ -189,6 +193,47 @@ class BrokerBinance {
         console.log('BINANCE_BROKER: added new stream: '+sId);
         this.streams[sId] = stream;
     }
+
+    getAccountInfo() { return this.accountInfo; }
+    getOpenOrders() { return this.openOrders; }
+
+    updateAccountInfo()
+    {
+        this.client.account()
+            .then(response => this.accountInfo = response.data )
+            .catch(error => { throw new Error(error) } )
+    } 
+
+    async updateOpenOrders() {
+        const openOrdersResponse = await this.client.openOrders();
+        this.openOrders = openOrdersResponse.data;
+
+        for (var order of this.openOrders) {
+            let response = await this.client.myTrades(order.symbol);
+            order.myTrades = response.data; 
+        }
+        return Promise.resolve(1);
+    }
+
+
+    
+
+
+ /*
+    sendRawCoinInfo(socket) {
+        this.client.coinInfo()
+            .then(response => socket.emit('broker_coin_info', response.data) )
+            .catch(error => socket.emit('error', error ) )
+    }
+   
+    sendAllOrders(socket, symbol) {
+
+        this.client.allOrders(symbol)
+            .then(response => socket.emit(
+                'broker_all_orders', { symbol: symbol, data: response.data } ))
+            .catch(error => socket.emit('error', error ))
+    }
+*/
 
 }
 
