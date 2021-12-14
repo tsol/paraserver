@@ -31,7 +31,7 @@ function parseCandleFromREST(inCandleData) {
       close:    parseFloat(inCandleData[4]),
       volume:   parseFloat(inCandleData[5]),
       closeTime:   parseFloat(inCandleData[6]),
-      from: 'bulk'
+      live: false
     });
 }
 
@@ -82,7 +82,7 @@ function parseCandleFromWSS(msg)
         close:    parseFloat(cdl.c),
         volume:   parseFloat(cdl.v),
         closeTime: cdl.T,
-        from: 'stream'
+        live: false
       });
   
 }

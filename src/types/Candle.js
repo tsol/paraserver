@@ -9,6 +9,7 @@ class Candle {
         this.volume = volume;
         this.closeTime = closeTime;
         this.visualDebug = [];
+        this.live = false; /* false - candle historic load, true - fresh runtime new candle */
     }
 
     isRed() {
