@@ -216,7 +216,17 @@ class BrokerBinance {
     }
 
 
-    
+    recalcOpenOrdersStats() {
+        this.openOrders.forEach( (order) => {
+            const currentPrice = this.dataProcessor.getCurrentPrice(order.symbol);
+            order.myCurrentPrice = currentPrice;
+            order.myGainPercent = this.calcGainPercent(order.myTrades);
+        });
+    }
+
+    calcGainPercent(trades) {
+        
+    }
 
 
  /*
