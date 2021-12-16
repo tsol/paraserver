@@ -1,6 +1,4 @@
-
 const TickerProcessor = require('./TickerProcessor.js');
-const Flags = require('./Flags.js');
 
 class SymbolProcessor {
 
@@ -33,45 +31,11 @@ class SymbolProcessor {
 
     }
 
-    newCandleFromBroker(candle) {
-
-        if (this.allLoaded) {
-            // todo: process through ticker
-            this.processByTicker(candle);
-            return;
-        }
-
-        const state = this.loadState[ candle.timeframe ];
-
-        this.candlesBuffer.push(candle);
-
-        // we load history data only after first candle received by live stream
-        if (! state.wasLive) {
-            state.wasLive = true;
-
-            this.broker.loadCandles(this.symbol, candle.timeframe, state.limit)
-                .then( (candles) => {
-                    for(var candle of candles) {
-                        this.candlesBuffer.push(candle);
-                    }
-
-                    state.bulkLoaded = true;
-
-                    if (this.areAllTimeframesLoaded()) {
-                        this.processCandlesssBuffer();
-                        this.allLoaded = true;
-                    }
-
-                })
-
-        }
-
-    }
 
     areAllTimeframesLoaded() {
         
-        for ( tf of SymbolProcessor.Timeframes ) {
-            if (! this.loadState[tf].bulkLoaded )
+        for( var tf of SymbolProcessor.Timeframes ) {
+            if (! this.loadState[tf.name].bulkLoaded )
                 { return false; }
         };
         
@@ -80,11 +44,25 @@ class SymbolProcessor {
 
     processByTicker(candle)
     {
-        let time = (new Date(candle.openTime).toLocaleTimeString('ru-RU'));
-        console.log('PROCESS_CANDLE: '+time+' '+candle.getId());
+        if (!candle.closed) {
+            return;
+        }
 
-        // todo: get ticker and process by it
+        let od = new Date(candle.openTime);
+        let cd = new Date(candle.closeTime);
 
+        let odt = od.toLocaleDateString('ru-RU')+' '+od.toLocaleTimeString('ru-RU');
+        let cdt = cd.toLocaleDateString('ru-RU')+' '+cd.toLocaleTimeString('ru-RU');
+        
+        console.log('PROCESS_CANDLE: '+odt+' -> '+cdt+' === '+candle.getId());
+
+        const ticker = this.tickers[ candle.timeframe ];
+
+        if (! ticker ) {
+            throw new Error('no ticker object!');
+        }
+
+        ticker.addCandle(candle);
     }
 
     processCandlesBuffer() {
@@ -119,38 +97,76 @@ class SymbolProcessor {
 
         candles.forEach( candle => this.processByTicker(candle) );
 
+        console.log('SP: done loading candles, now we live on '+this.symbol);
+
     }
 
     createTickers()
     {
-        for ( tf of SymbolProcessor.Timeframes ) {
+        for ( var tf of SymbolProcessor.Timeframes ) {
             let ticker = new TickerProcessor(this.symbol,tf.name,tf.limit,this.flags);
-            const tickerId = ticker.getId();
-            this.tickers[tickerId] = ticker;
-            console.log('SP: adding ticker: '+tickerId);
+            this.tickers[tf.name] = ticker;
+            console.log('SP: adding ticker: '+ticker.getId());
         };
     }
 
-/*
-    getChart(tickerId) {
-        return this.tickers[tickerId].getChart();
+
+/* broker IO */
+
+newCandleFromBroker(candle) {
+
+    if (this.allLoaded) {
+        // todo: process through ticker
+        this.processByTicker(candle);
+        return;
     }
 
-    getState() {
+    const state = this.loadState[ candle.timeframe ];
+
+    this.candlesBuffer.push(candle);
+
+    // we load history data only after first candle received by live stream
+    if (! state.wasLive) {
+        state.wasLive = true;
+
+        this.broker.loadCandles(this.symbol, candle.timeframe, state.limit)
+            .then( candles => {
+
+                for(var candle of candles) {
+                    this.candlesBuffer.push(candle);
+                }
+
+                state.bulkLoaded = true;
+
+                if (this.areAllTimeframesLoaded()) {
+                    this.processCandlesBuffer();
+                    this.allLoaded = true;
+                }
+
+            })
+
+    }
+
+}
+
+/* public IO */
+
+    getTickerChart(timeframe) {
+        return this.tickers[ timeframe ].getChart();
+    }
+
+    getTickersState() {
         return Object.keys(this.tickers).map( t => this.tickers[t].getState() );
     }
     
-    getCurrentPrice(symbol) {
-        const t = this.tickers[ symbol+'-1m' ];
+    getCurrentPrice() {
+        const t = this.tickers[ '1m' ];
         if (! t) {
-            console.error('cannot get current price of '+symbol);
+            console.error('cannot get current price of '+this.symbol);
             return 0;
-        }
-            
+        }        
         return t.getCurrentPrice();
     }
-
-*/
 
 }
 

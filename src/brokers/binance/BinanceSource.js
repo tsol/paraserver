@@ -26,6 +26,8 @@ function parseCandleFromWSS(symbol,timeframe,msg)
         return undefined;
     }
 
+    const cdl = msg['k'];
+    
     return new Candle({
         openTime: cdl.t,
         open:     parseFloat(cdl.o),
@@ -35,7 +37,7 @@ function parseCandleFromWSS(symbol,timeframe,msg)
         volume:   parseFloat(cdl.v),
         closeTime: cdl.T,
         live: true,
-        closed: ( msg[k] ? true : false),
+        closed: ( cdl.x ? true : false),
         symbol: symbol,
         timeframe: timeframe
       });
@@ -101,18 +103,17 @@ class BinanceSource {
     constructor ({ apiKey, secretKey })
     {
         this.client = new Spot( apiKey, secretKey );
-        this.dataProcessor = dataProcessor;
         this.streams = {};
     }
 
     async loadCandles(symbol, timeframe, limit)
     {
-        this.client.klines(symbol, timeframe, { limit: limit })
+       let candles = await this.client.klines(symbol, timeframe, { limit: limit })
             .then( response => {
                 let candles = [];
 
                 response.data.forEach( oneCandle => {
-                    let objectCandle = parseCandleFromREST(this.symbol,this.timeframe,oneCandle);;
+                    let objectCandle = parseCandleFromREST(symbol,timeframe,oneCandle);;
                     candles.push(objectCandle);    
                 });
 
@@ -125,6 +126,9 @@ class BinanceSource {
                 console.log(error.message);
                 process.exit(1)
             })
+
+
+            return candles;
 
     }
 

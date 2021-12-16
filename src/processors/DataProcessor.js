@@ -1,38 +1,43 @@
 
-const TickerProcessor = require('./TickerProcessor.js');
+const SymbolProcessor = require('./SymbolProcessor.js');
 const Flags = require('./Flags.js');
 
 class DataProcessor {
 
     constructor() {
-        this.tickers = {};
+        this.symbolProcessors = {};
         this.flags = new Flags();
     }
 
-    addTicker(symbol,timeframe,limit)
+    addSymbol(broker, symbol)
     {
-        const ticker = new TickerProcessor(symbol,timeframe,limit,this.flags);
-        const tickerId = ticker.getId();
-        this.tickers[tickerId] = ticker;
-        console.log('DP: adding ticker: '+tickerId);
-        return this.tickers[tickerId];
+        if (this.symbolProcessors[ symbol ]) {
+            return false;
+        }
+        const sp = new SymbolProcessor(broker,symbol,this.flags);
+        this.symbolProcessors[symbol] = sp;
+        console.log('DP: adding SYMBOL: '+symbol);
+        return sp;
     }
 
-    getChart(tickerId) {
-        return this.tickers[tickerId].getChart();
+    getTickerChart(symbol, timeframe) {
+        return this.symbolProcessors[ symbol ].getTickerChart( timeframe );
     }
 
     getState() {
-        return Object.keys(this.tickers).map( t => this.tickers[t].getState() );
+
+        return Object.keys(this.symbolProcessors)
+            .reduce( (p, c) => { 
+                    return [...p, ...this.symbolProcessors[c].getTickersState()]; 
+            }, [] );
     }
     
     getCurrentPrice(symbol) {
-        const t = this.tickers[ symbol+'-1m' ];
+        const t = this.symbolProcessors[ symbol ];
         if (! t) {
             console.error('cannot get current price of '+symbol);
             return 0;
         }
-            
         return t.getCurrentPrice();
     }
 }
