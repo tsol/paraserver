@@ -26,7 +26,15 @@ class DataProcessor {
         return Object.keys(this.tickers).map( t => this.tickers[t].getState() );
     }
     
-
+    getCurrentPrice(symbol) {
+        const t = this.tickers[ symbol+'-1m' ];
+        if (! t) {
+            console.error('cannot get current price of '+symbol);
+            return 0;
+        }
+            
+        return t.getCurrentPrice();
+    }
 }
 
 module.exports = DataProcessor;

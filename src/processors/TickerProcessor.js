@@ -54,6 +54,15 @@ class TickerProcessor {
         this.resetAnalyzers();
     }
 
+    getCurrentPrice()  {
+        if (this.candles.length < 1) {
+            console.error('no candles to get current price');
+            return 0;
+        }
+        const lastCandle = this.candles[this.candles.length - 1];
+        return lastCandle.close;
+    }
+
     /* until batchLoaded we just gather all candles in array waiting for
     ** history data to be loaded, while getting live updates from wss
     */

@@ -24,20 +24,17 @@ const broker = new Broker(
     dataProcessor
 );
 
-broker.updateAccountInfo();
+broker.updateAccountInfo().then( () => {
+    broker.updateMyTrades('USDT').then( () => {
+        broker.getMyTrades().forEach( (trade) => {
+            broker.startTracking(trade.symbol,'1d','50');
+            broker.startTracking(trade.symbol,'1h','50');
+            broker.startTracking(trade.symbol,'15m','100');
+            broker.startTracking(trade.symbol,'1m','100');    
+        })
+    })
+})
 
-broker.updateOpenOrders().then(() => {
-    
-    console.log(broker.getOpenOrders());
-
-    broker.getOpenOrders().forEach( (order) => {
-        broker.startTracking(order.symbol,'1d','300');
-        broker.startTracking(order.symbol,'1h','300');
-        broker.startTracking(order.symbol,'15m','300');
-        broker.startTracking(order.symbol,'1m','300');
-    });
-
-});
 
 /*
 broker.startTracking('BTCUSDT','1d','300');
@@ -58,7 +55,7 @@ broker.startTracking('MANAUSDT','1m','1000');
 
 const io = new Server({
     cors: {
-        origin: "http://localhost:8080",
+        origin: [ /localhost/, /192\.168/, "http://192.168.1.10:8080" ],
         methods: ["GET", "POST"],
         credentials: true
       },
@@ -78,6 +75,12 @@ io.on("connection", (socket) => {
         //console.log('SENDING_TICKERS: '+JSON.stringify(data))
         socket.emit("tickers", data);
     });
+
+    socket.on("broker_my_trades", (arg) => {
+        let data = broker.getMyTradesJSON();
+        socket.emit('broker_my_trades', data);
+    });
+
 
 });
 

@@ -1,0 +1,2204 @@
+request my_trades BNBUSDT
+request my_trades ZRXUSDT
+request my_trades TRXUSDT
+request my_trades BATUSDT
+request my_trades MFTUSDT
+request my_trades VETUSDT
+request my_trades MATICUSDT
+request my_trades ALGOUSDT
+request my_trades RUBUSDT
+Error: Request failed with status code 400
+    at createError (/home/harry/projects/paraserver/node_modules/axios/lib/core/createError.js:16:15)
+    at settle (/home/harry/projects/paraserver/node_modules/axios/lib/core/settle.js:17:12)
+    at IncomingMessage.handleStreamEnd (/home/harry/projects/paraserver/node_modules/axios/lib/adapters/http.js:269:11)
+    at IncomingMessage.emit (events.js:412:35)
+    at endReadableNT (internal/streams/readable.js:1334:12)
+    at processTicksAndRejections (internal/process/task_queues.js:82:21) {
+  config: {
+    url: '/api/v3/myTrades?symbol=RUBUSDT&timestamp=1639659635051&signature=3e2436680332cb4bc17fa7aaa614018531807154ced24b04f39db239c9ce920a',
+    method: 'get',
+    headers: {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json',
+      'X-MBX-APIKEY': 'q0xkezU4Pcp1VcTxIT8VrR5Z8Q81Clt40HA8NqFCFVdLnHMjiKoupOtQwogCnNgF',
+      'User-Agent': '@binance/connector-node/1.5.0'
+    },
+    baseURL: 'https://api.binance.com',
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 0,
+    adapter: [Function: httpAdapter],
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    validateStatus: [Function: validateStatus],
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false
+    },
+    data: undefined
+  },
+  request: <ref *1> ClientRequest {
+    _events: [Object: null prototype] {
+      abort: [Function (anonymous)],
+      aborted: [Function (anonymous)],
+      connect: [Function (anonymous)],
+      error: [Function (anonymous)],
+      socket: [Function (anonymous)],
+      timeout: [Function (anonymous)],
+      prefinish: [Function: requestOnPrefinish]
+    },
+    _eventsCount: 7,
+    _maxListeners: undefined,
+    outputData: [],
+    outputSize: 0,
+    writable: true,
+    destroyed: false,
+    _last: true,
+    chunkedEncoding: false,
+    shouldKeepAlive: false,
+    _defaultKeepAlive: true,
+    useChunkedEncodingByDefault: false,
+    sendDate: false,
+    _removedConnection: false,
+    _removedContLen: false,
+    _removedTE: false,
+    _contentLength: 0,
+    _hasBody: true,
+    _trailer: '',
+    finished: true,
+    _headerSent: true,
+    socket: TLSSocket {
+      _tlsOptions: [Object],
+      _secureEstablished: true,
+      _securePending: false,
+      _newSessionPending: false,
+      _controlReleased: true,
+      secureConnecting: false,
+      _SNICallback: null,
+      servername: 'api.binance.com',
+      alpnProtocol: false,
+      authorized: true,
+      authorizationError: null,
+      encrypted: true,
+      _events: [Object: null prototype],
+      _eventsCount: 10,
+      connecting: false,
+      _hadError: false,
+      _parent: null,
+      _host: 'api.binance.com',
+      _readableState: [ReadableState],
+      _maxListeners: undefined,
+      _writableState: [WritableState],
+      allowHalfOpen: false,
+      _sockname: null,
+      _pendingData: null,
+      _pendingEncoding: '',
+      server: undefined,
+      _server: null,
+      ssl: [TLSWrap],
+      _requestCert: true,
+      _rejectUnauthorized: true,
+      parser: null,
+      _httpMessage: [Circular *1],
+      [Symbol(res)]: [TLSWrap],
+      [Symbol(verified)]: true,
+      [Symbol(pendingSession)]: null,
+      [Symbol(async_id_symbol)]: 214,
+      [Symbol(kHandle)]: [TLSWrap],
+      [Symbol(kSetNoDelay)]: false,
+      [Symbol(lastWriteQueueSize)]: 0,
+      [Symbol(timeout)]: null,
+      [Symbol(kBuffer)]: null,
+      [Symbol(kBufferCb)]: null,
+      [Symbol(kBufferGen)]: null,
+      [Symbol(kCapture)]: false,
+      [Symbol(kBytesRead)]: 0,
+      [Symbol(kBytesWritten)]: 0,
+      [Symbol(connect-options)]: [Object],
+      [Symbol(RequestTimeout)]: undefined
+    },
+    _header: 'GET /api/v3/myTrades?symbol=RUBUSDT&timestamp=1639659635051&signature=3e2436680332cb4bc17fa7aaa614018531807154ced24b04f39db239c9ce920a HTTP/1.1\r\n' +
+      'Accept: application/json, text/plain, */*\r\n' +
+      'Content-Type: application/json\r\n' +
+      'X-MBX-APIKEY: q0xkezU4Pcp1VcTxIT8VrR5Z8Q81Clt40HA8NqFCFVdLnHMjiKoupOtQwogCnNgF\r\n' +
+      'User-Agent: @binance/connector-node/1.5.0\r\n' +
+      'Host: api.binance.com\r\n' +
+      'Connection: close\r\n' +
+      '\r\n',
+    _keepAliveTimeout: 0,
+    _onPendingData: [Function: noopPendingOutput],
+    agent: Agent {
+      _events: [Object: null prototype],
+      _eventsCount: 2,
+      _maxListeners: undefined,
+      defaultPort: 443,
+      protocol: 'https:',
+      options: [Object],
+      requests: {},
+      sockets: [Object],
+      freeSockets: {},
+      keepAliveMsecs: 1000,
+      keepAlive: false,
+      maxSockets: Infinity,
+      maxFreeSockets: 256,
+      scheduling: 'lifo',
+      maxTotalSockets: Infinity,
+      totalSocketCount: 1,
+      maxCachedSessions: 100,
+      _sessionCache: [Object],
+      [Symbol(kCapture)]: false
+    },
+    socketPath: undefined,
+    method: 'GET',
+    maxHeaderSize: undefined,
+    insecureHTTPParser: undefined,
+    path: '/api/v3/myTrades?symbol=RUBUSDT&timestamp=1639659635051&signature=3e2436680332cb4bc17fa7aaa614018531807154ced24b04f39db239c9ce920a',
+    _ended: true,
+    res: IncomingMessage {
+      _readableState: [ReadableState],
+      _events: [Object: null prototype],
+      _eventsCount: 3,
+      _maxListeners: undefined,
+      socket: [TLSSocket],
+      httpVersionMajor: 1,
+      httpVersionMinor: 1,
+      httpVersion: '1.1',
+      complete: true,
+      headers: [Object],
+      rawHeaders: [Array],
+      trailers: {},
+      rawTrailers: [],
+      aborted: false,
+      upgrade: false,
+      url: '',
+      method: null,
+      statusCode: 400,
+      statusMessage: 'Bad Request',
+      client: [TLSSocket],
+      _consuming: false,
+      _dumped: false,
+      req: [Circular *1],
+      responseUrl: 'https://api.binance.com/api/v3/myTrades?symbol=RUBUSDT&timestamp=1639659635051&signature=3e2436680332cb4bc17fa7aaa614018531807154ced24b04f39db239c9ce920a',
+      redirects: [],
+      [Symbol(kCapture)]: false,
+      [Symbol(RequestTimeout)]: undefined
+    },
+    aborted: false,
+    timeoutCb: null,
+    upgradeOrConnect: false,
+    parser: null,
+    maxHeadersCount: null,
+    reusedSocket: false,
+    host: 'api.binance.com',
+    protocol: 'https:',
+    _redirectable: Writable {
+      _writableState: [WritableState],
+      _events: [Object: null prototype],
+      _eventsCount: 2,
+      _maxListeners: undefined,
+      _options: [Object],
+      _ended: true,
+      _ending: true,
+      _redirectCount: 0,
+      _redirects: [],
+      _requestBodyLength: 0,
+      _requestBodyBuffers: [],
+      _onNativeResponse: [Function (anonymous)],
+      _currentRequest: [Circular *1],
+      _currentUrl: 'https://api.binance.com/api/v3/myTrades?symbol=RUBUSDT&timestamp=1639659635051&signature=3e2436680332cb4bc17fa7aaa614018531807154ced24b04f39db239c9ce920a',
+      [Symbol(kCapture)]: false
+    },
+    [Symbol(kCapture)]: false,
+    [Symbol(kNeedDrain)]: false,
+    [Symbol(corked)]: 0,
+    [Symbol(kOutHeaders)]: [Object: null prototype] {
+      accept: [Array],
+      'content-type': [Array],
+      'x-mbx-apikey': [Array],
+      'user-agent': [Array],
+      host: [Array]
+    }
+  },
+  response: {
+    status: 400,
+    statusText: 'Bad Request',
+    headers: {
+      'content-type': 'application/json;charset=UTF-8',
+      'content-length': '38',
+      connection: 'close',
+      date: 'Thu, 16 Dec 2021 13:00:35 GMT',
+      server: 'nginx',
+      'x-mbx-uuid': 'e04b7b96-e90a-4de9-a4fc-a8b7ac0d71dd',
+      'x-mbx-used-weight': '380',
+      'x-mbx-used-weight-1m': '380',
+      'strict-transport-security': 'max-age=31536000; includeSubdomains',
+      'x-frame-options': 'SAMEORIGIN',
+      'x-xss-protection': '1; mode=block',
+      'x-content-type-options': 'nosniff',
+      'content-security-policy': "default-src 'self'",
+      'x-content-security-policy': "default-src 'self'",
+      'x-webkit-csp': "default-src 'self'",
+      'cache-control': 'no-cache, no-store, must-revalidate',
+      pragma: 'no-cache',
+      expires: '0',
+      'x-cache': 'Error from cloudfront',
+      via: '1.1 d9bcd0a29e17b9290f8c9f1617335955.cloudfront.net (CloudFront)',
+      'x-amz-cf-pop': 'FRA56-P4',
+      'x-amz-cf-id': 'yEVLtuzcWV7eombqWVxucaDJPOmm84b-2lHE0x2IIENh2MQMNwzefQ=='
+    },
+    config: {
+      url: '/api/v3/myTrades?symbol=RUBUSDT&timestamp=1639659635051&signature=3e2436680332cb4bc17fa7aaa614018531807154ced24b04f39db239c9ce920a',
+      method: 'get',
+      headers: [Object],
+      baseURL: 'https://api.binance.com',
+      transformRequest: [Array],
+      transformResponse: [Array],
+      timeout: 0,
+      adapter: [Function: httpAdapter],
+      xsrfCookieName: 'XSRF-TOKEN',
+      xsrfHeaderName: 'X-XSRF-TOKEN',
+      maxContentLength: -1,
+      maxBodyLength: -1,
+      validateStatus: [Function: validateStatus],
+      transitional: [Object],
+      data: undefined
+    },
+    request: <ref *1> ClientRequest {
+      _events: [Object: null prototype],
+      _eventsCount: 7,
+      _maxListeners: undefined,
+      outputData: [],
+      outputSize: 0,
+      writable: true,
+      destroyed: false,
+      _last: true,
+      chunkedEncoding: false,
+      shouldKeepAlive: false,
+      _defaultKeepAlive: true,
+      useChunkedEncodingByDefault: false,
+      sendDate: false,
+      _removedConnection: false,
+      _removedContLen: false,
+      _removedTE: false,
+      _contentLength: 0,
+      _hasBody: true,
+      _trailer: '',
+      finished: true,
+      _headerSent: true,
+      socket: [TLSSocket],
+      _header: 'GET /api/v3/myTrades?symbol=RUBUSDT&timestamp=1639659635051&signature=3e2436680332cb4bc17fa7aaa614018531807154ced24b04f39db239c9ce920a HTTP/1.1\r\n' +
+        'Accept: application/json, text/plain, */*\r\n' +
+        'Content-Type: application/json\r\n' +
+        'X-MBX-APIKEY: q0xkezU4Pcp1VcTxIT8VrR5Z8Q81Clt40HA8NqFCFVdLnHMjiKoupOtQwogCnNgF\r\n' +
+        'User-Agent: @binance/connector-node/1.5.0\r\n' +
+        'Host: api.binance.com\r\n' +
+        'Connection: close\r\n' +
+        '\r\n',
+      _keepAliveTimeout: 0,
+      _onPendingData: [Function: noopPendingOutput],
+      agent: [Agent],
+      socketPath: undefined,
+      method: 'GET',
+      maxHeaderSize: undefined,
+      insecureHTTPParser: undefined,
+      path: '/api/v3/myTrades?symbol=RUBUSDT&timestamp=1639659635051&signature=3e2436680332cb4bc17fa7aaa614018531807154ced24b04f39db239c9ce920a',
+      _ended: true,
+      res: [IncomingMessage],
+      aborted: false,
+      timeoutCb: null,
+      upgradeOrConnect: false,
+      parser: null,
+      maxHeadersCount: null,
+      reusedSocket: false,
+      host: 'api.binance.com',
+      protocol: 'https:',
+      _redirectable: [Writable],
+      [Symbol(kCapture)]: false,
+      [Symbol(kNeedDrain)]: false,
+      [Symbol(corked)]: 0,
+      [Symbol(kOutHeaders)]: [Object: null prototype]
+    },
+    data: { code: -1121, msg: 'Invalid symbol.' }
+  },
+  isAxiosError: true,
+  toJSON: [Function: toJSON]
+}
+request my_trades STPTUSDT
+request my_trades DOTUSDT
+request my_trades SRMUSDT
+request my_trades IDEXUSDT
+request my_trades BAKEUSDT
+request my_trades HARDUSDT
+request my_trades SLPUSDT
+request my_trades GHSTUSDT
+request my_trades LINAUSDT
+request my_trades RAYUSDT
+request my_trades CLVUSDT
+request my_trades DARUSDT
+request my_trades ASTRUSDT
+Error: Request failed with status code 400
+    at createError (/home/harry/projects/paraserver/node_modules/axios/lib/core/createError.js:16:15)
+    at settle (/home/harry/projects/paraserver/node_modules/axios/lib/core/settle.js:17:12)
+    at IncomingMessage.handleStreamEnd (/home/harry/projects/paraserver/node_modules/axios/lib/adapters/http.js:269:11)
+    at IncomingMessage.emit (events.js:412:35)
+    at endReadableNT (internal/streams/readable.js:1334:12)
+    at processTicksAndRejections (internal/process/task_queues.js:82:21) {
+  config: {
+    url: '/api/v3/myTrades?symbol=ASTRUSDT&timestamp=1639659642369&signature=7d357968e411f03f35ad0feb3b854606271daccf60bad52884b52373afea310f',
+    method: 'get',
+    headers: {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json',
+      'X-MBX-APIKEY': 'q0xkezU4Pcp1VcTxIT8VrR5Z8Q81Clt40HA8NqFCFVdLnHMjiKoupOtQwogCnNgF',
+      'User-Agent': '@binance/connector-node/1.5.0'
+    },
+    baseURL: 'https://api.binance.com',
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 0,
+    adapter: [Function: httpAdapter],
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    validateStatus: [Function: validateStatus],
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false
+    },
+    data: undefined
+  },
+  request: <ref *1> ClientRequest {
+    _events: [Object: null prototype] {
+      abort: [Function (anonymous)],
+      aborted: [Function (anonymous)],
+      connect: [Function (anonymous)],
+      error: [Function (anonymous)],
+      socket: [Function (anonymous)],
+      timeout: [Function (anonymous)],
+      prefinish: [Function: requestOnPrefinish]
+    },
+    _eventsCount: 7,
+    _maxListeners: undefined,
+    outputData: [],
+    outputSize: 0,
+    writable: true,
+    destroyed: false,
+    _last: true,
+    chunkedEncoding: false,
+    shouldKeepAlive: false,
+    _defaultKeepAlive: true,
+    useChunkedEncodingByDefault: false,
+    sendDate: false,
+    _removedConnection: false,
+    _removedContLen: false,
+    _removedTE: false,
+    _contentLength: 0,
+    _hasBody: true,
+    _trailer: '',
+    finished: true,
+    _headerSent: true,
+    socket: TLSSocket {
+      _tlsOptions: [Object],
+      _secureEstablished: true,
+      _securePending: false,
+      _newSessionPending: false,
+      _controlReleased: true,
+      secureConnecting: false,
+      _SNICallback: null,
+      servername: 'api.binance.com',
+      alpnProtocol: false,
+      authorized: true,
+      authorizationError: null,
+      encrypted: true,
+      _events: [Object: null prototype],
+      _eventsCount: 10,
+      connecting: false,
+      _hadError: false,
+      _parent: null,
+      _host: 'api.binance.com',
+      _readableState: [ReadableState],
+      _maxListeners: undefined,
+      _writableState: [WritableState],
+      allowHalfOpen: false,
+      _sockname: null,
+      _pendingData: null,
+      _pendingEncoding: '',
+      server: undefined,
+      _server: null,
+      ssl: [TLSWrap],
+      _requestCert: true,
+      _rejectUnauthorized: true,
+      parser: null,
+      _httpMessage: [Circular *1],
+      [Symbol(res)]: [TLSWrap],
+      [Symbol(verified)]: true,
+      [Symbol(pendingSession)]: null,
+      [Symbol(async_id_symbol)]: 513,
+      [Symbol(kHandle)]: [TLSWrap],
+      [Symbol(kSetNoDelay)]: false,
+      [Symbol(lastWriteQueueSize)]: 0,
+      [Symbol(timeout)]: null,
+      [Symbol(kBuffer)]: null,
+      [Symbol(kBufferCb)]: null,
+      [Symbol(kBufferGen)]: null,
+      [Symbol(kCapture)]: false,
+      [Symbol(kBytesRead)]: 0,
+      [Symbol(kBytesWritten)]: 0,
+      [Symbol(connect-options)]: [Object],
+      [Symbol(RequestTimeout)]: undefined
+    },
+    _header: 'GET /api/v3/myTrades?symbol=ASTRUSDT&timestamp=1639659642369&signature=7d357968e411f03f35ad0feb3b854606271daccf60bad52884b52373afea310f HTTP/1.1\r\n' +
+      'Accept: application/json, text/plain, */*\r\n' +
+      'Content-Type: application/json\r\n' +
+      'X-MBX-APIKEY: q0xkezU4Pcp1VcTxIT8VrR5Z8Q81Clt40HA8NqFCFVdLnHMjiKoupOtQwogCnNgF\r\n' +
+      'User-Agent: @binance/connector-node/1.5.0\r\n' +
+      'Host: api.binance.com\r\n' +
+      'Connection: close\r\n' +
+      '\r\n',
+    _keepAliveTimeout: 0,
+    _onPendingData: [Function: noopPendingOutput],
+    agent: Agent {
+      _events: [Object: null prototype],
+      _eventsCount: 2,
+      _maxListeners: undefined,
+      defaultPort: 443,
+      protocol: 'https:',
+      options: [Object],
+      requests: {},
+      sockets: [Object],
+      freeSockets: {},
+      keepAliveMsecs: 1000,
+      keepAlive: false,
+      maxSockets: Infinity,
+      maxFreeSockets: 256,
+      scheduling: 'lifo',
+      maxTotalSockets: Infinity,
+      totalSocketCount: 1,
+      maxCachedSessions: 100,
+      _sessionCache: [Object],
+      [Symbol(kCapture)]: false
+    },
+    socketPath: undefined,
+    method: 'GET',
+    maxHeaderSize: undefined,
+    insecureHTTPParser: undefined,
+    path: '/api/v3/myTrades?symbol=ASTRUSDT&timestamp=1639659642369&signature=7d357968e411f03f35ad0feb3b854606271daccf60bad52884b52373afea310f',
+    _ended: true,
+    res: IncomingMessage {
+      _readableState: [ReadableState],
+      _events: [Object: null prototype],
+      _eventsCount: 3,
+      _maxListeners: undefined,
+      socket: [TLSSocket],
+      httpVersionMajor: 1,
+      httpVersionMinor: 1,
+      httpVersion: '1.1',
+      complete: true,
+      headers: [Object],
+      rawHeaders: [Array],
+      trailers: {},
+      rawTrailers: [],
+      aborted: false,
+      upgrade: false,
+      url: '',
+      method: null,
+      statusCode: 400,
+      statusMessage: 'Bad Request',
+      client: [TLSSocket],
+      _consuming: false,
+      _dumped: false,
+      req: [Circular *1],
+      responseUrl: 'https://api.binance.com/api/v3/myTrades?symbol=ASTRUSDT&timestamp=1639659642369&signature=7d357968e411f03f35ad0feb3b854606271daccf60bad52884b52373afea310f',
+      redirects: [],
+      [Symbol(kCapture)]: false,
+      [Symbol(RequestTimeout)]: undefined
+    },
+    aborted: false,
+    timeoutCb: null,
+    upgradeOrConnect: false,
+    parser: null,
+    maxHeadersCount: null,
+    reusedSocket: false,
+    host: 'api.binance.com',
+    protocol: 'https:',
+    _redirectable: Writable {
+      _writableState: [WritableState],
+      _events: [Object: null prototype],
+      _eventsCount: 2,
+      _maxListeners: undefined,
+      _options: [Object],
+      _ended: true,
+      _ending: true,
+      _redirectCount: 0,
+      _redirects: [],
+      _requestBodyLength: 0,
+      _requestBodyBuffers: [],
+      _onNativeResponse: [Function (anonymous)],
+      _currentRequest: [Circular *1],
+      _currentUrl: 'https://api.binance.com/api/v3/myTrades?symbol=ASTRUSDT&timestamp=1639659642369&signature=7d357968e411f03f35ad0feb3b854606271daccf60bad52884b52373afea310f',
+      [Symbol(kCapture)]: false
+    },
+    [Symbol(kCapture)]: false,
+    [Symbol(kNeedDrain)]: false,
+    [Symbol(corked)]: 0,
+    [Symbol(kOutHeaders)]: [Object: null prototype] {
+      accept: [Array],
+      'content-type': [Array],
+      'x-mbx-apikey': [Array],
+      'user-agent': [Array],
+      host: [Array]
+    }
+  },
+  response: {
+    status: 400,
+    statusText: 'Bad Request',
+    headers: {
+      'content-type': 'application/json;charset=UTF-8',
+      'content-length': '38',
+      connection: 'close',
+      date: 'Thu, 16 Dec 2021 13:00:42 GMT',
+      server: 'nginx',
+      'x-mbx-uuid': '4e5edd53-9663-4159-8539-b91b07d01155',
+      'x-mbx-used-weight': '510',
+      'x-mbx-used-weight-1m': '510',
+      'strict-transport-security': 'max-age=31536000; includeSubdomains',
+      'x-frame-options': 'SAMEORIGIN',
+      'x-xss-protection': '1; mode=block',
+      'x-content-type-options': 'nosniff',
+      'content-security-policy': "default-src 'self'",
+      'x-content-security-policy': "default-src 'self'",
+      'x-webkit-csp': "default-src 'self'",
+      'cache-control': 'no-cache, no-store, must-revalidate',
+      pragma: 'no-cache',
+      expires: '0',
+      'x-cache': 'Error from cloudfront',
+      via: '1.1 f9c16664a13e70e73a4e280c7a0f2267.cloudfront.net (CloudFront)',
+      'x-amz-cf-pop': 'FRA56-P4',
+      'x-amz-cf-id': '4aLoDHjaB6KeqKNsPECQrPLmWUcduVhVwh6FTHPBMrN78AwBWlgsCg=='
+    },
+    config: {
+      url: '/api/v3/myTrades?symbol=ASTRUSDT&timestamp=1639659642369&signature=7d357968e411f03f35ad0feb3b854606271daccf60bad52884b52373afea310f',
+      method: 'get',
+      headers: [Object],
+      baseURL: 'https://api.binance.com',
+      transformRequest: [Array],
+      transformResponse: [Array],
+      timeout: 0,
+      adapter: [Function: httpAdapter],
+      xsrfCookieName: 'XSRF-TOKEN',
+      xsrfHeaderName: 'X-XSRF-TOKEN',
+      maxContentLength: -1,
+      maxBodyLength: -1,
+      validateStatus: [Function: validateStatus],
+      transitional: [Object],
+      data: undefined
+    },
+    request: <ref *1> ClientRequest {
+      _events: [Object: null prototype],
+      _eventsCount: 7,
+      _maxListeners: undefined,
+      outputData: [],
+      outputSize: 0,
+      writable: true,
+      destroyed: false,
+      _last: true,
+      chunkedEncoding: false,
+      shouldKeepAlive: false,
+      _defaultKeepAlive: true,
+      useChunkedEncodingByDefault: false,
+      sendDate: false,
+      _removedConnection: false,
+      _removedContLen: false,
+      _removedTE: false,
+      _contentLength: 0,
+      _hasBody: true,
+      _trailer: '',
+      finished: true,
+      _headerSent: true,
+      socket: [TLSSocket],
+      _header: 'GET /api/v3/myTrades?symbol=ASTRUSDT&timestamp=1639659642369&signature=7d357968e411f03f35ad0feb3b854606271daccf60bad52884b52373afea310f HTTP/1.1\r\n' +
+        'Accept: application/json, text/plain, */*\r\n' +
+        'Content-Type: application/json\r\n' +
+        'X-MBX-APIKEY: q0xkezU4Pcp1VcTxIT8VrR5Z8Q81Clt40HA8NqFCFVdLnHMjiKoupOtQwogCnNgF\r\n' +
+        'User-Agent: @binance/connector-node/1.5.0\r\n' +
+        'Host: api.binance.com\r\n' +
+        'Connection: close\r\n' +
+        '\r\n',
+      _keepAliveTimeout: 0,
+      _onPendingData: [Function: noopPendingOutput],
+      agent: [Agent],
+      socketPath: undefined,
+      method: 'GET',
+      maxHeaderSize: undefined,
+      insecureHTTPParser: undefined,
+      path: '/api/v3/myTrades?symbol=ASTRUSDT&timestamp=1639659642369&signature=7d357968e411f03f35ad0feb3b854606271daccf60bad52884b52373afea310f',
+      _ended: true,
+      res: [IncomingMessage],
+      aborted: false,
+      timeoutCb: null,
+      upgradeOrConnect: false,
+      parser: null,
+      maxHeadersCount: null,
+      reusedSocket: false,
+      host: 'api.binance.com',
+      protocol: 'https:',
+      _redirectable: [Writable],
+      [Symbol(kCapture)]: false,
+      [Symbol(kNeedDrain)]: false,
+      [Symbol(corked)]: 0,
+      [Symbol(kOutHeaders)]: [Object: null prototype]
+    },
+    data: { code: -1121, msg: 'Invalid symbol.' }
+  },
+  isAxiosError: true,
+  toJSON: [Function: toJSON]
+}
+request my_trades AMPUSDT
+DP: adding ticker: BNBUSDT-1d
+wss://stream.binance.com:9443/ws/bnbusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: BNBUSDT-1d
+DP: adding ticker: BNBUSDT-1h
+wss://stream.binance.com:9443/ws/bnbusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: BNBUSDT-1h
+DP: adding ticker: BNBUSDT-15m
+wss://stream.binance.com:9443/ws/bnbusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: BNBUSDT-15m
+DP: adding ticker: BNBUSDT-1m
+wss://stream.binance.com:9443/ws/bnbusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: BNBUSDT-1m
+DP: adding ticker: ZRXUSDT-1d
+wss://stream.binance.com:9443/ws/zrxusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: ZRXUSDT-1d
+DP: adding ticker: ZRXUSDT-1h
+wss://stream.binance.com:9443/ws/zrxusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: ZRXUSDT-1h
+DP: adding ticker: ZRXUSDT-15m
+wss://stream.binance.com:9443/ws/zrxusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: ZRXUSDT-15m
+DP: adding ticker: ZRXUSDT-1m
+wss://stream.binance.com:9443/ws/zrxusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: ZRXUSDT-1m
+DP: adding ticker: TRXUSDT-1d
+wss://stream.binance.com:9443/ws/trxusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: TRXUSDT-1d
+DP: adding ticker: TRXUSDT-1h
+wss://stream.binance.com:9443/ws/trxusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: TRXUSDT-1h
+DP: adding ticker: TRXUSDT-15m
+wss://stream.binance.com:9443/ws/trxusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: TRXUSDT-15m
+DP: adding ticker: TRXUSDT-1m
+wss://stream.binance.com:9443/ws/trxusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: TRXUSDT-1m
+DP: adding ticker: BATUSDT-1d
+wss://stream.binance.com:9443/ws/batusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: BATUSDT-1d
+DP: adding ticker: BATUSDT-1h
+wss://stream.binance.com:9443/ws/batusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: BATUSDT-1h
+DP: adding ticker: BATUSDT-15m
+wss://stream.binance.com:9443/ws/batusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: BATUSDT-15m
+DP: adding ticker: BATUSDT-1m
+wss://stream.binance.com:9443/ws/batusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: BATUSDT-1m
+DP: adding ticker: MFTUSDT-1d
+wss://stream.binance.com:9443/ws/mftusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: MFTUSDT-1d
+DP: adding ticker: MFTUSDT-1h
+wss://stream.binance.com:9443/ws/mftusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: MFTUSDT-1h
+DP: adding ticker: MFTUSDT-15m
+wss://stream.binance.com:9443/ws/mftusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: MFTUSDT-15m
+DP: adding ticker: MFTUSDT-1m
+wss://stream.binance.com:9443/ws/mftusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: MFTUSDT-1m
+DP: adding ticker: VETUSDT-1d
+wss://stream.binance.com:9443/ws/vetusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: VETUSDT-1d
+DP: adding ticker: VETUSDT-1h
+wss://stream.binance.com:9443/ws/vetusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: VETUSDT-1h
+DP: adding ticker: VETUSDT-15m
+wss://stream.binance.com:9443/ws/vetusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: VETUSDT-15m
+DP: adding ticker: VETUSDT-1m
+wss://stream.binance.com:9443/ws/vetusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: VETUSDT-1m
+DP: adding ticker: MATICUSDT-1d
+wss://stream.binance.com:9443/ws/maticusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: MATICUSDT-1d
+DP: adding ticker: MATICUSDT-1h
+wss://stream.binance.com:9443/ws/maticusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: MATICUSDT-1h
+DP: adding ticker: MATICUSDT-15m
+wss://stream.binance.com:9443/ws/maticusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: MATICUSDT-15m
+DP: adding ticker: MATICUSDT-1m
+wss://stream.binance.com:9443/ws/maticusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: MATICUSDT-1m
+DP: adding ticker: ALGOUSDT-1d
+wss://stream.binance.com:9443/ws/algousdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: ALGOUSDT-1d
+DP: adding ticker: ALGOUSDT-1h
+wss://stream.binance.com:9443/ws/algousdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: ALGOUSDT-1h
+DP: adding ticker: ALGOUSDT-15m
+wss://stream.binance.com:9443/ws/algousdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: ALGOUSDT-15m
+DP: adding ticker: ALGOUSDT-1m
+wss://stream.binance.com:9443/ws/algousdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: ALGOUSDT-1m
+DP: adding ticker: STPTUSDT-1d
+wss://stream.binance.com:9443/ws/stptusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: STPTUSDT-1d
+DP: adding ticker: STPTUSDT-1h
+wss://stream.binance.com:9443/ws/stptusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: STPTUSDT-1h
+DP: adding ticker: STPTUSDT-15m
+wss://stream.binance.com:9443/ws/stptusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: STPTUSDT-15m
+DP: adding ticker: STPTUSDT-1m
+wss://stream.binance.com:9443/ws/stptusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: STPTUSDT-1m
+DP: adding ticker: DOTUSDT-1d
+wss://stream.binance.com:9443/ws/dotusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: DOTUSDT-1d
+DP: adding ticker: DOTUSDT-1h
+wss://stream.binance.com:9443/ws/dotusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: DOTUSDT-1h
+DP: adding ticker: DOTUSDT-15m
+wss://stream.binance.com:9443/ws/dotusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: DOTUSDT-15m
+DP: adding ticker: DOTUSDT-1m
+wss://stream.binance.com:9443/ws/dotusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: DOTUSDT-1m
+DP: adding ticker: SRMUSDT-1d
+wss://stream.binance.com:9443/ws/srmusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: SRMUSDT-1d
+DP: adding ticker: SRMUSDT-1h
+wss://stream.binance.com:9443/ws/srmusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: SRMUSDT-1h
+DP: adding ticker: SRMUSDT-15m
+wss://stream.binance.com:9443/ws/srmusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: SRMUSDT-15m
+DP: adding ticker: SRMUSDT-1m
+wss://stream.binance.com:9443/ws/srmusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: SRMUSDT-1m
+DP: adding ticker: IDEXUSDT-1d
+wss://stream.binance.com:9443/ws/idexusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: IDEXUSDT-1d
+DP: adding ticker: IDEXUSDT-1h
+wss://stream.binance.com:9443/ws/idexusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: IDEXUSDT-1h
+DP: adding ticker: IDEXUSDT-15m
+wss://stream.binance.com:9443/ws/idexusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: IDEXUSDT-15m
+DP: adding ticker: IDEXUSDT-1m
+wss://stream.binance.com:9443/ws/idexusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: IDEXUSDT-1m
+DP: adding ticker: BAKEUSDT-1d
+wss://stream.binance.com:9443/ws/bakeusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: BAKEUSDT-1d
+DP: adding ticker: BAKEUSDT-1h
+wss://stream.binance.com:9443/ws/bakeusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: BAKEUSDT-1h
+DP: adding ticker: BAKEUSDT-15m
+wss://stream.binance.com:9443/ws/bakeusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: BAKEUSDT-15m
+DP: adding ticker: BAKEUSDT-1m
+wss://stream.binance.com:9443/ws/bakeusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: BAKEUSDT-1m
+DP: adding ticker: HARDUSDT-1d
+wss://stream.binance.com:9443/ws/hardusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: HARDUSDT-1d
+DP: adding ticker: HARDUSDT-1h
+wss://stream.binance.com:9443/ws/hardusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: HARDUSDT-1h
+DP: adding ticker: HARDUSDT-15m
+wss://stream.binance.com:9443/ws/hardusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: HARDUSDT-15m
+DP: adding ticker: HARDUSDT-1m
+wss://stream.binance.com:9443/ws/hardusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: HARDUSDT-1m
+DP: adding ticker: SLPUSDT-1d
+wss://stream.binance.com:9443/ws/slpusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: SLPUSDT-1d
+DP: adding ticker: SLPUSDT-1h
+wss://stream.binance.com:9443/ws/slpusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: SLPUSDT-1h
+DP: adding ticker: SLPUSDT-15m
+wss://stream.binance.com:9443/ws/slpusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: SLPUSDT-15m
+DP: adding ticker: SLPUSDT-1m
+wss://stream.binance.com:9443/ws/slpusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: SLPUSDT-1m
+DP: adding ticker: GHSTUSDT-1d
+wss://stream.binance.com:9443/ws/ghstusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: GHSTUSDT-1d
+DP: adding ticker: GHSTUSDT-1h
+wss://stream.binance.com:9443/ws/ghstusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: GHSTUSDT-1h
+DP: adding ticker: GHSTUSDT-15m
+wss://stream.binance.com:9443/ws/ghstusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: GHSTUSDT-15m
+DP: adding ticker: GHSTUSDT-1m
+wss://stream.binance.com:9443/ws/ghstusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: GHSTUSDT-1m
+DP: adding ticker: LINAUSDT-1d
+wss://stream.binance.com:9443/ws/linausdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: LINAUSDT-1d
+DP: adding ticker: LINAUSDT-1h
+wss://stream.binance.com:9443/ws/linausdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: LINAUSDT-1h
+DP: adding ticker: LINAUSDT-15m
+wss://stream.binance.com:9443/ws/linausdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: LINAUSDT-15m
+DP: adding ticker: LINAUSDT-1m
+wss://stream.binance.com:9443/ws/linausdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: LINAUSDT-1m
+DP: adding ticker: RAYUSDT-1d
+wss://stream.binance.com:9443/ws/rayusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: RAYUSDT-1d
+DP: adding ticker: RAYUSDT-1h
+wss://stream.binance.com:9443/ws/rayusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: RAYUSDT-1h
+DP: adding ticker: RAYUSDT-15m
+wss://stream.binance.com:9443/ws/rayusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: RAYUSDT-15m
+DP: adding ticker: RAYUSDT-1m
+wss://stream.binance.com:9443/ws/rayusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: RAYUSDT-1m
+DP: adding ticker: CLVUSDT-1d
+wss://stream.binance.com:9443/ws/clvusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: CLVUSDT-1d
+DP: adding ticker: CLVUSDT-1h
+wss://stream.binance.com:9443/ws/clvusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: CLVUSDT-1h
+DP: adding ticker: CLVUSDT-15m
+wss://stream.binance.com:9443/ws/clvusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: CLVUSDT-15m
+DP: adding ticker: CLVUSDT-1m
+wss://stream.binance.com:9443/ws/clvusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: CLVUSDT-1m
+DP: adding ticker: DARUSDT-1d
+wss://stream.binance.com:9443/ws/darusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: DARUSDT-1d
+DP: adding ticker: DARUSDT-1h
+wss://stream.binance.com:9443/ws/darusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: DARUSDT-1h
+DP: adding ticker: DARUSDT-15m
+wss://stream.binance.com:9443/ws/darusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: DARUSDT-15m
+DP: adding ticker: DARUSDT-1m
+wss://stream.binance.com:9443/ws/darusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: DARUSDT-1m
+DP: adding ticker: AMPUSDT-1d
+wss://stream.binance.com:9443/ws/ampusdt@kline_1d
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: AMPUSDT-1d
+DP: adding ticker: AMPUSDT-1h
+wss://stream.binance.com:9443/ws/ampusdt@kline_1h
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: AMPUSDT-1h
+DP: adding ticker: AMPUSDT-15m
+wss://stream.binance.com:9443/ws/ampusdt@kline_15m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: AMPUSDT-15m
+DP: adding ticker: AMPUSDT-1m
+wss://stream.binance.com:9443/ws/ampusdt@kline_1m
+listen to event: open
+listen to event: close
+listen to event: message
+BINANCE_BROKER: added new stream: AMPUSDT-1m
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream open
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream open
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: history data loaded
+TP: double candle filtered out.
+BINANCE: batch loaded. now we are live..
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+Received ping from server
+Received ping from server
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+Received ping from server
+Received ping from server
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+Received ping from server
+Received ping from server
+BINANCE: ws stream data
+Received ping from server
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+Received ping from server
+Received ping from server
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+Received ping from server
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+Received ping from server
+Received ping from server
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+Received ping from server
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+Received ping from server
+Received ping from server
+Received ping from server
+Received ping from server
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
+BINANCE: ws stream data
