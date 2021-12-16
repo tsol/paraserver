@@ -1,6 +1,6 @@
 class Candle {
 
-    constructor({ openTime, open, high, low, close, volume, closeTime }) {
+    constructor({ openTime, open, high, low, close, volume, closeTime, live, closed, symbol, timeframe }) {
         this.openTime = openTime;
         this.open = open;
         this.high = high;
@@ -9,7 +9,14 @@ class Candle {
         this.volume = volume;
         this.closeTime = closeTime;
         this.visualDebug = [];
-        this.live = false; /* false - candle historic load, true - fresh runtime new candle */
+        this.live = live; /* false - candle historic load, true - fresh runtime new candle */
+        this.closed = closed;
+        this.symbol = symbol;
+        this.timeframe = timeframe;
+    }
+
+    getId() {
+        return this.symbol+'-'+this.timeframe+'-'+this.openTime;
     }
 
     isRed() {
