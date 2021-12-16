@@ -17,7 +17,6 @@ class TickerProcessor {
         this.symbol = symbol;
         this.timeframe = timeframe;
         this.limit = limit;
-        this.batchLoaded = false;
    
         this.analyzers = [];
         this.analyzers.push(new AnExtremum());
@@ -28,8 +27,7 @@ class TickerProcessor {
         this.analyzers.push(new AnVLevels(limit));
         this.analyzers.push(new AnCandlePatterns());
         this.analyzers.push(new AnDoubleBottom());
-        
-        
+                
     }
 
     getId() {
@@ -42,7 +40,7 @@ class TickerProcessor {
             'symbol': this.symbol,
             'timeframe': this.timeframe,
             'limit': this.limit,
-            'batchLoaded': this.batchLoaded,
+            'batchLoaded': false, /* todo: deal with it */
             'flags': this.flags.allFlags(this.getId())
        };
     }
@@ -50,7 +48,6 @@ class TickerProcessor {
     reset() {
         console.log('TP: full reset');
         this.candles = [];
-        this.batchLoaded = false;
         this.resetAnalyzers();
     }
 
@@ -63,17 +60,12 @@ class TickerProcessor {
         return lastCandle.close;
     }
 
-    /* until batchLoaded we just gather all candles in array waiting for
-    ** history data to be loaded, while getting live updates from wss
-    */
     addCandle(candle) {
         this.candles.push(candle);
-        if (this.batchLoaded) {
-            while (this.candles.length > this.limit) {
-                this.forgetFirstCandle();
-            }
-            this.processCandle(candle);
+        while (this.candles.length > this.limit) {
+            this.forgetFirstCandle();
         }
+        this.processCandle(candle);
     }
 
     forgetFirstCandle() {
@@ -94,87 +86,11 @@ class TickerProcessor {
             //this.flags.merge( analayzer.getFlags() );
         });
 
-    }    
-
-
-    isBatchLoaded() {
-        return this.batchLoaded;
     }
 
-    /* when history data is ready and all candles added we
-    ** filter unique, resort, and run process all candles
-    */
-    batchLoadFinished() {
-
-        const candles = [];
-        const uniqueId = {};
-
-        /* filtering out duplicates from livestream and bulk history */
-        let cnt = 0;
-        this.candles.forEach( (candle) => {
-            if (uniqueId[ candle.openTime ]) {
-                console.log('TP: double candle filtered out.')
-                return;
-            }
-            candle.count = cnt;
-            cnt++;
-            candles.push(candle);
-            uniqueId[ candle.openTime ] = 1;
-        });
-
-        /* re-sort by open time */
-        candles.sort((a, b) => (a.openTime > b.openTime) ? 1 : -1)
-
-        /* reset all analyzers, in case of lost wss connection and reconnect */
-
-        /* process all candles */
-        this.candles = candles;
-        this.candles.forEach( candle => this.processCandle(candle) );
-
-        /* set flag, so all new added candles will be processed automatically */
-        this.batchLoaded = true;
-    }
-
+   
     resetAnalyzers() {
         this.analyzers.forEach( analayzer => analayzer.reset() );
-    }
-
-    /* Now this is totally inapropriate check for non 24h brokers, because
-    every GAP will fail this check. Also even binance closes on maintanence.
-    So disable it altogether?
-    */
-    checkCandleConsistent(thisCandle,prevCandle)
-    {
-        let diff = thisCandle.openTime - prevCandle.closeTime;
-        
-        if ( (diff > 1) || (diff < 0) ) {
-            
-            console.log('ERROR: time consistancy check failed');
-
-            console.log('Latest Candle');
-            console.log(thisCandle);
-
-            console.log('Previous Candle');
-            console.log(prevCandle);
-            //throw new Error('ERROR: time consistancy check failed diff='+diff);
-        }
-
-    }
-
-    timeConsistancyCheckAllCandles()
-    {
-        let prevCandle = undefined;
-
-        this.candles.forEach( (candle) => {
-            if (prevCandle === undefined) {
-                prevCandle = candle;
-                return;
-            }
-
-            this.checkCandleConsistent(candle,prevCandle);
-            prevCandle = candle;
-        });
-
     }
 
     getChart() {

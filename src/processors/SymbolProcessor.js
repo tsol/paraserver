@@ -3,10 +3,10 @@ const TickerProcessor = require('./TickerProcessor.js');
 class SymbolProcessor {
 
     static Timeframes = [
-            { name: '1d', limit: 10 },
-            { name: '1h', limit: 50 },
-            { name: '15m', limit: 100 },
-            { name: '1m', limit: 150 }
+            { name: '1d', limit:  300 },
+            { name: '1h', limit:  500 },
+            { name: '15m', limit: 700 },
+            { name: '1m', limit:  1000 }
     ];
 
     constructor(brokerSource, symbol, flagsObject) {
