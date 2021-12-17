@@ -1,21 +1,30 @@
 const { Server } = require("socket.io");
 
 const DataProcessor = require('./src/processors/DataProcessor.js');
-
-const Broker = require('./src/brokers/binance/BinanceSource.js');
-
-const broker = new Broker(
-    {
-        apiKey:     'q0xkezU4Pcp1VcTxIT8VrR5Z8Q81Clt40HA8NqFCFVdLnHMjiKoupOtQwogCnNgF',
-        secretKey:  'nlcSYGg1VgGQFbxqm0FoYNdnwk3MZY5V4L0rl5VE4oWNtrGflDq6ohYd8JUwbqu6'
-    }
-);
+const BinanceSource = require('./src/brokers/binance/BinanceSource.js');
+const BinanceClient = require('./src/brokers/binance/BinanceClient.js');
 
 const dataProcessor = new DataProcessor();
 
-dataProcessor.addSymbol(broker,'BTCUSDT');
+const binanceClient = new BinanceClient({
+        apiKey:     'q0xkezU4Pcp1VcTxIT8VrR5Z8Q81Clt40HA8NqFCFVdLnHMjiKoupOtQwogCnNgF',
+        secretKey:  'nlcSYGg1VgGQFbxqm0FoYNdnwk3MZY5V4L0rl5VE4oWNtrGflDq6ohYd8JUwbqu6'
+}, dataProcessor);
 
+const brokerSrc = new BinanceSource({
+    apiKey:     'Sx012YCUR2rFGGINH8N6CdT7tSRP0ATqxbxOGzpniI7pgHeb70sUGeXIuz1runwF',
+    secretKey:  'iT2cDYfMOdU817kIcA2zFEUYMgM1KpuWx7eKf3o8gKFLs7f2YStFXfOSx6SxIg9c'
+});
 
+dataProcessor.addSymbol(brokerSrc,'BTCUSDT');
+
+binanceClient.updateAccountInfo().then( () => {
+    binanceClient.updateMyTrades('USDT').then( () => {
+        binanceClient.getMyTrades().forEach( (trade) => {
+            dataProcessor.addSymbol(brokerSrc,trade.symbol);    
+        })
+    })
+})
 
 const io = new Server({
     cors: {
@@ -37,16 +46,15 @@ io.on("connection", (socket) => {
 
     socket.on("list_tickers", (arg) => {
         let data = dataProcessor.getState();
-        console.log('SENDING_TICKERS: '+JSON.stringify(data))
+        //console.log('SENDING_TICKERS: '+JSON.stringify(data))
         socket.emit("tickers", data);
     });
 
-    /*
+    
     socket.on("broker_my_trades", (arg) => {
-        let data = broker.getMyTradesJSON();
+        let data = binanceClient.getMyTradesJSON();
         socket.emit('broker_my_trades', data);
     });
-*/
 
 });
 

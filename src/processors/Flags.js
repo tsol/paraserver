@@ -36,6 +36,8 @@ class Flags {
         return this.tickers[ this.currentId() ][ field ];
     }
 
+
+    /* get Higher Time Frame flag. That way tickers can peek for flags of older brothers */
     getHTF(field) {
         const ntf = this.nextTF();
         if (ntf == undefined) {
