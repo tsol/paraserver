@@ -1,3 +1,9 @@
+/*
+** SymbolProcessor holds all Tickers for specific symbol. 
+** Its main job is to get data from broker, sort it by closeTime and feed
+** all tickers 
+*/
+
 const TickerProcessor = require('./TickerProcessor.js');
 
 class SymbolProcessor {
@@ -44,10 +50,7 @@ class SymbolProcessor {
 
     processByTicker(candle)
     {
-        if (!candle.closed) {
-            return;
-        }
-
+        /*
         let od = new Date(candle.openTime);
         let cd = new Date(candle.closeTime);
 
@@ -55,11 +58,16 @@ class SymbolProcessor {
         let cdt = cd.toLocaleDateString('ru-RU')+' '+cd.toLocaleTimeString('ru-RU');
         
         console.log('PROCESS_CANDLE: '+odt+' -> '+cdt+' === '+candle.getId());
-
+        */
         const ticker = this.tickers[ candle.timeframe ];
 
         if (! ticker ) {
             throw new Error('no ticker object!');
+        }
+
+        if (!candle.closed) {
+            ticker.peekCandle(candle);
+            return;
         }
 
         ticker.addCandle(candle);
