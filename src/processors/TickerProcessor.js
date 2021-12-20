@@ -60,6 +60,10 @@ class TickerProcessor {
         return lastCandle.close;
     }
 
+    peekCandle(candle) {
+        
+    }
+
     addCandle(candle) {
         this.candles.push(candle);
         while (this.candles.length > this.limit) {

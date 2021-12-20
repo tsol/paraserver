@@ -66,7 +66,7 @@ class SymbolProcessor {
         }
 
         if (!candle.closed) {
-            ticker.peekCandle(candle);
+            // ticker.peekCandle(candle);
             return;
         }
 
