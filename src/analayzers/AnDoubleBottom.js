@@ -21,7 +21,26 @@ class AnDoubleBottom extends AnalayzerIO {
         this.greenCount = 0;
         this.redCount = 0;
         this.totalCount = 0;
+        this.lowestSecondTail = 0;
     }
+
+    makeEntry(candle, flags) {
+
+        const entryPrice = candle.close;
+        const stopLoss = this.lowestSecondTail - flags.get('atr14'); 
+        const stopHeight = entryPrice - stopLoss;
+        const takeProfit = entryPrice + stopHeight * 1.4;
+
+        flags.set('entry',{
+                strategy: 'dblbottom',
+                atCandle: candle,
+                type: 'buy',
+                takeProfit: takeProfit,
+                stopLoss: stopLoss	
+        });
+
+    }
+
 
     addCandle(candle, flags) {
         super.addCandle(candle, flags);
@@ -60,19 +79,29 @@ class AnDoubleBottom extends AnalayzerIO {
 
             if (this.readyToSpotSecondBottom() && this.candleTouchesZone(candle)) {
                 this.secondBottom = candle;
+                this.lowestSecondTail = candle.low;
                 CDB.labelBottom(candle,'B2');
             }
 
         }
 
+        // we have second bottom and now we need to find lowest wick till our entry candle
+
+        if (candle.low < this.lowestSecondTail) {
+            this.lowestSecondTail = candle.low;
+        }
+
         // we have second bottom and a green candle
 
-        if (this.secondBottom && ! candle.isRed() ) {
+        if (this.secondBottom && candle.isGreen() ) {
+            
             CDB.labelTop(candle,'EN');
             flags.set('dblbottom.new.entry', candle);
+            this.makeEntry(candle, flags);
 
             CDB.circleLow(this.firstBottom, { radius: 2, color: 'yellow' });
             CDB.circleLow(this.secondBottom, { radius: 2, color: 'yellow' });
+
             this.resetFinder();
         }
 

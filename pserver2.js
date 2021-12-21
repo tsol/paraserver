@@ -3,8 +3,10 @@ const { Server } = require("socket.io");
 const DataProcessor = require('./src/processors/DataProcessor.js');
 const BinanceSource = require('./src/brokers/binance/BinanceSource.js');
 const BinanceClient = require('./src/brokers/binance/BinanceClient.js');
+const OrdersManager = require('./src/processors/OrdersManager.js');
 
-const dataProcessor = new DataProcessor();
+const ordersManager = new OrdersManager();
+const dataProcessor = new DataProcessor(ordersManager);
 
 const binanceClient = new BinanceClient({
         apiKey:     'q0xkezU4Pcp1VcTxIT8VrR5Z8Q81Clt40HA8NqFCFVdLnHMjiKoupOtQwogCnNgF',
@@ -16,15 +18,14 @@ const brokerSrc = new BinanceSource({
     secretKey:  'iT2cDYfMOdU817kIcA2zFEUYMgM1KpuWx7eKf3o8gKFLs7f2YStFXfOSx6SxIg9c'
 });
 
-dataProcessor.addSymbol(brokerSrc,'BTCUSDT');
 
-binanceClient.updateAccountInfo().then( () => {
-    binanceClient.updateMyTrades('USDT').then( () => {
-        binanceClient.getMyTrades().forEach( (trade) => {
-            dataProcessor.addSymbol(brokerSrc,trade.symbol);    
-        })
-    })
-})
+dataProcessor.runSymbols([
+    { symbol: 'LUNAUSDT', broker: brokerSrc },
+    { symbol: 'AVAXUSDT', broker: brokerSrc },
+    { symbol: 'BTCUSDT', broker: brokerSrc },
+    { symbol: 'SOLUSDT', broker: brokerSrc }
+]);
+
 
 const io = new Server({
     cors: {
@@ -34,7 +35,17 @@ const io = new Server({
       },
     allowEIO3: true
 });
-    
+
+/*
+binanceClient.updateAccountInfo().then( () => {
+    binanceClient.updateMyTrades('USDT').then( () => {
+        binanceClient.getMyTrades().forEach( (trade) => {
+            dataProcessor.runSymbols([{ symbol: trade.symbol, broker: brokerSrc }]);   
+        })
+    })
+})
+*/
+
 io.on("connection", (socket) => {
     console.log('client connected')
 
@@ -45,12 +56,16 @@ io.on("connection", (socket) => {
     });
 
     socket.on("list_tickers", (arg) => {
-        let data = dataProcessor.getState();
+        let data = dataProcessor.getTickersState();
         //console.log('SENDING_TICKERS: '+JSON.stringify(data))
         socket.emit("tickers", data);
     });
 
-    
+    socket.on("list_orders", (arg) => {
+        let data = ordersManager.toJSON();
+        socket.emit("orders", data);
+    });
+
     socket.on("broker_my_trades", (arg) => {
         let data = binanceClient.getMyTradesJSON();
         socket.emit('broker_my_trades', data);

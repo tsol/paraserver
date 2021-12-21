@@ -46,13 +46,14 @@ function parseCandleFromWSS(symbol,timeframe,msg)
 
 class Stream {
 
-    constructor(client, symbol, timeframe, symbolProcessor) {
+    constructor(client, symbol, timeframe) {
 
         this.client = client;
         this.symbol = symbol;
         this.timeframe = timeframe;
-        this.symbolProcessor = symbolProcessor;    
-        this.websocket = undefined;
+      this.websocket = undefined;
+
+        this.subscribers = [];
 
         this.wsHandleOpen = this.wsHandleOpen.bind(this);
         this.wsHandleClose = this.wsHandleClose.bind(this);
@@ -60,6 +61,28 @@ class Stream {
 
         this.startWebsocket();
         
+    }
+
+    subscribe(subscriberId, subscriberObject)
+    {
+        const found = this.subscribers.find( s => s.id === subscriberId );
+        
+        if (found) {
+            found.obj = subscriberObject;
+            return true;
+        }
+
+        this.subscribers.push({
+                id: subscriberId,
+                obj: subscriberObject
+        });
+
+        return true;
+    }
+
+    unsubscribe(id)
+    {
+        this.subscribers = this.subscribers.filter( s => s.id !== id );
     }
 
     startWebsocket()
@@ -88,9 +111,8 @@ class Stream {
 
     wsHandleData(data) {
         let objectCandle = parseCandleFromWSS(this.symbol,this.timeframe,JSON.parse(data));
-        
         if (objectCandle) {
-            this.symbolProcessor.newCandleFromBroker(objectCandle);
+            this.subscribers.forEach( s => s.obj.newCandleFromBroker(objectCandle) );
         }
     }
 
@@ -133,15 +155,35 @@ class BinanceSource {
     }
 
 
-    subscribe(symbol, timeframe, symbolProcessor)
+    subscribe(symbol, timeframe, subscriberId, subscriberObject)
     {
-        const stream = new Stream(this.client, symbol, timeframe, symbolProcessor);
-        const sId = stream.getId();
-        console.log('BINANCE_SRC: added new stream: '+sId);
-        this.streams[sId] = stream;
+        const sid = symbol+'-'+timeframe;
+        const foundStream = this.streams[sid];
+
+        if (foundStream) {
+            foundStream.subscribe(subscriberId,subscriberObject);
+            return true;
+        }
+
+        const stream = new Stream(this.client, symbol, timeframe);
+        console.log('BINANCE_SRC: added new stream: '+sid);
+        this.streams[sid] = stream;
+        stream.subscribe(subscriberId,subscriberObject);
+        return true;
     }
 
- 
+    unsubscribe(symbol,timeframe,subscriberId)
+    {
+        const sid = symbol+'-'+timeframe;
+        const foundStream = this.streams[sid];
+
+        if (foundStream) {
+            return foundStream.unsubscribe(subscriberId);
+        }
+        return false;
+    }
+
+
 }
 
 module.exports = BinanceSource;

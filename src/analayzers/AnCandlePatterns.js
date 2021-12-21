@@ -68,7 +68,6 @@ class AnCandlePatterns extends AnalayzerIO {
 
 
         isShootingStar(candle) {
-            if (! candle.isRed() ) { return false; }
             const c = candle.close - candle.low;
             const o = candle.open - candle.low;
             const h = candle.high - candle.low;
@@ -77,7 +76,6 @@ class AnCandlePatterns extends AnalayzerIO {
         }
 
         isHammer(candle) {
-            if (candle.isRed()) { return false; }
             const c = candle.close - candle.low;
             const o = candle.open - candle.low;
             const h = candle.high - candle.low;

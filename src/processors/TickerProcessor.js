@@ -9,14 +9,17 @@ const AnHills = require('../analayzers/AnHills.js');
 
 class TickerProcessor {
 
-    constructor(symbol,timeframe,limit,flags) {
+    constructor(symbol,timeframe,limit,flags,ordersManager) {
     
+        this.ordersManager = ordersManager;
         this.flags = flags;
-
+        
         this.candles = [];
         this.symbol = symbol;
         this.timeframe = timeframe;
         this.limit = limit;
+
+        this.isLive = false;
    
         this.analyzers = [];
         this.analyzers.push(new AnExtremum());
@@ -30,6 +33,15 @@ class TickerProcessor {
                 
     }
 
+    setLive()
+    {
+        this.isLive = true;
+    }
+
+    setFlagsObject(flagsObject) {
+        this.flags = flagsObject;
+    }
+
     getId() {
         return this.symbol+'-'+this.timeframe;
     }
@@ -40,16 +52,11 @@ class TickerProcessor {
             'symbol': this.symbol,
             'timeframe': this.timeframe,
             'limit': this.limit,
-            'batchLoaded': false, /* todo: deal with it */
+            'batchLoaded': this.isLive, /* todo: deal with it */
             'flags': this.flags.allFlags(this.getId())
        };
     }
 
-    reset() {
-        console.log('TP: full reset');
-        this.candles = [];
-        this.resetAnalyzers();
-    }
 
     getCurrentPrice()  {
         if (this.candles.length < 1) {
@@ -61,15 +68,41 @@ class TickerProcessor {
     }
 
     peekCandle(candle) {
-        
+        this.ordersManager.priceUpdated(candle.symbol, candle.close, this.isLive);
     }
 
-    addCandle(candle) {
+    addCandle(candle)
+    {
+        if (!candle.closed) {
+            return this.peekCandle(candle);
+        }
+
         this.candles.push(candle);
+
         while (this.candles.length > this.limit) {
             this.forgetFirstCandle();
         }
-        this.processCandle(candle);
+
+        this.flags.start(this.symbol, this.timeframe);
+
+        this.analyzers.forEach( (analayzer) => {
+            analayzer.addCandle(candle, this.flags);
+        });
+
+        this.ordersManager.priceUpdated(candle.symbol, candle.close, this.isLive);
+        const newEntry = this.flags.get('entry'); 
+        if (newEntry) {
+            this.ordersManager.newEntry(newEntry,this.isLive);
+        }
+        
+        // in future: updateEntry
+
+    }
+
+    /* broker IO */
+    newCandleFromBroker(candle) {
+        //console.log('TP: candle from broker '+candle.getId());
+        this.addCandle(candle);
     }
 
     forgetFirstCandle() {
@@ -81,22 +114,11 @@ class TickerProcessor {
 
     }
 
-    processCandle(candle) {
+    processCandle(candle) {        
         
-        this.flags.start(this.symbol, this.timeframe);
-
-        this.analyzers.forEach( (analayzer) => {
-            analayzer.addCandle(candle, this.flags);
-            //this.flags.merge( analayzer.getFlags() );
-        });
 
     }
-
-   
-    resetAnalyzers() {
-        this.analyzers.forEach( analayzer => analayzer.reset() );
-    }
-
+ 
     getChart() {
         return {
             id: this.getId(),
@@ -104,6 +126,18 @@ class TickerProcessor {
             flags: this.currentFlags
         }
     }
+
+/*
+    reset() {
+        console.log('TP: full reset');
+        this.candles = [];
+        this.resetAnalyzers();
+    }
+
+    resetAnalyzers() {
+        this.analyzers.forEach( analayzer => analayzer.reset() );
+    }
+*/
 
 }
 

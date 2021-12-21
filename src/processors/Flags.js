@@ -20,6 +20,7 @@ class Flags {
         this.tickers[ this.currentId() ] = {};
     }
 
+
     currentId() {
         return this.currentSymbol+'-'+this.currentTimeframe;
     }
@@ -36,7 +37,6 @@ class Flags {
         return this.tickers[ this.currentId() ][ field ];
     }
 
-
     /* get Higher Time Frame flag. That way tickers can peek for flags of older brothers */
     getHTF(field) {
         const ntf = this.nextTF();
@@ -49,6 +49,7 @@ class Flags {
     }
 
     nextTF() {
+        // todo: use static definition in Timeframes
         switch (this.currentTimeframe) {
             case '1m': return '15m';
             case '15m': return '1h';
@@ -56,6 +57,18 @@ class Flags {
         }
         return undefined;
     }
+
+    getTickers() {
+        return this.tickers;
+    }
+
+    merge(anotherFlagObject) {
+        const newTickers = anotherFlagObject.getTickers();
+        for( var tid of Object.keys(newTickers)) {
+            this.tickers[ tid ] = newTickers[ tid ];
+        }
+    }
+
 
 }
 

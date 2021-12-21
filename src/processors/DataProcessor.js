@@ -1,43 +1,56 @@
 
-const SymbolProcessor = require('./SymbolProcessor.js');
+const SymbolsLoader = require('./SymbolsLoader.js');
 const Flags = require('./Flags.js');
 
 class DataProcessor {
 
-    constructor() {
-        this.symbolProcessors = {};
+    constructor(ordersManager) {
         this.flags = new Flags();
+        this.loaders = [];
+        this.tickers = {};
+        this.ordersManager = ordersManager;
+    }
+ 
+    /*
+     Ex: dp->runSymbols([
+            { symbol: 'SOLUSDT', broker: binance },
+            { symbol: 'BTCUSDT', broker: binance }
+        ]);
+    */
+
+    runSymbols(symbolBrokerArray)
+    {
+        const loader = new SymbolsLoader(symbolBrokerArray, this, this.ordersManager);
+        this.loaders.push(loader);
     }
 
-    addSymbol(broker, symbol)
-    {
-        if (this.symbolProcessors[ symbol ]) {
-            return false;
+    loaderFinished(loader) {
+ 
+        this.flags.merge( loader.getFlags() );
+
+        for (var ticker of loader.getTickers()) {
+            ticker.setFlagsObject(this.flags);
+            ticker.setLive();
+            this.tickers[ ticker.getId() ] = ticker;
         }
-        const sp = new SymbolProcessor(broker,symbol,this.flags);
-        this.symbolProcessors[symbol] = sp;
-        console.log('DP: adding SYMBOL: '+symbol);
-        return sp;
+ 
+        this.loaders = this.loaders.filter( l => l !== loader);
     }
 
     getTickerChart(symbol, timeframe) {
-        return this.symbolProcessors[ symbol ].getTickerChart( timeframe );
+        return this.tickers[ symbol+'-'+timeframe ].getChart();
     }
 
-    getState() {
-
-        return Object.keys(this.symbolProcessors)
-            .reduce( (p, c) => { 
-                    return [...p, ...this.symbolProcessors[c].getTickersState()]; 
-            }, [] );
+    getTickersState() {
+        return Object.keys(this.tickers).map( t => this.tickers[t].getState() );
     }
     
     getCurrentPrice(symbol) {
-        const t = this.symbolProcessors[ symbol ];
+        const t = this.tickers[ symbol+'-1m' ];
         if (! t) {
             console.error('cannot get current price of '+symbol);
             return 0;
-        }
+        }        
         return t.getCurrentPrice();
     }
 }
