@@ -8,15 +8,10 @@ const OrdersManager = require('./src/processors/OrdersManager.js');
 const ordersManager = new OrdersManager();
 const dataProcessor = new DataProcessor(ordersManager);
 
-const binanceClient = new BinanceClient({
-        apiKey:     'q0xkezU4Pcp1VcTxIT8VrR5Z8Q81Clt40HA8NqFCFVdLnHMjiKoupOtQwogCnNgF',
-        secretKey:  'nlcSYGg1VgGQFbxqm0FoYNdnwk3MZY5V4L0rl5VE4oWNtrGflDq6ohYd8JUwbqu6'
-}, dataProcessor);
+const USERS = require('./private/private.js');
 
-const brokerSrc = new BinanceSource({
-    apiKey:     'Sx012YCUR2rFGGINH8N6CdT7tSRP0ATqxbxOGzpniI7pgHeb70sUGeXIuz1runwF',
-    secretKey:  'iT2cDYfMOdU817kIcA2zFEUYMgM1KpuWx7eKf3o8gKFLs7f2YStFXfOSx6SxIg9c'
-});
+const binanceClient = new BinanceClient(USERS.users.mona.brokers.binance, dataProcessor);
+const brokerSrc = new BinanceSource(USERS.users.harry.brokers.binance);
 
 
 dataProcessor.runSymbols([
