@@ -54,6 +54,10 @@ class Level {
         };
     }
 
+    getTotalWeight() {
+        return this.totalWeight;
+    }
+
     isWorthy() {
         return true;
   /*
@@ -71,6 +75,15 @@ class Level {
 
         return (y >= this.y0) && (y <= this.y1 );
     }
+
+    inLevelExact(y) {
+        if ( (this.resY0 == undefined) || (this.resY1 == undefined)) {
+            return false;
+        }
+
+        return (y >= this.resY0) && (y <= this.resY1 );
+    }
+
 
     recalcLevel() {
         const count = this.points.length;
@@ -103,8 +116,8 @@ class Level {
         this.y0 = yMiddle - avgHeight/2;
         this.y1 = yMiddle + avgHeight/2;
 
-        this.resY0 = yMiddle - avgHeight/8;
-        this.resY1 = yMiddle + avgHeight/8;
+        this.resY0 = yMiddle - avgHeight/4;
+        this.resY1 = yMiddle + avgHeight/4;
         
     }
 
@@ -211,6 +224,25 @@ class AnVLevels extends AnalayzerIO {
             const countBefore = this.levels.length;
             this.levels = this.levels.filter( (l) => l.forgetBefore(time) );
         }
+
+
+        getCandleResistTouchWeight(candle)
+        {
+            let weight = 0;
+
+            this.levels.forEach( (l) => {
+
+                if (    l.inLevelExact(candle.bodyLow()) 
+                    ||  l.inLevelExact(candle.low)
+                ) {
+                    weight += l.getTotalWeight();
+                }
+            })
+
+            return weight;
+        }
+
+
 
 }
 

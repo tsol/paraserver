@@ -119,6 +119,10 @@ class BinanceClient {
             return 0;
         }
 
+        if (totalUSDT < 1 ) {
+            return 0;
+        }
+
         return totalUSDT / totalQTY;
     }
 

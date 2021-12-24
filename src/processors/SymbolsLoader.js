@@ -8,7 +8,7 @@
 
 const TickerProcessor = require('./TickerProcessor.js');
 const Flags = require('./Flags.js');
-const TFRAMES = require('../types/Timeframes.js');
+const { TFRAMES } = require('../types/Timeframes.js');
 
 class SymbolsLoader {
 

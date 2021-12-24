@@ -84,6 +84,15 @@ class CandleDebug {
         });        
     }
 
+    static entry(candle, takeProfit, stopLoss) {
+        candle.visualDebug.push({
+            type: 'entry',
+            src: 'entries',
+            tp: takeProfit,
+            sl: stopLoss
+        });        
+    }
+
 }
 
 module.exports = CandleDebug;

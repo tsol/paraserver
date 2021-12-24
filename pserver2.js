@@ -26,7 +26,6 @@ dataProcessor.runSymbols([
     { symbol: 'SOLUSDT', broker: brokerSrc }
 ]);
 
-
 const io = new Server({
     cors: {
         origin: [ /localhost/, /192\.168/, "http://192.168.1.10:8080" ],
@@ -36,7 +35,7 @@ const io = new Server({
     allowEIO3: true
 });
 
-/*
+
 binanceClient.updateAccountInfo().then( () => {
     binanceClient.updateMyTrades('USDT').then( () => {
         binanceClient.getMyTrades().forEach( (trade) => {
@@ -44,7 +43,7 @@ binanceClient.updateAccountInfo().then( () => {
         })
     })
 })
-*/
+
 
 io.on("connection", (socket) => {
     console.log('client connected')

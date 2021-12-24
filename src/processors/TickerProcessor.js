@@ -68,7 +68,7 @@ class TickerProcessor {
     }
 
     peekCandle(candle) {
-        this.ordersManager.priceUpdated(candle.symbol, candle.close, this.isLive);
+        this.ordersManager.priceUpdated(candle.symbol, candle.timeframe, candle.close, this.isLive);
     }
 
     addCandle(candle)
@@ -89,7 +89,9 @@ class TickerProcessor {
             analayzer.addCandle(candle, this.flags);
         });
 
-        this.ordersManager.priceUpdated(candle.symbol, candle.close, this.isLive);
+        this.ordersManager.lowestPriceOnClose(candle.symbol, candle.timeframe, candle.low, this.isLive);
+        this.ordersManager.highestPriceOnClose(candle.symbol, candle.timeframe, candle.high, this.isLive);
+        
         const newEntry = this.flags.get('entry'); 
         if (newEntry) {
             this.ordersManager.newEntry(newEntry,this.isLive);

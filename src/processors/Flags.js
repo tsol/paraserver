@@ -6,6 +6,8 @@
 **
 */
 
+const { NEXT_TFRAME } = require('../types/Timeframes.js');
+
 class Flags {
 
     constructor() {
@@ -39,23 +41,13 @@ class Flags {
 
     /* get Higher Time Frame flag. That way tickers can peek for flags of older brothers */
     getHTF(field) {
-        const ntf = this.nextTF();
+        const ntf = NEXT_TFRAME(this.currentTimeframe);
         if (ntf == undefined) {
             return undefined;
         }
         const t = this.tickers[ this.currentSymbol+'-'+ntf ];
         if (! t) { return undefined; }
         return t[ field ];
-    }
-
-    nextTF() {
-        // todo: use static definition in Timeframes
-        switch (this.currentTimeframe) {
-            case '1m': return '15m';
-            case '15m': return '1h';
-            case '1h': return '1d';
-        }
-        return undefined;
     }
 
     getTickers() {
@@ -71,6 +63,5 @@ class Flags {
 
 
 }
-
 
 module.exports = Flags;

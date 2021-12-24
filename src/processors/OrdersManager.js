@@ -3,6 +3,7 @@
 
 */
 
+const CDB = require('../types/CandleDebug');
 
 class OrdersManager {
 
@@ -11,6 +12,7 @@ class OrdersManager {
     }
 
     newEntry(entry, isLive) {
+
         if (entry.type === 'buy') {
             if (   ! entry.atCandle 
                 || ! entry.strategy
@@ -19,6 +21,11 @@ class OrdersManager {
             ) {
                 console.log(entry);
                 throw new Error('bad newOrder entry!');
+            }
+
+            if (entry.atCandle.timeframe in['1d']) {
+                console.log('OM: ignoring order entry for timeframe='+
+                    entry.atCandle.timeframe);
             }
 
             return this.newOrderBuy(
@@ -43,13 +50,14 @@ class OrdersManager {
 
     newOrderBuy(atCandle,strategyName,takeProfit,stopLoss) {
 
-        const tickerId = atCandle.symbol+'-'+atCandle.timefame;
+        const tickerId = atCandle.symbol+'-'+atCandle.timeframe;
         const time = atCandle.closeTime;
         const orderId = tickerId+'-'+strategyName+'-'+time;
         
         const order = {
             id: orderId,
             time: time,
+            type: 'buy',
             symbol: atCandle.symbol,
             timeframe: atCandle.timeframe,
             strategy: strategyName,
@@ -58,6 +66,7 @@ class OrdersManager {
             stopLoss: stopLoss,
 
             active: true,
+            closePrice: 0,
             gain: 0
         }
 
@@ -66,20 +75,31 @@ class OrdersManager {
         this.orders.push(order);
 
         console.log('OM: new order BUY '+orderId);
+        CDB.entry(atCandle,takeProfit,stopLoss);
+
         return orderId;
     }
 
     riskManageGetQty(order) {
-        const inUSD = 10;
+        const inUSD = 100;
         const priceInUSD = order.entryPrice;
         const qty = inUSD / priceInUSD;
-        return qty.toPrecision(5);
+        return qty;
     }
 
-    priceUpdated(symbol, newPrice, isLive) {
-        console.log('OM: price update '+symbol+' = '+newPrice);
+    lowestPriceOnClose(symbol, timeframe, newPrice, isLive) {
+        this.priceUpdated(symbol, timeframe, newPrice, isLive);
+    }
 
-        const orders = this.orders.filter( o => o.symbol === symbol );
+    highestPriceOnClose(symbol, timeframe, newPrice, isLive) {
+        this.priceUpdated(symbol, timeframe, newPrice, isLive);
+    }
+
+    priceUpdated(symbol, timeframe, newPrice, isLive) {
+        //console.log('OM: price update '+symbol+' = '+newPrice);
+
+        const orders = this.orders.filter( o => 
+            o.active && (o.symbol === symbol) && (o.timeframe === timeframe) );
 
         orders.filter( o => newPrice >= o.takeProfit ).forEach( o => this.closeOrder(o.id, newPrice) );
         orders.filter( o => newPrice <= o.stopLoss ).forEach( o => this.closeOrder(o.id, newPrice) );
@@ -88,6 +108,7 @@ class OrdersManager {
 
     closeOrder(orderId,price) {
         const order = this.orders.find( o => o.id === orderId );
+
         if (! order) {
             throw new Error('OM: order not found on close order: '+orderId);
         }
@@ -96,11 +117,11 @@ class OrdersManager {
         }
         order.active = false;
 
-        const boughtInUSD = order.qty / order.entryPrice;
-        const soldInUSD = order.qty / price;
+        const boughtInUSD = order.qty * order.entryPrice;
+        const soldInUSD = order.qty * price;
         const gainInUSD = soldInUSD - boughtInUSD;
-
-        order.gain = gainInUSD.toFixed(2);
+        order.closePrice = price;
+        order.gain = gainInUSD;
     }
 
     toJSON() {

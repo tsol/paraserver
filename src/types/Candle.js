@@ -15,6 +15,11 @@ class Candle {
         this.timeframe = timeframe;
     }
 
+    bodyLow()
+    {
+        return Math.min(this.open, this.close);
+    }
+
     getId() {
         return this.symbol+'-'+this.timeframe+'-'+this.openTime;
     }
@@ -24,7 +29,7 @@ class Candle {
     }
     
     isGreen() {
-        return this.open > this.close;
+        return this.open < this.close;
     }
 
     bodySize(candle) {

@@ -9,6 +9,13 @@ const CDB = require('../types/CandleDebug');
 
 class AnDoubleBottom extends AnalayzerIO {
 
+    static TF_SETTINGS = {
+        '1m':   { required: 20, ratio: 2 },
+        '5m':   { required: 80, ratio: 1.55 },
+        '30m':  { required: 80, ratio: 1.5 },
+        '4h':   { required: 40, ratio: 1.45 } 
+    };
+
     constructor() {
         super();
         this.resetFinder();
@@ -24,23 +31,7 @@ class AnDoubleBottom extends AnalayzerIO {
         this.lowestSecondTail = 0;
     }
 
-    makeEntry(candle, flags) {
-
-        const entryPrice = candle.close;
-        const stopLoss = this.lowestSecondTail - flags.get('atr14'); 
-        const stopHeight = entryPrice - stopLoss;
-        const takeProfit = entryPrice + stopHeight * 1.4;
-
-        flags.set('entry',{
-                strategy: 'dblbottom',
-                atCandle: candle,
-                type: 'buy',
-                takeProfit: takeProfit,
-                stopLoss: stopLoss	
-        });
-
-    }
-
+ 
 
     addCandle(candle, flags) {
         super.addCandle(candle, flags);
@@ -79,7 +70,6 @@ class AnDoubleBottom extends AnalayzerIO {
 
             if (this.readyToSpotSecondBottom() && this.candleTouchesZone(candle)) {
                 this.secondBottom = candle;
-                this.lowestSecondTail = candle.low;
                 CDB.labelBottom(candle,'B2');
             }
 
@@ -95,17 +85,22 @@ class AnDoubleBottom extends AnalayzerIO {
 
         if (this.secondBottom && candle.isGreen() ) {
             
-            CDB.labelTop(candle,'EN');
-            flags.set('dblbottom.new.entry', candle);
-            this.makeEntry(candle, flags);
+            CDB.circleLow(this.firstBottom, { radius: 1.7, color: 'black' });
+            CDB.circleLow(this.secondBottom, { radius: 1.7, color: 'black' });
 
-            CDB.circleLow(this.firstBottom, { radius: 2, color: 'yellow' });
-            CDB.circleLow(this.secondBottom, { radius: 2, color: 'yellow' });
+
+            if ( this.makeEntry(candle, flags) ) {
+                CDB.labelTop(candle,'EN');
+            } else {
+                CDB.labelTop(candle,'NE');
+            }
 
             this.resetFinder();
         }
 
     }
+
+ 
 
     checkFirstBottom(flags) {
         const possibleBottom = flags.get('hl_trend.new.low'); 
@@ -119,6 +114,7 @@ class AnDoubleBottom extends AnalayzerIO {
 
         this.firstBottom = possibleBottom;
         this.firstZoneUpperLevel = Math.min(possibleBottom.open, possibleBottom.close);
+        this.lowestSecondTail = this.firstBottom.low;
         CDB.labelBottom(possibleBottom,'B1');
         return true;
     }
@@ -149,6 +145,60 @@ class AnDoubleBottom extends AnalayzerIO {
         const candleLowerBody = Math.min(candle.open, candle.close);
         return this.inZone(candleLowerBody) || this.inZone(candle.low);
     }
+
+    makeEntry(candle, flags) {
+
+        const tf = candle.timeframe;
+        const settings = AnDoubleBottom.TF_SETTINGS[tf];
+
+        if (! settings ) {
+            console.log('DBLBOTTOM: no entry for timeframe, no settings');
+            return false;
+        }
+
+        let levelTouchWeight = 0;
+        levelTouchWeight += this.countBottomTouchWeight(this.firstBottom,flags);
+        levelTouchWeight += this.countBottomTouchWeight(this.secondBottom,flags);
+
+        if (levelTouchWeight < settings.required ) {
+            console.log('DBLBOTTOM: no entry, weight not enough '+levelTouchWeight+' < '
+                + settings.required );
+            return false;
+        }
+
+        const entryPrice = candle.close;
+        const stopLoss = this.lowestSecondTail - flags.get('atr14'); 
+        const stopHeight = entryPrice - stopLoss;
+        const takeProfit = entryPrice + stopHeight * settings.ratio;
+
+        flags.set('entry',{
+                strategy: 'dblbottom',
+                atCandle: candle,
+                type: 'buy',
+                takeProfit: takeProfit,
+                stopLoss: stopLoss	
+        });
+
+    }
+
+    countBottomTouchWeight(candle, flags)
+    {
+        let touchWeight = 0;
+
+        const vlevels = flags.get('vlevels');
+        if (vlevels) { 
+            touchWeight += vlevels.getCandleResistTouchWeight(candle);
+        }
+
+        const vlevels_high = flags.get('vlevels_high');
+        if (vlevels_high) { 
+            touchWeight += vlevels_high.getCandleResistTouchWeight(candle);
+        }
+
+        return touchWeight;
+    }
+
+
 
 }
 
