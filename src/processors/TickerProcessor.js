@@ -46,18 +46,6 @@ class TickerProcessor {
         return this.symbol+'-'+this.timeframe;
     }
 
-    getState() {
-       return {
-            'id': this.getId(),
-            'symbol': this.symbol,
-            'timeframe': this.timeframe,
-            'limit': this.limit,
-            'batchLoaded': this.isLive, /* todo: deal with it */
-            'flags': this.flags.allFlags(this.getId())
-       };
-    }
-
-
     getCurrentPrice()  {
         if (this.candles.length < 1) {
             console.error('no candles to get current price');
@@ -121,13 +109,23 @@ class TickerProcessor {
 
     }
  
+    getState() {
+        return {
+             'id': this.getId(),
+             'symbol': this.symbol,
+             'timeframe': this.timeframe,
+             'limit': this.limit
+        };
+     }
+ 
     getChart() {
         return {
             id: this.getId(),
             candles: this.candles,
-            flags: this.currentFlags
+            flags: this.flags.allFlags(this.getId())
         }
     }
+
 
 /*
     reset() {

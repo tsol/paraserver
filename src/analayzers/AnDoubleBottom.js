@@ -88,7 +88,6 @@ class AnDoubleBottom extends AnalayzerIO {
             CDB.circleLow(this.firstBottom, { radius: 1.7, color: 'black' });
             CDB.circleLow(this.secondBottom, { radius: 1.7, color: 'black' });
 
-
             if ( this.makeEntry(candle, flags) ) {
                 CDB.labelTop(candle,'EN');
             } else {
@@ -108,7 +107,7 @@ class AnDoubleBottom extends AnalayzerIO {
             { return false; }
 
         const wick = possibleBottom.lowerTailSize();
-        if (wick > (flags.get('atr14'))) {
+        if (wick > flags.get('atr14') * 2) {
             return false;
         }
 
@@ -178,6 +177,8 @@ class AnDoubleBottom extends AnalayzerIO {
                 takeProfit: takeProfit,
                 stopLoss: stopLoss	
         });
+
+        return true;
 
     }
 
