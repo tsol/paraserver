@@ -8,7 +8,7 @@
 
 const TickerProcessor = require('./TickerProcessor.js');
 const Flags = require('./Flags.js');
-const { TFRAMES } = require('../types/Timeframes.js');
+const { TF } = require('../types/Timeframes.js');
 
 class SymbolsLoader {
 
@@ -36,7 +36,7 @@ class SymbolsLoader {
 */
     async load(symbols) {
         symbols.forEach( (s) => {
-            TFRAMES.forEach( (tf) => {
+            TF.TFRAMES.forEach( (tf) => {
                 
                 const ls = {
                     symbol: s.symbol,

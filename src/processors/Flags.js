@@ -6,7 +6,7 @@
 **
 */
 
-const { NEXT_TFRAME } = require('../types/Timeframes.js');
+const { TF } = require('../types/Timeframes.js');
 
 class Flags {
 
@@ -41,7 +41,7 @@ class Flags {
 
     /* get Higher Time Frame flag. That way tickers can peek for flags of older brothers */
     getHTF(field) {
-        const ntf = NEXT_TFRAME(this.currentTimeframe);
+        const ntf = TF.next(this.currentTimeframe);
         if (ntf == undefined) {
             return undefined;
         }

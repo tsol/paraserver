@@ -51,7 +51,7 @@ class Stream {
         this.client = client;
         this.symbol = symbol;
         this.timeframe = timeframe;
-      this.websocket = undefined;
+        this.websocket = undefined;
 
         this.subscribers = [];
 
@@ -122,10 +122,72 @@ class Stream {
 
 class BinanceSource {
 
+    static MAX_CANDLES_PER_REQUEST = 1000;
+
     constructor ({ apiKey, secretKey })
     {
         this.client = new Spot( apiKey, secretKey );
         this.streams = {};
+    }
+
+
+    async loadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp)
+    {
+        if (startTimestamp > endTimestamp) {
+            throw new Error('BS: start greater than end!');
+        }
+        let allCandles = [];
+
+        let currentStart = startTimestamp;
+        
+        while ( true ) {
+            let candles = await this.tryLoadCandlesPeriod(
+                symbol, timeframe, currentStart, endTimestamp
+            );
+
+            if (candles.length === 0) {
+                break;
+            }
+
+            allCandles = [... allCandles, ... candles];
+            let lastCandle = candles[ candles.length - 1];
+
+            if (lastCandle.closeTime >= endTimestamp-1) {
+                break;
+            }
+
+            currentStart = lastCandle.closeTime;
+
+        }
+
+        return allCandles;
+    }
+
+
+    async tryLoadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp)
+    {
+       let candles = await this.client.klines(symbol, timeframe, {
+                limit: BinanceSource.MAX_CANDLES_PER_REQUEST,
+                startTime: startTimestamp,
+                endTime: endTimestamp
+            })
+            .then( response => {
+
+                let candles = [];
+
+                response.data.forEach( oneCandle => {
+                    let objectCandle = parseCandleFromREST(symbol,timeframe,oneCandle);
+                    candles.push(objectCandle);    
+                });
+
+                return candles;
+            })
+            .catch( (error) => {
+                console.log(error.message);
+                process.exit(1)
+            })
+
+            return candles;
     }
 
     async loadCandles(symbol, timeframe, limit)
@@ -139,7 +201,14 @@ class BinanceSource {
                     candles.push(objectCandle);    
                 });
 
-                /* last candle is most likely not closed */
+                /* last candle is most likely is not closed yet 
+                
+                here we rely on the fact, than live candles will arive first
+                and be earlier in loader buffer with closed status
+                (loader must init bulk load after first live candle received)
+                and unclosed candle here will be filtered out by unique check
+                
+                todo: probably check openTime versus closeTime and TFRAMES.length */
                 candles[candles.length-1].closed = false;
 
                 return candles;
@@ -149,9 +218,7 @@ class BinanceSource {
                 process.exit(1)
             })
 
-
             return candles;
-
     }
 
 

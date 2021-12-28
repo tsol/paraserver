@@ -1,19 +1,34 @@
+const BinanceSource = require('./src/brokers/binance/BinanceSource.js');
+const USERS = require('./private/private.js');
+const brokerSrc = new BinanceSource(USERS.users.harry.brokers.binance);
+const { TF } = require('./src/types/Timeframes.js');
 
-const Broker = require('./src/brokers/binance/BrokerBinance.js');
-const DataProcessor = require('./src/processors/DataProcessor.js');
+function displayCandle(msg, candle) {
+    console.log(msg+' FROM: '
+        +TF.timestampToDate(candle.openTime)+' to '
+        +TF.timestampToDate(candle.closeTime)
+    );
+    console.log(candle);
+}
 
-const dataProcessor = new DataProcessor();
+brokerSrc.loadCandlesPeriod(
+    'BTCUSDT','1m',
+    TF.dateToTimestamp('2021-12-27 00:00:00'),
+    TF.currentTimestamp()
+).then( (candles) => {
 
-const broker = new Broker(
-    {
-        apiKey:     'Sx012YCUR2rFGGINH8N6CdT7tSRP0ATqxbxOGzpniI7pgHeb70sUGeXIuz1runwF',
-        secretKey:  'iT2cDYfMOdU817kIcA2zFEUYMgM1KpuWx7eKf3o8gKFLs7f2YStFXfOSx6SxIg9c'
-    },
-    dataProcessor
-);
+    console.log('COUNT CANDLES: '+candles.length);
+    
+    let lastCandle = candles[ candles.length - 1]; 
+    let firstCandle = candles[0];
 
-broker.startTracking('BTCUSDT','1m','10');
+    displayCandle('FIRST: ',firstCandle);
+    displayCandle('LAST: ',lastCandle);
+    
 
+})
+
+console.log("hello there!");
 
 
 

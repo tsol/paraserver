@@ -1,6 +1,6 @@
 /* remove _example from filename, fill in your account data */
 
-class USERS {
+class SETTINGS {
 
     static users = {
             harry: {
@@ -13,9 +13,18 @@ class USERS {
             },
     };
 
+    static databases = {
+        mysql: {
+            host: "localhost",
+            user: "yourusername",
+            password: "yourpassword",
+            database: "mydb"
+        }
+    };
+
     constructor() {
     };
 
 };
 
-module.exports = USERS;
+module.exports = SETTINGS;
