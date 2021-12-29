@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "@binance/connector": "^1.5.0",
+    "mysql": "^2.18.1",
+    "mysql2": "^2.3.3",
     "socket.io": "^4.3.1"
   }
 }

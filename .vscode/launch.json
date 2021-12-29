@@ -7,7 +7,7 @@
         {
             "type": "pwa-node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Run pserver2.js",
             "skipFiles": [
                 "<node_internals>/**"
             ],

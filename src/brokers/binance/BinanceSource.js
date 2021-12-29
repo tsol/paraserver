@@ -130,6 +130,10 @@ class BinanceSource {
         this.streams = {};
     }
 
+    hasSymbol(symbol) {
+        // todo: here we should really agree only on symbols binance has ))
+        return true;
+    }
 
     async loadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp)
     {
@@ -190,7 +194,7 @@ class BinanceSource {
             return candles;
     }
 
-    async loadCandles(symbol, timeframe, limit)
+    async loadLastCandles(symbol, timeframe, limit)
     {
        let candles = await this.client.klines(symbol, timeframe, { limit: limit })
             .then( response => {

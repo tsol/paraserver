@@ -73,7 +73,7 @@ class SymbolsLoader {
         if (! state.wasLive) {
             state.wasLive = true;
     
-            state.broker.loadCandles(state.symbol, state.timeframe, state.limit)
+            state.broker.loadLastCandles(state.symbol, state.timeframe, state.limit)
                 .then( candles => {
     
                     for(var candle of candles) {
