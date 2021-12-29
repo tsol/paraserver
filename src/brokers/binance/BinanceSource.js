@@ -135,6 +135,8 @@ class BinanceSource {
         return true;
     }
 
+
+    // todo: dont return last candle if it is not yet finished
     async loadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp)
     {
         if (startTimestamp > endTimestamp) {

@@ -20,10 +20,14 @@ class DataProcessor {
 
     runSymbols(symbolBrokerArray)
     {
-        const loader = new SymbolsLoader(symbolBrokerArray, this, this.ordersManager);
+        const loader = new SymbolsLoader(symbolBrokerArray, this, this.ordersManager);   
         this.loaders.push(loader);
     }
 
+ // todo: change this to promise by symbol loader and wait with .then
+ // and probably we don't need loaders[] array, since no API asks if something is loading
+ // and then again we should prevent attempts to start loading symbol if it's in progress...
+ // think about it
     loaderFinished(loader) {
  
         this.flags.merge( loader.getFlags() );
