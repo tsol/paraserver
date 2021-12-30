@@ -18,9 +18,8 @@ class CandleDB {
         return null;
     }
 
-    async getCandlesSince(symbol, timeframe, dateTime)
+    async getClosedCandlesSince(symbol, timeframe, sinceTimestamp)
     {
-        const sinceTimestamp = TF.dateToTimestamp(dateTime);
         const currentTimestamp = TF.currentTimestamp();
         return await this.getCandlesPeriod(symbol,timeframe,sinceTimestamp,currentTimestamp);
     }
@@ -28,7 +27,7 @@ class CandleDB {
     // this will load from mysql candles
     // get from broker who has symbol missing candles up to current time
     // (if required by several requests)
-    // store missing candles to mysql
+    // store missing candles to mysql (only closed ones!)
     // and return all candles array in a Promise
 
     async getCandlesPeriod( symbol, timeframe, sinceTimestamp, toTimestamp ) {
@@ -50,6 +49,7 @@ class CandleDB {
             let brokerCandles = await 
                 broker.loadCandlesPeriod(symbol,timeframe,needBrokerSince,needBrokerTo);
 
+            PIO.removeUnclosedCandles(brokerCandles);
             this.db.saveCandlesToDB(symbol,timeframe,brokerCandles);
 
             return brokerCandles;
@@ -62,7 +62,11 @@ class CandleDB {
 
             if (PIO.candleHitsBoundary(lastCandle, toTimestamp)) {
                 // all period was loaded from db, cool...
-                console.log('CDB: all candles from db...');
+                console.log('CDB: DB_ONLY ('+symbol+'-'+timeframe+') '
+                    +TF.timestampToDate(sinceTimestamp)
+                    +' <- DB -> '
+                    +TF.timestampToDate(toTimestamp)
+                );
                 return dbCandles;
             }
 
@@ -70,13 +74,20 @@ class CandleDB {
             needBrokerSince = lastCandle.closeTime;
             needBrokerTo = toTimestamp;
 
+            console.log('CDB: DB-BROKER ('+symbol+'-'+timeframe+') '
+                +TF.timestampToDate(sinceTimestamp)
+                +' <- DB -> '
+                +TF.timestampToDate(needBrokerSince)
+                +' <- BROKER -> '
+                +TF.timestampToDate(needBrokerTo)
+            );
+
             let brokerCandles = await 
                 broker.loadCandlesPeriod(symbol,timeframe,needBrokerSince,needBrokerTo);
 
+            PIO.removeUnclosedCandles(brokerCandles);
             this.db.saveCandlesToDB(symbol,timeframe,brokerCandles);
             
-            console.log('CDB: first part from db, rest from broker...');
-
             return [... dbCandles, ... brokerCandles];     
                 
         }
@@ -88,8 +99,15 @@ class CandleDB {
         needBrokerSince = sinceTimestamp;
         needBrokerTo = firstCandle.openTime-1;
 
-        console.log('CDB: first part broker load from '+
-            TF.timestampToDate(needBrokerSince)+' to '+TF.timestampToDate(needBrokerTo) );
+        console.log('CDB: BROKER-DB-? ('+symbol+'-'+timeframe+') '
+            +TF.timestampToDate(needBrokerSince)
+            +' <- BROKER -> '
+            +TF.timestampToDate(needBrokerTo)
+            +' <- DB -> '
+            +TF.timestampToDate(lastCandle.closeTime-1)
+            +' <- ? -> '
+            +TF.timestampToDate(toTimestamp)
+        );
         
         brokerCandlesBeforeDb = await 
             broker.loadCandlesPeriod(symbol,timeframe,needBrokerSince,needBrokerTo);
@@ -99,12 +117,19 @@ class CandleDB {
         needBrokerSince = lastCandle.closeTime;
         needBrokerTo = toTimestamp;
 
-        console.log('CDB: last part broker load from '+
-            TF.timestampToDate(needBrokerSince)+' to '+TF.timestampToDate(needBrokerTo) );
-
         if (needBrokerSince < needBrokerTo) {
+  
+            console.log('CDB: ?-DB-BROKER ('+symbol+'-'+timeframe+') '
+                +TF.timestampToDate(sinceTimestamp)
+                +' <- DB-BROKER1 -> '
+                +TF.timestampToDate(needBrokerSince)
+                +' <- BROKER -> '
+                +TF.timestampToDate(needBrokerTo)
+            );
+ 
             brokerCandlesAfterDb = await 
                 broker.loadCandlesPeriod(symbol,timeframe,needBrokerSince,needBrokerTo);
+            PIO.removeUnclosedCandles(brokerCandlesAfterDb);
         }
 
         this.db.saveCandlesToDB(symbol,timeframe,[...brokerCandlesBeforeDb, ...brokerCandlesAfterDb]);    
@@ -119,6 +144,23 @@ class PIO { /* private static */
 
     static candleHitsBoundary(candle,timestamp) {
         return ( (candle.openTime <= timestamp) && (candle.closeTime >= timestamp) );
+    }
+
+    static removeUnclosedCandles(candlesArray)
+    {
+        if (! candlesArray || candlesArray.length == 0) {
+            return false;
+        }
+        let lc = candlesArray[candlesArray.length-1];
+        if (!lc.closed) {
+            console.log('CDB: removed last candle from array was not closed');
+            console.log(lc.symbol+'-'+lc.timeframe
+                +' open: '+TF.timestampToDate(lc.openTime)
+                +' close: '+TF.timestampToDate(lc.closeTime)
+            );
+            candlesArray.pop();
+        }
+
     }
 
 

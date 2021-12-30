@@ -1,8 +1,162 @@
 
 const { Spot } = require('@binance/connector')
 const Candle = require('../../types/Candle.js');
+const { TF } = require('../../types/Timeframes.js');
 
-function parseCandleFromREST(symbol,timeframe,inCandleData) {
+class BinanceSource {
+
+    static MAX_CANDLES_PER_REQUEST = 1000;
+
+    constructor ({ apiKey, secretKey })
+    {
+        this.client = new Spot( apiKey, secretKey );
+        this.streams = {};
+    }
+
+    hasSymbol(symbol) {
+        // todo: here we should really agree only on symbols binance has ))
+        return true;
+    }
+
+
+    // this function might return not yet closed candle
+    async loadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp)
+    {
+        if (startTimestamp > endTimestamp) {
+            throw new Error('BS: start greater than end!');
+        }
+        let allCandles = [];
+
+        let currentStart = startTimestamp;
+        
+        while ( true ) {
+            let candles = await this.tryLoadCandlesPeriod(
+                symbol, timeframe, currentStart, endTimestamp
+            );
+
+            if (candles.length === 0) {
+                break;
+            }
+
+            allCandles = [... allCandles, ... candles];
+            let lastCandle = candles[ candles.length - 1];
+
+            if (lastCandle.closeTime >= endTimestamp-1) {
+                break;
+            }
+
+            currentStart = lastCandle.closeTime;
+
+        }
+
+        PIO.markUnclosedLastCandle(allCandles);
+
+        return allCandles;
+    }
+
+
+    async tryLoadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp)
+    {
+       let candles = await this.client.klines(symbol, timeframe, {
+                limit: BinanceSource.MAX_CANDLES_PER_REQUEST,
+                startTime: startTimestamp,
+                endTime: endTimestamp
+            })
+            .then( response => {
+
+                let candles = [];
+
+                response.data.forEach( oneCandle => {
+                    let objectCandle = PIO.parseCandleFromREST(symbol,timeframe,oneCandle);
+                    candles.push(objectCandle);    
+                });
+
+                return candles;
+            })
+
+            return candles;
+    }
+
+    
+    async loadLastCandles(symbol, timeframe, limit)
+    {
+       let candles = await this.client.klines(symbol, timeframe, { limit: limit })
+            .then( response => {
+                let candles = [];
+
+                response.data.forEach( oneCandle => {
+                    let objectCandle = PIO.parseCandleFromREST(symbol,timeframe,oneCandle);;
+                    candles.push(objectCandle);    
+                });
+
+                let wasMarked = PIO.markUnclosedLastCandle(candles);
+
+                if (wasMarked) {
+                    if ( candles[candles.length-1].closed ) {
+                        throw new Error('BS: marking didnt work!');
+                    }
+                }
+
+                return candles;
+            })
+
+            return candles;
+    }
+
+
+    subscribe(symbol, timeframe, subscriberId, subscriberObject)
+    {
+        const sid = symbol+'-'+timeframe;
+        const foundStream = this.streams[sid];
+
+        if (foundStream) {
+            foundStream.subscribe(subscriberId,subscriberObject);
+            return true;
+        }
+
+        const stream = new Stream(this.client, symbol, timeframe);
+        console.log('BINANCE_SRC: added new stream: '+sid);
+        this.streams[sid] = stream;
+        stream.subscribe(subscriberId,subscriberObject);
+        return true;
+    }
+
+    unsubscribe(symbol,timeframe,subscriberId)
+    {
+        const sid = symbol+'-'+timeframe;
+        const foundStream = this.streams[sid];
+
+        if (foundStream) {
+            return foundStream.unsubscribe(subscriberId);
+        }
+        return false;
+    }
+
+
+}
+
+class PIO 
+{
+
+    static markUnclosedLastCandle(candles)
+    {
+        if (candles.length === 0) return false;
+
+        let lastCandle = candles[candles.length-1];
+               
+        if ( TF.checkCandleCloseTimeInFuture(lastCandle)) {
+            console.log('BINANCE_SRC: close in future, marking unclosed '
+            +lastCandle.symbol+'-'+lastCandle.timeframe+' close:'
+            +TF.timestampToDate(lastCandle.closeTime));
+            lastCandle.closed = false;
+            return true;                    
+        }
+        
+        return false;
+    }
+
+
+    static parseCandleFromREST(symbol,timeframe,inCandleData) {
     return new Candle({
       openTime: inCandleData[0],
       open:     parseFloat(inCandleData[1]),
@@ -16,19 +170,19 @@ function parseCandleFromREST(symbol,timeframe,inCandleData) {
       symbol: symbol,
       timeframe: timeframe
     });
-}
-
-function parseCandleFromWSS(symbol,timeframe,msg)
-{
-    if (msg['e'] !== 'kline') {
-        console.log('BINANCE_SRC: parse_wss not a kline!');
-        console.log(msg);
-        return undefined;
     }
 
-    const cdl = msg['k'];
+    static parseCandleFromWSS(symbol,timeframe,msg)
+    {
+        if (msg['e'] !== 'kline') {
+            console.log('BINANCE_SRC: parse_wss not a kline!');
+            console.log(msg);
+            return undefined;
+        }
+
+        const cdl = msg['k'];
     
-    return new Candle({
+        return new Candle({
         openTime: cdl.t,
         open:     parseFloat(cdl.o),
         high:     parseFloat(cdl.h),
@@ -42,6 +196,7 @@ function parseCandleFromWSS(symbol,timeframe,msg)
         timeframe: timeframe
       });
   
+    }
 }
 
 class Stream {
@@ -110,7 +265,7 @@ class Stream {
     }
 
     wsHandleData(data) {
-        let objectCandle = parseCandleFromWSS(this.symbol,this.timeframe,JSON.parse(data));
+        let objectCandle = PIO.parseCandleFromWSS(this.symbol,this.timeframe,JSON.parse(data));
         if (objectCandle) {
             this.subscribers.forEach( s => s.obj.newCandleFromBroker(objectCandle) );
         }
@@ -118,145 +273,6 @@ class Stream {
 
 }
 
-/* PUBLIC IO */
 
-class BinanceSource {
-
-    static MAX_CANDLES_PER_REQUEST = 1000;
-
-    constructor ({ apiKey, secretKey })
-    {
-        this.client = new Spot( apiKey, secretKey );
-        this.streams = {};
-    }
-
-    hasSymbol(symbol) {
-        // todo: here we should really agree only on symbols binance has ))
-        return true;
-    }
-
-
-    // todo: dont return last candle if it is not yet finished
-    async loadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp)
-    {
-        if (startTimestamp > endTimestamp) {
-            throw new Error('BS: start greater than end!');
-        }
-        let allCandles = [];
-
-        let currentStart = startTimestamp;
-        
-        while ( true ) {
-            let candles = await this.tryLoadCandlesPeriod(
-                symbol, timeframe, currentStart, endTimestamp
-            );
-
-            if (candles.length === 0) {
-                break;
-            }
-
-            allCandles = [... allCandles, ... candles];
-            let lastCandle = candles[ candles.length - 1];
-
-            if (lastCandle.closeTime >= endTimestamp-1) {
-                break;
-            }
-
-            currentStart = lastCandle.closeTime;
-
-        }
-
-        return allCandles;
-    }
-
-
-    async tryLoadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp)
-    {
-       let candles = await this.client.klines(symbol, timeframe, {
-                limit: BinanceSource.MAX_CANDLES_PER_REQUEST,
-                startTime: startTimestamp,
-                endTime: endTimestamp
-            })
-            .then( response => {
-
-                let candles = [];
-
-                response.data.forEach( oneCandle => {
-                    let objectCandle = parseCandleFromREST(symbol,timeframe,oneCandle);
-                    candles.push(objectCandle);    
-                });
-
-                return candles;
-            })
-            .catch( (error) => {
-                console.log(error.message);
-                process.exit(1)
-            })
-
-            return candles;
-    }
-
-    async loadLastCandles(symbol, timeframe, limit)
-    {
-       let candles = await this.client.klines(symbol, timeframe, { limit: limit })
-            .then( response => {
-                let candles = [];
-
-                response.data.forEach( oneCandle => {
-                    let objectCandle = parseCandleFromREST(symbol,timeframe,oneCandle);;
-                    candles.push(objectCandle);    
-                });
-
-                /* last candle is most likely is not closed yet 
-                
-                here we rely on the fact, than live candles will arive first
-                and be earlier in loader buffer with closed status
-                (loader must init bulk load after first live candle received)
-                and unclosed candle here will be filtered out by unique check
-                
-                todo: probably check openTime versus closeTime and TFRAMES.length */
-                candles[candles.length-1].closed = false;
-
-                return candles;
-            })
-            .catch( (error) => {
-                console.log(error.message);
-                process.exit(1)
-            })
-
-            return candles;
-    }
-
-
-    subscribe(symbol, timeframe, subscriberId, subscriberObject)
-    {
-        const sid = symbol+'-'+timeframe;
-        const foundStream = this.streams[sid];
-
-        if (foundStream) {
-            foundStream.subscribe(subscriberId,subscriberObject);
-            return true;
-        }
-
-        const stream = new Stream(this.client, symbol, timeframe);
-        console.log('BINANCE_SRC: added new stream: '+sid);
-        this.streams[sid] = stream;
-        stream.subscribe(subscriberId,subscriberObject);
-        return true;
-    }
-
-    unsubscribe(symbol,timeframe,subscriberId)
-    {
-        const sid = symbol+'-'+timeframe;
-        const foundStream = this.streams[sid];
-
-        if (foundStream) {
-            return foundStream.unsubscribe(subscriberId);
-        }
-        return false;
-    }
-
-
-}
 
 module.exports = BinanceSource;

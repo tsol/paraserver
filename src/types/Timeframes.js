@@ -1,12 +1,26 @@
 class Timeframes
 {
+
+    DAY_LENGTH = 6 * 8 * 30 * 60000;
+    MIN_LENGTH = 60000;
+    HOUR_LENGTH = this.MIN_LENGTH * 60;
+
     TFRAMES = [
-        { name: '1d',  limit:  300, length: 6 * 8 * 30 * 60000 },
-        { name: '4h',  limit: 1000, length: 8 * 30 * 60000 },
-        { name: '30m', limit: 1000, length: 30 * 60000 },
-        { name: '5m',  limit: 1000, length: 5 * 60000 },
-        { name: '1m',  limit: 1000, length: 60000 }
+        { name: '1d',  levelsLimit: 300, days: 300, limit: 0, levelsLimitTime: 0, length: this.DAY_LENGTH },
+        { name: '4h',  levelsLimit: 300, days: 30, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
+        { name: '30m', levelsLimit: 300, days: 30,  limit: 0, levelsLimitTime: 0, length: 30 * this.MIN_LENGTH },
+        { name: '5m',  levelsLimit: 300, days: 30,  limit: 0, levelsLimitTime: 0, length: 5 * this.MIN_LENGTH },
+        { name: '1m',  levelsLimit: 300, days: 15,  limit: 0, levelsLimitTime: 0, length: this.MIN_LENGTH }
     ];
+
+    constructor() {
+        this.TFRAMES.forEach( (tf) => {
+            tf.limit = Math.floor( (tf.days * this.DAY_LENGTH) / tf.length );
+            tf.levelsLimitTime = tf.levelsLimit * tf.length;
+            console.log('TF: tf limit set '+tf.name+' = '+tf.limit+' candles');
+        });
+    }
+
 
     next(timeframe) {
         // todo: use static definition in Timeframes
@@ -19,6 +33,12 @@ class Timeframes
         return undefined;
     };
 
+    getLevelLimitTime(timeframe) {
+        return this.TFRAMES.find( t => t.name == timeframe ).levelsLimitTime;
+    }
+
+
+    /* REST of functions probably should be somewhere else :) */
 
     mysqlFormat(datetime) {
         var now     = new Date(datetime); 
@@ -47,9 +67,10 @@ class Timeframes
         return dateTime;
     }
 
+
     currentDatetime()
     {
-        return this.mysqlDatetime(null);
+        return this.mysqlFormat(null);
     }
 
     currentTimestamp()
@@ -64,9 +85,28 @@ class Timeframes
         return date.getTime();
     }
 
+    timestampDaysBack(days) {
+        var d = new Date();
+        d.setDate(d.getDate() - days);
+        d.setHours(0,0,0,0);
+        return d.getTime();
+    }
+
     timestampToDate(timestamp) {
         let od = new Date(timestamp);
         return od.toLocaleDateString('ru-RU')+' '+od.toLocaleTimeString('ru-RU');
+    }
+
+    getCandleTimeframeLength(candle) {
+        return this.TFRAMES.find( tf => tf.name === candle.timeframe).length;
+    }
+
+    checkCandleShorter(candle) {
+        return (candle.openTime + this.getCandleTimeframeLength(candle) >= candle.closeTime-1);
+    }
+
+    checkCandleCloseTimeInFuture(candle) {
+        return (candle.closeTime > this.currentTimestamp());
     }
 
 }

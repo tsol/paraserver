@@ -6,6 +6,123 @@
 
 const AnalayzerIO = require("./AnalayzerIO");
 const CDB = require('../types/CandleDebug');
+const { TF } = require('../types/Timeframes.js');
+
+class AnVLevels extends AnalayzerIO {
+
+        constructor(maxCandles) {
+            super();
+            this.levels = [];
+            this.maxCandles = maxCandles;
+        }
+
+        addCandle(candle,flags) {
+            super.addCandle(candle,flags)
+            CDB.setSource('vlevels');
+
+            /* cut levels from begining */
+            const cutSince = candle.openTime - TF.getLevelLimitTime(candle.timeframe);
+            /*
+            console.log('ANVLEVEL: cut since: '+cutSince+' = '+TF.timestampToDate(cutSince)
+            +' LLT='+TF.getLevelLimitTime(candle.timeframe)+' OT='+candle.openTime
+            + ' timeframe='+candle.timeframe);
+            */
+            this.forgetBefore(cutSince);
+
+
+            const extremum = flags.get('extremum');            
+            const atr = flags.get('atr14');
+            
+            const hillLow = flags.get('hills.new.low');
+            if (hillLow) {
+                this.addBounceLevel(true,
+                    hillLow.openTime,
+                    hillLow.low,
+                    atr,
+                    30);
+            }
+
+            const hillHigh = flags.get('hills.new.high');
+            if (hillHigh) {
+                this.addBounceLevel(false,
+                    hillHigh.openTime,
+                    hillHigh.high,
+                    atr,
+                    30);
+            }
+
+            let extremumCandle = flags.get('hl_trend.new.high');
+            if ( extremumCandle ) {
+                this.addBounceLevel(false,
+                     extremumCandle.openTime,
+                     extremumCandle.high,
+                     atr, 10);
+            }
+
+            extremumCandle = flags.get('hl_trend.new.low');
+            if ( extremumCandle ) {
+                this.addBounceLevel(true,
+                     extremumCandle.openTime,
+                     extremumCandle.low,
+                     atr, 10);
+            }
+
+            flags.set('vlevels', this);
+            flags.set('vlevels_high', flags.getHTF('vlevels'));
+            
+        }
+
+        toJSON() {
+            let levels = [];
+            this.levels.forEach( (l) => {
+                if (l.isWorthy()) {
+                    levels.push(l.toJSON())
+                }
+            });
+            return levels;
+        }
+
+        addBounceLevel(bounceUp, time, y, atr, weight) {
+            let wasFound = false;
+            for (const l of this.levels)
+            {
+                if (l.inLevel(y)) {
+                    l.addPoint(time,y,bounceUp,atr,weight);
+                    wasFound = true;
+                }
+            }
+            if (wasFound || weight < 30) {
+                return;
+            }
+            const newLevel = new Level(this.maxCandles);
+            newLevel.addPoint(time,y,bounceUp,atr,weight);
+            this.levels.push(newLevel);
+        }
+
+        forgetBefore(time) {
+            const countBefore = this.levels.length;
+            this.levels = this.levels.filter( (l) => l.forgetBefore(time) );
+        }
+
+        getCandleResistTouchWeight(candle)
+        {
+            let weight = 0;
+
+            this.levels.forEach( (l) => {
+
+                if (    l.inLevelExact(candle.bodyLow()) 
+                    ||  l.inLevelExact(candle.low)
+                ) {
+                    weight += l.getTotalWeight();
+                }
+            })
+
+            return weight;
+        }
+
+
+}
+
 
 class Level {
 
@@ -135,114 +252,6 @@ class Level {
 
         return true;
     }
-
-}
-
-
-class AnVLevels extends AnalayzerIO {
-
-        constructor(maxCandles) {
-            super();
-            this.levels = [];
-            this.maxCandles = maxCandles;
-        }
-
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags)
-            CDB.setSource('vlevels');
-
-            const extremum = flags.get('extremum');            
-            const atr = flags.get('atr14');
-            
-            const hillLow = flags.get('hills.new.low');
-            if (hillLow) {
-                this.addBounceLevel(true,
-                    hillLow.openTime,
-                    hillLow.low,
-                    atr,
-                    30);
-            }
-
-            const hillHigh = flags.get('hills.new.high');
-            if (hillHigh) {
-                this.addBounceLevel(false,
-                    hillHigh.openTime,
-                    hillHigh.high,
-                    atr,
-                    30);
-            }
-
-            let extremumCandle = flags.get('hl_trend.new.high');
-            if ( extremumCandle ) {
-                this.addBounceLevel(false,
-                     extremumCandle.openTime,
-                     extremumCandle.high,
-                     atr, 10);
-            }
-
-            extremumCandle = flags.get('hl_trend.new.low');
-            if ( extremumCandle ) {
-                this.addBounceLevel(true,
-                     extremumCandle.openTime,
-                     extremumCandle.low,
-                     atr, 10);
-            }
-
-            flags.set('vlevels', this);
-            flags.set('vlevels_high', flags.getHTF('vlevels'));
-            
-        }
-
-        toJSON() {
-            let levels = [];
-            this.levels.forEach( (l) => {
-                if (l.isWorthy()) {
-                    levels.push(l.toJSON())
-                }
-            });
-            return levels;
-        }
-
-        addBounceLevel(bounceUp, time, y, atr, weight) {
-            let wasFound = false;
-            for (const l of this.levels)
-            {
-                if (l.inLevel(y)) {
-                    l.addPoint(time,y,bounceUp,atr,weight);
-                    wasFound = true;
-                }
-            }
-            if (wasFound || weight < 30) {
-                return;
-            }
-            const newLevel = new Level(this.maxCandles);
-            newLevel.addPoint(time,y,bounceUp,atr,weight);
-            this.levels.push(newLevel);
-        }
-
-        forgetBefore(time) {
-            const countBefore = this.levels.length;
-            this.levels = this.levels.filter( (l) => l.forgetBefore(time) );
-        }
-
-
-        getCandleResistTouchWeight(candle)
-        {
-            let weight = 0;
-
-            this.levels.forEach( (l) => {
-
-                if (    l.inLevelExact(candle.bodyLow()) 
-                    ||  l.inLevelExact(candle.low)
-                ) {
-                    weight += l.getTotalWeight();
-                }
-            })
-
-            return weight;
-        }
-
-
 
 }
 

@@ -47,7 +47,6 @@ class MysqlDB {
 
     }
 
-
     async loadCandlesPeriod(symbol,timeframe,startTimestamp,endTimestamp) {
 
         if (! this.connection ) throw new Error('MDB: no connection');
@@ -90,6 +89,8 @@ class MysqlDB {
 
     saveCandlesToDB(symbol,timeframe,candles) {
 
+        if (! candles || candles.length == 0) return;
+
         const tableName = PIO.getTableName(symbol,timeframe);
 
         var sqlQuery = `INSERT INTO ${tableName} 
@@ -110,7 +111,13 @@ class MysqlDB {
         })
 
         this.connection.query(sqlQuery, [values], function (err, result) {
-          if (err)throw err;
+          if (err){
+              console.log('FAILED INSERT:');
+              console.log(sqlQuery);
+              console.log('VALUES:');
+              console.log(values);
+              throw err;
+          }
           console.log("MDB: number of records inserted: " + result.affectedRows);
         });
 

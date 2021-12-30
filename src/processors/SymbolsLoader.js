@@ -12,9 +12,10 @@ const { TF } = require('../types/Timeframes.js');
 
 class SymbolsLoader {
 
-    constructor(symbols, dataProcessor, ordersManager) {
+    constructor(symbols, dataProcessor, ordersManager, candleDB) {
         this.id = 'loader'+Math.random();
 
+        this.candleDB = candleDB;
         this.dataProcessor = dataProcessor;
         this.ordersManager = ordersManager;
 
@@ -43,6 +44,7 @@ class SymbolsLoader {
                     broker: s.broker,
                     timeframe: tf.name,
                     limit: tf.limit,
+                    days: tf.days,
                     wasLive: false,
                     bulkLoaded: false
                 };
@@ -67,13 +69,16 @@ class SymbolsLoader {
             return;
         }
        
-        this.candlesBuffer.push(candle);
-    
+        if (candle.closed) {
+            this.candlesBuffer.push(candle);
+        }
+
         // we load history data only after first candle received by live stream
         if (! state.wasLive) {
             state.wasLive = true;
     
-            state.broker.loadLastCandles(state.symbol, state.timeframe, state.limit)
+            this.candleDB.getClosedCandlesSince(
+                state.symbol, state.timeframe, TF.timestampDaysBack( state.days ) )
                 .then( candles => {
     
                     for(var candle of candles) {

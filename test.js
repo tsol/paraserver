@@ -8,20 +8,14 @@ const CandleDB = require('./src/db/CandleDB.js');
 const mysqlHandler = new MysqlDB();
 const candleDB = new CandleDB(mysqlHandler, [ brokerSrc ]);
 
-var d = new Date();
-
-console.log('Today is: ' + d.toLocaleString());
-d.setDate(d.getDate() - 5);
-console.log('5 days ago was: ' + d.toLocaleString());
+console.log('5 days ago was: ' + TF.timestampToDate( TF.timestampDaysBack(5 )));
 
 mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
     
     //candleDB.getCandlesSince('BTCUSDT','1m', '2021-12-29 00:00:00').then( (candles) => {
     
-    candleDB.getCandlesPeriod('BTCUSDT','1m', 
-        TF.dateToTimestamp('2021-12-29 00:00:00'),
-        TF.dateToTimestamp('2021-12-29 03:59:59')
-     ).then( (candles) => {
+    candleDB.getClosedCandlesSince('BTCUSDT','1d',TF.timestampDaysBack(30))
+        .then( (candles) => {
     
         console.log('CANDLES:');
         console.log(candles);

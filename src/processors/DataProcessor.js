@@ -4,11 +4,12 @@ const Flags = require('./Flags.js');
 
 class DataProcessor {
 
-    constructor(ordersManager) {
+    constructor(ordersManager, candlesDB) {
         this.flags = new Flags();
         this.loaders = [];
         this.tickers = {};
         this.ordersManager = ordersManager;
+        this.candlesDB = candlesDB;
     }
  
     /*
@@ -20,7 +21,8 @@ class DataProcessor {
 
     runSymbols(symbolBrokerArray)
     {
-        const loader = new SymbolsLoader(symbolBrokerArray, this, this.ordersManager);   
+        const loader = new SymbolsLoader(symbolBrokerArray, 
+            this, this.ordersManager, this.candlesDB);   
         this.loaders.push(loader);
     }
 
@@ -42,7 +44,12 @@ class DataProcessor {
     }
 
     getTickerChart(symbol, timeframe) {
-        return this.tickers[ symbol+'-'+timeframe ].getChart();
+        const ticker = this.tickers[ symbol+'-'+timeframe ];
+        if (! ticker ) {
+            console.log('DP: ticker not loaded yet!');
+            return null;
+        }
+        return ticker.getChart();
     }
 
     getTickersState() {

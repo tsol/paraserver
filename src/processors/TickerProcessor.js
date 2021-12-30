@@ -104,11 +104,6 @@ class TickerProcessor {
 
     }
 
-    processCandle(candle) {        
-        
-
-    }
- 
     getState() {
         return {
              'id': this.getId(),

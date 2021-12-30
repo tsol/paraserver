@@ -10,10 +10,10 @@ const CDB = require('../types/CandleDebug');
 class AnDoubleBottom extends AnalayzerIO {
 
     static TF_SETTINGS = {
-        '1m':   { required: 20, ratio: 2 },
-        '5m':   { required: 80, ratio: 1.55 },
-        '30m':  { required: 80, ratio: 1.5 },
-        '4h':   { required: 40, ratio: 1.45 } 
+        '1m':   { required: 40, ratio: 1.4 },
+        '5m':   { required: 40, ratio: 1.4 },
+        '30m':  { required: 40, ratio: 1.4 },
+        '4h':   { required: 40, ratio: 1.4 } 
     };
 
     constructor() {
@@ -152,6 +152,13 @@ class AnDoubleBottom extends AnalayzerIO {
 
         if (! settings ) {
             console.log('DBLBOTTOM: no entry for timeframe, no settings');
+            return false;
+        }
+
+        const higherTrend = flags.getHTF('hl_trend');
+
+        if (! higherTrend || ! (higherTrend.direction > 0) ) {
+            console.log('DBLBOTTOM: no entry higher trend not detected');
             return false;
         }
 
