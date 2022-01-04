@@ -43,13 +43,13 @@ class DataProcessor {
         this.loaders = this.loaders.filter( l => l !== loader);
     }
 
-    getTickerChart(symbol, timeframe) {
+    getTickerChart({ symbol, timeframe, limit, timestamp } ) {
         const ticker = this.tickers[ symbol+'-'+timeframe ];
         if (! ticker ) {
             console.log('DP: ticker not loaded yet!');
             return null;
         }
-        return ticker.getChart();
+        return ticker.getChart(limit, timestamp);
     }
 
     getTickersState() {

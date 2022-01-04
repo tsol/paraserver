@@ -32,8 +32,12 @@ class Candle {
         return this.open < this.close;
     }
 
-    bodySize(candle) {
+    bodySize() {
         return Math.abs(this.open-this.close);
+    }
+
+    totalSize() {
+        return Math.abs(this.high-this.low);
     }
 
     lowerTailSize() {

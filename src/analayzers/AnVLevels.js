@@ -29,7 +29,6 @@ class AnVLevels extends AnalayzerIO {
             */
             this.forgetBefore(cutSince);
 
-
             const extremum = flags.get('extremum');            
             const atr = flags.get('atr14');
             
@@ -39,7 +38,7 @@ class AnVLevels extends AnalayzerIO {
                     hillLow.openTime,
                     hillLow.low,
                     atr,
-                    30);
+                    30, hillLow);
             }
 
             const hillHigh = flags.get('hills.new.high');
@@ -48,7 +47,7 @@ class AnVLevels extends AnalayzerIO {
                     hillHigh.openTime,
                     hillHigh.high,
                     atr,
-                    30);
+                    30, hillHigh);
             }
 
             let extremumCandle = flags.get('hl_trend.new.high');
@@ -56,7 +55,7 @@ class AnVLevels extends AnalayzerIO {
                 this.addBounceLevel(false,
                      extremumCandle.openTime,
                      extremumCandle.high,
-                     atr, 10);
+                     atr, 10, extremumCandle);
             }
 
             extremumCandle = flags.get('hl_trend.new.low');
@@ -64,7 +63,7 @@ class AnVLevels extends AnalayzerIO {
                 this.addBounceLevel(true,
                      extremumCandle.openTime,
                      extremumCandle.low,
-                     atr, 10);
+                     atr, 10, extremumCandle);
             }
 
             flags.set('vlevels', this);
@@ -82,12 +81,12 @@ class AnVLevels extends AnalayzerIO {
             return levels;
         }
 
-        addBounceLevel(bounceUp, time, y, atr, weight) {
+        addBounceLevel(bounceUp, time, y, atr, weight, candle) {
             let wasFound = false;
             for (const l of this.levels)
             {
                 if (l.inLevel(y)) {
-                    l.addPoint(time,y,bounceUp,atr,weight);
+                    l.addPoint(time,y,bounceUp,atr,weight, candle);
                     wasFound = true;
                 }
             }
@@ -95,7 +94,7 @@ class AnVLevels extends AnalayzerIO {
                 return;
             }
             const newLevel = new Level(this.maxCandles);
-            newLevel.addPoint(time,y,bounceUp,atr,weight);
+            newLevel.addPoint(time,y,bounceUp,atr,weight,candle);
             this.levels.push(newLevel);
         }
 
@@ -104,20 +103,25 @@ class AnVLevels extends AnalayzerIO {
             this.levels = this.levels.filter( (l) => l.forgetBefore(time) );
         }
 
-        getCandleResistTouchWeight(candle)
+        getCandleBottomTouch(candle)
         {
-            let weight = 0;
+            let resistWeight = 0;
+            let supportWeight = 0;
 
             this.levels.forEach( (l) => {
 
                 if (    l.inLevelExact(candle.bodyLow()) 
                     ||  l.inLevelExact(candle.low)
                 ) {
-                    weight += l.getTotalWeight();
+                    resistWeight += l.resistWeight;
+                    supportWeight += l.supportWeight;
                 }
             })
 
-            return weight;
+            return {
+                rw: resistWeight,
+                sw: supportWeight
+            };
         }
 
 
@@ -141,7 +145,7 @@ class Level {
         this.resistWeight = 0;
     }
 
-    addPoint(time,level,bounceUp,height,weight) {
+    addPoint(time,level,bounceUp,height,weight,candle) {
         const wasPoint = this.points.find( p => p.time === time );
         if (wasPoint) { return; }
         
@@ -155,6 +159,14 @@ class Level {
         
         this.points.push(point);
         this.recalcLevel();
+        
+        const debugMsg = '['+this.supportWeight+'/'+this.resistWeight+']';
+
+        if (bounceUp) {
+            CDB.labelBottom(candle,debugMsg);
+        } else {
+            CDB.labelTop(candle,debugMsg);
+        }
     }
 
     toJSON() {

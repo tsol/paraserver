@@ -43,7 +43,7 @@ mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
         { symbol: 'SOLUSDT', broker: brokerSrc }
     ]);
 
-
+/*
     binanceClient = new BinanceClient(SETTINGS.users.mona.brokers.binance, dataProcessor);
     binanceClient.updateAccountInfo().then( () => {
         binanceClient.updateMyTrades('USDT').then( () => {
@@ -52,7 +52,7 @@ mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
             })
         })
     })
-
+*/
 
 });
 
@@ -62,8 +62,23 @@ io.on("connection", (socket) => {
 
     socket.on("get_chart", (arg) => {
         if (!dataProcessor) return;
-        let [symbol, timeframe] = arg.split('-');
-        let data = dataProcessor.getTickerChart(symbol, timeframe);
+
+        if (! arg.tickerId ) {
+            console.log('SIO: invalid get_chart params');
+        }
+
+        let [symbol, timeframe] = arg.tickerId.split('-');      
+
+        let param = {
+            symbol: symbol,
+            timeframe: timeframe,
+            limit: 1000
+        }
+    
+        if (arg.limit) { param.limit = arg.limit; };
+        if (arg.timestamp) { param.timestamp = arg.timestamp; }
+
+        let data = dataProcessor.getTickerChart(param);
         socket.emit("chart", data);
     });
 

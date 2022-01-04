@@ -29,7 +29,7 @@ class OrdersManager {
             }
 
             return this.newOrderBuy(
-                entry.atCandle, entry.strategy, entry.takeProfit, entry.stopLoss
+                entry.atCandle, entry.strategy, entry.takeProfit, entry.stopLoss, entry.flags
             );
         }
 
@@ -48,7 +48,7 @@ class OrdersManager {
                 stopLoss: 52.102	
 */
 
-    newOrderBuy(atCandle,strategyName,takeProfit,stopLoss) {
+    newOrderBuy(atCandle,strategyName,takeProfit,stopLoss, flags) {
 
         const tickerId = atCandle.symbol+'-'+atCandle.timeframe;
         const time = atCandle.closeTime;
@@ -64,6 +64,8 @@ class OrdersManager {
             entryPrice: atCandle.close,
             takeProfit: takeProfit,
             stopLoss: stopLoss,
+
+            flags: flags,
 
             active: true,
             closePrice: 0,

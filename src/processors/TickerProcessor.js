@@ -6,6 +6,10 @@ const AnMA = require('../analayzers/AnMA.js');
 const AnCandlePatterns = require('../analayzers/AnCandlePatterns.js');
 const AnDoubleBottom = require('../analayzers/AnDoubleBottom.js');
 const AnHills = require('../analayzers/AnHills.js');
+const AnTouchMA = require('../analayzers/AnTouchMA.js');
+
+const { TF } = require('../types/Timeframes.js');
+
 
 class TickerProcessor {
 
@@ -30,7 +34,7 @@ class TickerProcessor {
         this.analyzers.push(new AnVLevels(limit));
         this.analyzers.push(new AnCandlePatterns());
         this.analyzers.push(new AnDoubleBottom());
-                
+        this.analyzers.push(new AnTouchMA());                
     }
 
     setLive()
@@ -80,8 +84,10 @@ class TickerProcessor {
         this.ordersManager.lowestPriceOnClose(candle.symbol, candle.timeframe, candle.low, this.isLive);
         this.ordersManager.highestPriceOnClose(candle.symbol, candle.timeframe, candle.high, this.isLive);
         
-        const newEntry = this.flags.get('entry'); 
+        const newEntry = this.flags.get('entry');
         if (newEntry) {
+            const currentFlags = this.flags.allFlags(this.getId());
+            newEntry.flags = JSON.parse(JSON.stringify(currentFlags));
             this.ordersManager.newEntry(newEntry,this.isLive);
         }
         
@@ -113,14 +119,60 @@ class TickerProcessor {
         };
      }
  
-    getChart() {
+    getChart(limit, targetTimestamp) {
+        
+        const currentTimestamp = TF.currentTimestamp();
+        const firstTimestamp = this.getFirstTimestamp();
+
+        if (! firstTimestamp) {
+            return null;
+        }
+        let wasTarget = true;
+        if (! targetTimestamp) { targetTimestamp = currentTimestamp; wasTarget=false; }
+        if (! limit ) { limit = 1000; }
+        
+        const tfLen = TF.getTimeframeLength(this.timeframe);
+        const periodLen = tfLen * limit;
+        const halfPeriod = Math.floor(periodLen/2);
+
+        let endTimestamp = targetTimestamp + halfPeriod;
+        let startTimestamp = targetTimestamp - halfPeriod;
+
+        // shift limit right 
+        if (startTimestamp < firstTimestamp) {
+            const diff = firstTimestamp - startTimestamp;
+            startTimestamp = firstTimestamp;
+            endTimestamp += diff;
+        }
+        // shift limit left
+        if (endTimestamp > currentTimestamp) {
+            const diff = endTimestamp - currentTimestamp;
+            endTimestamp = currentTimestamp;
+            startTimestamp -= diff;
+        }
+
+        // truncate left wing (less than limit return) 
+        if (startTimestamp < firstTimestamp) {
+            startTimestamp = firstTimestamp;
+        }
+
         return {
             id: this.getId(),
-            candles: this.candles,
+            candles: this.candles.filter(
+                 c => (c.openTime >= startTimestamp) && (c.closeTime <= endTimestamp)
+            ),
+            targetTimestamp: (wasTarget ? targetTimestamp : null),
             flags: this.flags.allFlags(this.getId())
         }
     }
 
+
+    getFirstTimestamp() {
+        if (this.candles.length == 0) {
+            return null;
+        }
+        return this.candles[0].openTime;
+    }
 
 /*
     reset() {

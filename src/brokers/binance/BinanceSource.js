@@ -57,6 +57,12 @@ class BinanceSource {
 
     async tryLoadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp)
     {
+
+        console.log('BINANCE_SRC: ('
+            +symbol+'-'+timeframe
+            +') TRY TO LOAD FROM '
+            +TF.timestampToDate(startTimestamp));
+
        let candles = await this.client.klines(symbol, timeframe, {
                 limit: BinanceSource.MAX_CANDLES_PER_REQUEST,
                 startTime: startTimestamp,
@@ -71,6 +77,11 @@ class BinanceSource {
                     candles.push(objectCandle);    
                 });
 
+                console.log('BINANCE_SRC: ('
+                    +symbol+'-'+timeframe
+                    +') TRY LOADED '
+                    +candles.length+' CANDLES.');
+    
                 return candles;
             })
 

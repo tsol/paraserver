@@ -10,10 +10,10 @@ const CDB = require('../types/CandleDebug');
 class AnDoubleBottom extends AnalayzerIO {
 
     static TF_SETTINGS = {
-        '1m':   { required: 40, ratio: 1.4 },
-        '5m':   { required: 40, ratio: 1.4 },
-        '30m':  { required: 40, ratio: 1.4 },
-        '4h':   { required: 40, ratio: 1.4 } 
+        '1m':   { required: 40, ratio: 1.35 },
+        '5m':   { required: 40, ratio: 1.35 },
+        '30m':  { required: 40, ratio: 1.35 },
+        '4h':   { required: 40, ratio: 1.35 } 
     };
 
     constructor() {
@@ -156,21 +156,33 @@ class AnDoubleBottom extends AnalayzerIO {
         }
 
         const higherTrend = flags.getHTF('hl_trend');
+        let htMsg = '';
 
-        if (! higherTrend || ! (higherTrend.direction > 0) ) {
+        if (! higherTrend || ! (higherTrend.direction > 0) || (higherTrend.swings < 4) ) {
             console.log('DBLBOTTOM: no entry higher trend not detected');
             return false;
         }
+        else {
+            htMsg = ' HT: '+higherTrend.direction+'/'+higherTrend.swings;
+        }
 
         let levelTouchWeight = 0;
-        levelTouchWeight += this.countBottomTouchWeight(this.firstBottom,flags);
-        levelTouchWeight += this.countBottomTouchWeight(this.secondBottom,flags);
+
+        let touchFirst = this.countBottomTouchWeight(this.firstBottom,flags);
+        levelTouchWeight += touchFirst.sw;
+
+        let touchSecond = this.countBottomTouchWeight(this.secondBottom,flags);
+        levelTouchWeight += touchSecond.sw;
 
         if (levelTouchWeight < settings.required ) {
             console.log('DBLBOTTOM: no entry, weight not enough '+levelTouchWeight+' < '
                 + settings.required );
             return false;
         }
+
+        CDB.labelBottom(this.firstBottom,JSON.stringify(touchFirst));
+        CDB.labelBottom(this.secondBottom,JSON.stringify(touchSecond));
+        CDB.labelTop(candle,'W:'+levelTouchWeight+htMsg);
 
         const entryPrice = candle.close;
         const stopLoss = this.lowestSecondTail - flags.get('atr14'); 
@@ -191,19 +203,25 @@ class AnDoubleBottom extends AnalayzerIO {
 
     countBottomTouchWeight(candle, flags)
     {
-        let touchWeight = 0;
+        let result = {
+            rw: 0, sw: 0, rwH: 0, swH: 0
+        };
 
         const vlevels = flags.get('vlevels');
         if (vlevels) { 
-            touchWeight += vlevels.getCandleResistTouchWeight(candle);
+            let bt = vlevels.getCandleBottomTouch(candle);
+            result.rw += bt.rw;
+            result.sw += bt.sw;
         }
 
         const vlevels_high = flags.get('vlevels_high');
         if (vlevels_high) { 
-            touchWeight += vlevels_high.getCandleResistTouchWeight(candle);
+            let bt = vlevels_high.getCandleBottomTouch(candle);
+            result.rwH += bt.rw;
+            result.swH += bt.sw;
         }
 
-        return touchWeight;
+        return result;
     }
 
 

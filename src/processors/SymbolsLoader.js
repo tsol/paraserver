@@ -56,7 +56,6 @@ class SymbolsLoader {
     }
 
     newCandleFromBroker(candle) {
-        console.log('SL: new candle from broker: '+candle.getId());
 
         const state = this.loadState.find( 
             ls => 
@@ -76,7 +75,8 @@ class SymbolsLoader {
         // we load history data only after first candle received by live stream
         if (! state.wasLive) {
             state.wasLive = true;
-    
+            console.log('SL: first candle from broker: '+candle.getId());
+
             this.candleDB.getClosedCandlesSince(
                 state.symbol, state.timeframe, TF.timestampDaysBack( state.days ) )
                 .then( candles => {

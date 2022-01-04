@@ -22,10 +22,12 @@ class AnCandlePatterns extends AnalayzerIO {
             if (this.isShootingStar(candle)) {
                 CDB.labelBottom(candle,'SHU');
                 this.debugCircle(candle);
+                flags.set('new.cpatt.star',candle);
             }
             else if (this.isHammer(candle)) {
                 CDB.labelBottom(candle,'HAM');
                 this.debugCircle(candle);
+                flags.set('new.cpatt.hamm',candle);
             }
 
             if (this.prevCandle !== undefined) {
