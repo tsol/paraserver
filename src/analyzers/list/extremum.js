@@ -1,7 +1,7 @@
-const AnalayzerIO = require("./AnalayzerIO");
-const CDB = require('../types/CandleDebug');
+const AnalyzerIO = require("../AnalyzerIO.js");
+const CDB = require('../../types/CandleDebug.js');
 
-class AnExtremum extends AnalayzerIO {
+class AnExtremum extends AnalyzerIO {
 
     constructor() {
         super();
@@ -11,9 +11,11 @@ class AnExtremum extends AnalayzerIO {
 
     }
 
+    getId() { return 'extremum'; }
+
     addCandle(candle, flags) {
         super.addCandle(candle, flags);
-        CDB.setSource('extremum');
+        CDB.setSource(this.getId());
 
         if (this.firstCandle === undefined) {
             this.firstCandle = candle;

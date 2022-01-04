@@ -4,10 +4,10 @@
 **
 */
 
-const AnalayzerIO = require("./AnalayzerIO");
-const CDB = require('../types/CandleDebug');
+const AnalyzerIO = require("../AnalyzerIO");
+const CDB = require('../../types/CandleDebug');
 
-class AnHills extends AnalayzerIO {
+class AnHills extends AnalyzerIO {
 
     constructor() {
         super();
@@ -21,10 +21,12 @@ class AnHills extends AnalayzerIO {
         this.prevBottomCandle = undefined;
     }
 
+    getId() { return 'hills'; }
+
     addCandle(candle, flags) {
         super.addCandle(candle, flags);
         
-        CDB.setSource('hills');
+        CDB.setSource(this.getId());
 
         const currentMac = flags.get(this.followMac);
         const atr = flags.get('atr14');

@@ -4,10 +4,10 @@
 **
 */
 
-const AnalayzerIO = require("./AnalayzerIO");
-const CDB = require('../types/CandleDebug');
+const AnalyzerIO = require("../AnalyzerIO");
+const CDB = require('../../types/CandleDebug');
 
-class AnTouchMA extends AnalayzerIO {
+class AnTouchMA extends AnalyzerIO {
 
         static MIN_LENGTH = 5; /* minumum candles to close above ma20 */
 
@@ -15,6 +15,8 @@ class AnTouchMA extends AnalayzerIO {
             super();
             this.resetFinder();
         }
+
+        getId() { return 'touchma'; }
 
         resetFinder() {
             this.countAbove = 0;
@@ -26,7 +28,7 @@ class AnTouchMA extends AnalayzerIO {
 
         addCandle(candle,flags) {
             super.addCandle(candle,flags);
-            CDB.setSource('touchma');
+            CDB.setSource(this.getId());
 
             const ma = flags.get('mac20');
 

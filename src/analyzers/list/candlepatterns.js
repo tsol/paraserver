@@ -5,19 +5,21 @@
 **      Close Above/Below
 */
 
-const AnalayzerIO = require("./AnalayzerIO");
-const CDB = require('../types/CandleDebug');
+const AnalyzerIO = require("../AnalyzerIO");
+const CDB = require('../../types/CandleDebug');
 
-class AnCandlePatterns extends AnalayzerIO {
+class AnCandlePatterns extends AnalyzerIO {
 
         constructor(period) {
             super();
             this.prevCandle = undefined;
         }
 
+        getId() { return 'candlepatterns'; }
+
         addCandle(candle,flags) {
             super.addCandle(candle,flags);
-            CDB.setSource('candlepatterns');
+            CDB.setSource(this.getId());
 
             if (this.isShootingStar(candle)) {
                 CDB.labelBottom(candle,'SHU');

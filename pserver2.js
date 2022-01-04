@@ -9,10 +9,12 @@ const BinanceClient = require('./src/brokers/binance/BinanceClient.js');
 const OrdersManager = require('./src/processors/OrdersManager.js');
 const MysqlDB = require('./src/db/MysqlDB.js');
 const CandleDB = require('./src/db/CandleDB.js');
+const AnalyzersFactory = require('./src/analyzers/AnalyzersFactory.js');
 
 const brokerSrc = new BinanceSource(SETTINGS.users.harry.brokers.binance);
 const ordersManager = new OrdersManager();
 const mysqlHandler = new MysqlDB();
+const analyzersFactory = new AnalyzersFactory();
 
 const io = new Server({
     cors: {
@@ -29,12 +31,13 @@ let binanceClient = null;
 mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
 
     const candleDB = new CandleDB(mysqlHandler, [ brokerSrc ]);
-    dataProcessor = new DataProcessor(ordersManager,candleDB);
-/*
+    dataProcessor = new DataProcessor(ordersManager,candleDB,analyzersFactory);
+
     dataProcessor.runSymbols([
         { symbol: 'BTCUSDT', broker: brokerSrc },
     ]);
-*/
+
+/*
     
     dataProcessor.runSymbols([
         { symbol: 'LUNAUSDT', broker: brokerSrc },
@@ -43,7 +46,6 @@ mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
         { symbol: 'SOLUSDT', broker: brokerSrc }
     ]);
 
-/*
     binanceClient = new BinanceClient(SETTINGS.users.mona.brokers.binance, dataProcessor);
     binanceClient.updateAccountInfo().then( () => {
         binanceClient.updateMyTrades('USDT').then( () => {

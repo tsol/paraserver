@@ -12,12 +12,13 @@ const { TF } = require('../types/Timeframes.js');
 
 class SymbolsLoader {
 
-    constructor(symbols, dataProcessor, ordersManager, candleDB) {
+    constructor(symbols, dataProcessor, ordersManager, candleDB, analyzersFactory) {
         this.id = 'loader'+Math.random();
 
         this.candleDB = candleDB;
         this.dataProcessor = dataProcessor;
         this.ordersManager = ordersManager;
+        this.analyzersFactory = analyzersFactory;
 
         this.flags = new Flags();
         
@@ -35,10 +36,10 @@ class SymbolsLoader {
 /*    [ { symbol: 'SOLUSDT', broker: binance },
         { symbol: 'BTCUSDT', broker: binance } ]
 */
+
     async load(symbols) {
         symbols.forEach( (s) => {
-            TF.TFRAMES.forEach( (tf) => {
-                
+            TF.TFRAMES.forEach( (tf) => {                
                 const ls = {
                     symbol: s.symbol,
                     broker: s.broker,
@@ -183,7 +184,16 @@ class SymbolsLoader {
     createTickers()
     {
         for ( var ls of this.loadState ) {
-            let ticker = new TickerProcessor(ls.symbol,ls.timeframe,ls.limit,this.flags, this.ordersManager);
+
+            let ticker = new TickerProcessor(
+                ls.symbol,
+                ls.timeframe,
+                ls.limit,
+                this.flags,
+                this.ordersManager,
+                this.analyzersFactory.createBox()
+            ); 
+
             this.tickers[ls.symbol+'-'+ls.timeframe] = ticker;
             ls.broker.subscribe(ls.symbol,ls.timeframe,'ticker-'+ticker.getId(),ticker);
             console.log('SL: adding ticker: '+ticker.getId());

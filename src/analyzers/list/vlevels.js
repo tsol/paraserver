@@ -4,21 +4,22 @@
 **
 */
 
-const AnalayzerIO = require("./AnalayzerIO");
-const CDB = require('../types/CandleDebug');
-const { TF } = require('../types/Timeframes.js');
+const AnalyzerIO = require("../AnalyzerIO");
+const CDB = require('../../types/CandleDebug');
+const { TF } = require('../../types/Timeframes.js');
 
-class AnVLevels extends AnalayzerIO {
+class AnVLevels extends AnalyzerIO {
 
-        constructor(maxCandles) {
+        constructor() {
             super();
             this.levels = [];
-            this.maxCandles = maxCandles;
         }
+
+        getId() { return 'vlevels'; }
 
         addCandle(candle,flags) {
             super.addCandle(candle,flags)
-            CDB.setSource('vlevels');
+            CDB.setSource(this.getId());
 
             /* cut levels from begining */
             const cutSince = candle.openTime - TF.getLevelLimitTime(candle.timeframe);
@@ -93,7 +94,7 @@ class AnVLevels extends AnalayzerIO {
             if (wasFound || weight < 30) {
                 return;
             }
-            const newLevel = new Level(this.maxCandles);
+            const newLevel = new Level();
             newLevel.addPoint(time,y,bounceUp,atr,weight,candle);
             this.levels.push(newLevel);
         }
@@ -130,8 +131,7 @@ class AnVLevels extends AnalayzerIO {
 
 class Level {
 
-    constructor(maxCandles) {
-        this.maxCandles = maxCandles;
+    constructor() {
         this.points = [];
         this.y0 = undefined;
         this.y1 = undefined;
@@ -189,12 +189,6 @@ class Level {
 
     isWorthy() {
         return true;
-  /*
-        if ( this.totalWeight >= this.maxCandles / 50 ) {
-            return true;
-        }
-
-        return false;*/
     }
 
     inLevel(y) {

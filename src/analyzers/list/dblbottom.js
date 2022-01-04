@@ -4,10 +4,10 @@
 **
 */
 
-const AnalayzerIO = require("./AnalayzerIO");
-const CDB = require('../types/CandleDebug');
+const AnalyzerIO = require("../AnalyzerIO");
+const CDB = require('../../types/CandleDebug');
 
-class AnDoubleBottom extends AnalayzerIO {
+class AnDoubleBottom extends AnalyzerIO {
 
     static TF_SETTINGS = {
         '1m':   { required: 40, ratio: 1.35 },
@@ -20,6 +20,8 @@ class AnDoubleBottom extends AnalayzerIO {
         super();
         this.resetFinder();
     }
+
+    getId() { return 'dblbottom'; }
 
     resetFinder() {
         this.firstBottom = undefined;
@@ -36,7 +38,7 @@ class AnDoubleBottom extends AnalayzerIO {
     addCandle(candle, flags) {
         super.addCandle(candle, flags);
         
-        CDB.setSource('dblbottom');    
+        CDB.setSource(this.getId());    
 
         if (this.firstBottom == undefined) {
             this.checkFirstBottom(flags);

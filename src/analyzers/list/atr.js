@@ -4,10 +4,10 @@
 **
 */
 
-const AnalayzerIO = require("./AnalayzerIO");
-const CDB = require('../types/CandleDebug');
+const AnalyzerIO = require("../AnalyzerIO");
+const CDB = require('../../types/CandleDebug');
 
-class AnATR extends AnalayzerIO {
+class AnATR extends AnalyzerIO {
 
         constructor(period) {
             super();
@@ -17,9 +17,13 @@ class AnATR extends AnalayzerIO {
             this.prevCandle = undefined;
         }
 
+        getId() {
+            return this.name;
+        }
+
         addCandle(candle,flags) {
             super.addCandle(candle,flags);
-            CDB.setSource('atr');
+            CDB.setSource(this.getId());
 
             if (this.prevCandle === undefined) {
                 this.prevCandle = candle;

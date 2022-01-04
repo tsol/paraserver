@@ -1,19 +1,10 @@
-const AnExtremum = require('../analayzers/AnExtremum.js');
-const AnHLTrend = require('../analayzers/AnHLTrend.js');
-const AnVLevels = require('../analayzers/AnVLevels.js');
-const AnATR = require('../analayzers/AnATR.js');
-const AnMA = require('../analayzers/AnMA.js');
-const AnCandlePatterns = require('../analayzers/AnCandlePatterns.js');
-const AnDoubleBottom = require('../analayzers/AnDoubleBottom.js');
-const AnHills = require('../analayzers/AnHills.js');
-const AnTouchMA = require('../analayzers/AnTouchMA.js');
 
 const { TF } = require('../types/Timeframes.js');
 
 
 class TickerProcessor {
 
-    constructor(symbol,timeframe,limit,flags,ordersManager) {
+    constructor(symbol,timeframe,limit,flags,ordersManager,analyzersBox) {
     
         this.ordersManager = ordersManager;
         this.flags = flags;
@@ -24,17 +15,7 @@ class TickerProcessor {
         this.limit = limit;
 
         this.isLive = false;
-   
-        this.analyzers = [];
-        this.analyzers.push(new AnExtremum());
-        this.analyzers.push(new AnHLTrend());
-        this.analyzers.push(new AnATR(14));
-        this.analyzers.push(new AnMA('c',20));
-        this.analyzers.push(new AnHills());
-        this.analyzers.push(new AnVLevels(limit));
-        this.analyzers.push(new AnCandlePatterns());
-        this.analyzers.push(new AnDoubleBottom());
-        this.analyzers.push(new AnTouchMA());                
+        this.analyzersBox = analyzersBox;              
     }
 
     setLive()
@@ -76,10 +57,7 @@ class TickerProcessor {
         }
 
         this.flags.start(this.symbol, this.timeframe);
-
-        this.analyzers.forEach( (analayzer) => {
-            analayzer.addCandle(candle, this.flags);
-        });
+        this.analyzersBox.addCandle(candle, this.flags);
 
         this.ordersManager.lowestPriceOnClose(candle.symbol, candle.timeframe, candle.low, this.isLive);
         this.ordersManager.highestPriceOnClose(candle.symbol, candle.timeframe, candle.high, this.isLive);
@@ -103,11 +81,7 @@ class TickerProcessor {
 
     forgetFirstCandle() {
         const firstCandle = this.candles.shift();
-        
-        this.analyzers.forEach( (analayzer) => {
-            analayzer.forgetBefore(firstCandle.openTime);
-        });
-
+        this.analyzersBox.forgetBefore(firstCandle.openTime);
     }
 
     getState() {
@@ -174,17 +148,6 @@ class TickerProcessor {
         return this.candles[0].openTime;
     }
 
-/*
-    reset() {
-        console.log('TP: full reset');
-        this.candles = [];
-        this.resetAnalyzers();
-    }
-
-    resetAnalyzers() {
-        this.analyzers.forEach( analayzer => analayzer.reset() );
-    }
-*/
 
 }
 

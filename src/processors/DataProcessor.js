@@ -4,11 +4,12 @@ const Flags = require('./Flags.js');
 
 class DataProcessor {
 
-    constructor(ordersManager, candlesDB) {
+    constructor(ordersManager, candlesDB, analyzersFactory) {
         this.flags = new Flags();
         this.loaders = [];
         this.tickers = {};
         this.ordersManager = ordersManager;
+        this.analyzersFactory = analyzersFactory;
         this.candlesDB = candlesDB;
     }
  
@@ -22,7 +23,7 @@ class DataProcessor {
     runSymbols(symbolBrokerArray)
     {
         const loader = new SymbolsLoader(symbolBrokerArray, 
-            this, this.ordersManager, this.candlesDB);   
+            this, this.ordersManager, this.candlesDB, this.analyzersFactory);   
         this.loaders.push(loader);
     }
 

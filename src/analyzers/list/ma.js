@@ -4,22 +4,27 @@
 **
 */
 
-const AnalayzerIO = require("./AnalayzerIO");
-const CDB = require('../types/CandleDebug');
+const AnalyzerIO = require("../AnalyzerIO");
+const CDB = require('../../types/CandleDebug');
 
-class AnMA extends AnalayzerIO {
+class AnMA extends AnalyzerIO {
 
-        constructor(source,period) {
+        constructor({ source, period }) {
             super();
-            this.source = source;
-            this.name = 'ma'+source+period;
+            this.source = source || 'c';
+            this.period = period || 20;
+            this.name = 'ma'+this.source+this.period;
             this.values = [];
-            this.period = period;
+
+        }
+
+        getId() {
+            return this.name;
         }
 
         addCandle(candle,flags) {
             super.addCandle(candle,flags);
-            CDB.setSource('ma');
+            CDB.setSource(this.getId());
 
             this.values.push( this.getDataFromCandle(this.source, candle) );
 

@@ -6,10 +6,10 @@
 ** trend search (not to loose one pre-swing)
 */
 
-const AnalayzerIO = require("./AnalayzerIO");
-const CDB = require('../types/CandleDebug');
+const AnalyzerIO = require("../AnalyzerIO");
+const CDB = require('../../types/CandleDebug');
 
-class AnHLTrend extends AnalayzerIO {
+class AnHLTrend extends AnalyzerIO {
 
     constructor() {
         super();
@@ -23,6 +23,8 @@ class AnHLTrend extends AnalayzerIO {
         this.updateDirection = 0; /* bias, expectations, also swings counter */
         this.trendDirection = 0;  /* confirmed trend -1 or +1 */
     }
+
+    getId() { return 'hl_trend'; }
 
     resetTrend(byCandle) {
 
@@ -78,7 +80,7 @@ class AnHLTrend extends AnalayzerIO {
 
     addCandle(candle,flags) {
         super.addCandle(candle,flags);
-        CDB.setSource('hl_trend');
+        CDB.setSource(this.getId());
 
         if (flags.get('extremum')) {
             this.processExtremum(flags.get('extremum'),flags);

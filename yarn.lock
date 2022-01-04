@@ -60,6 +60,16 @@ bignumber.js@9.0.0:
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.0.0.tgz#805880f84a329b5eac6e7cb6f8274b6d82bdf075"
   integrity sha512-t/OYhhJ2SD+YGBQcjY8GzzDHEk9f3nerxjtfa6tlMXfe7frs/WozhvCNoGvpM0P3bNf3Gq5ZRMlGr5f3r4/N8A==
 
+callsite@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/callsite/-/callsite-1.0.0.tgz#280398e5d664bd74038b6f0905153e6e8af1bc20"
+  integrity sha1-KAOY5dZkvXQDi28JBRU+borxvCA=
+
+colors@0.6.0-1:
+  version "0.6.0-1"
+  resolved "https://registry.yarnpkg.com/colors/-/colors-0.6.0-1.tgz#6dbb68ceb8bc60f2b313dcc5ce1599f06d19e67a"
+  integrity sha1-bbtozri8YPKzE9zFzhWZ8G0Z5no=
+
 component-emitter@~1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/component-emitter/-/component-emitter-1.3.0.tgz#16e4070fba8ae29b679f2215853ee181ab2eabc0"
@@ -129,6 +139,14 @@ generate-function@^2.3.1:
   integrity sha512-eeB5GfMNeevm/GRYq20ShmsaGcmI81kIX2K9XQx5miC8KdHaC6Jm0qQ8ZNeGOi7wYB8OsdxKs+Y2oVuTFuVwKQ==
   dependencies:
     is-property "^1.0.2"
+
+hotload@^0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/hotload/-/hotload-0.0.5.tgz#d80c33d6bdbf9c1f8b1cc0c5f3c3a06d6bf808ff"
+  integrity sha1-2Awz1r2/nB+LHMDF88OgbWv4CP8=
+  dependencies:
+    callsite "1.0.0"
+    colors "0.6.0-1"
 
 iconv-lite@^0.6.3:
   version "0.6.3"
