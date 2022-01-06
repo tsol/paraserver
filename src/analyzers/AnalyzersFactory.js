@@ -16,6 +16,7 @@ class AnalyzersFactory {
             ['hl_trend',    'hl_trend',     null,   null],
             ['hills',       'hills',        null,   null],
             ['vlevels',     'vlevels',      null,   null],
+            ['candlepatterns',     'candlepatterns',      null,   null],
             ['dblbottom',   'dblbottom',    null,   null],
             ['touchma',     'touchma',      null,   null]
         ];
@@ -27,18 +28,15 @@ class AnalyzersFactory {
     reloadAll() {
         let fileNames = {};
 
-        console.log('AF: reloadAll');
-        console.log(this.items);
-
         this.items.forEach( (p) => { fileNames[ p[1] ] = 1 } );
 
         for (var fileName of Object.keys(fileNames)) {
-            this.reloadProto(fileName);
+            this.reloadFile(fileName);
         }
 
     }
 
-    reloadProto(fileName) {
+    reloadFile(fileName) {
         const fullName = './list/'+fileName+'.js';
         delete require.cache[require.resolve(fullName)];
 

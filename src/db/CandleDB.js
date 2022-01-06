@@ -3,25 +3,17 @@ const { TF } = require('../types/Timeframes.js');
 
 class CandleDB {
 
-    constructor (dbHandler, brokersSrcArray)
+    constructor (dbHandler, brokers)
     {
         this.db = dbHandler;
-        this.brokers = brokersSrcArray;
+        this.brokers = brokers;
     }
   
-    getBroker(symbol) {
-        for (let b of this.brokers) {
-            if (b.hasSymbol(symbol)) {
-                return b;
-            }
-        }
-        return null;
-    }
 
-    async getClosedCandlesSince(symbol, timeframe, sinceTimestamp)
+    async getClosedCandlesSince(symbol, timeframe, sinceTimestamp, useBroker)
     {
         const currentTimestamp = TF.currentTimestamp();
-        return await this.getCandlesPeriod(symbol,timeframe,sinceTimestamp,currentTimestamp);
+        return await this.getCandlesPeriod(symbol,timeframe,sinceTimestamp,currentTimestamp, useBroker);
     }
 
     // this will load from mysql candles
@@ -30,19 +22,19 @@ class CandleDB {
     // store missing candles to mysql (only closed ones!)
     // and return all candles array in a Promise
 
-    async getCandlesPeriod( symbol, timeframe, sinceTimestamp, toTimestamp ) {
-    
-        const broker = this.getBroker(symbol);
-
-        if (! broker) {
-            throw new Error('CDB: broker not found for '+symbol);
-        }
-    
-        let needBrokerSince = sinceTimestamp;
-        let needBrokerTo = toTimestamp;
-
+    async getCandlesPeriod( symbol, timeframe, sinceTimestamp, toTimestamp, useBroker ) {
+      
         let dbCandles = await 
             this.db.loadCandlesPeriod(symbol,timeframe,sinceTimestamp,toTimestamp);
+
+        if (! useBroker ) {
+            return dbCandles;
+        }
+
+        const broker = this.brokers.getFor(symbol);
+
+        let needBrokerSince = sinceTimestamp;
+        let needBrokerTo = toTimestamp;
 
         if (! dbCandles || dbCandles.length === 0) {
 

@@ -1,18 +1,53 @@
 
 const SymbolsLoader = require('./SymbolsLoader.js');
 const Flags = require('./Flags.js');
+const AnalyzersFactory = require('../analyzers/AnalyzersFactory.js');
+const OrdersManager = require('./OrdersManager.js');
+
 
 class DataProcessor {
 
-    constructor(ordersManager, candlesDB, analyzersFactory) {
+    constructor(mysqlHandler, brokers, candleDB) {
         this.flags = new Flags();
         this.loaders = [];
         this.tickers = {};
-        this.ordersManager = ordersManager;
-        this.analyzersFactory = analyzersFactory;
-        this.candlesDB = candlesDB;
+        this.ordersManager = new OrdersManager();
+        this.analyzersFactory = new AnalyzersFactory();
+        this.mysqlHandler = mysqlHandler;
+        this.brokers = brokers;
+        this.candleDB = candleDB;
     }
  
+    restartAll(runLive) {
+        this.flags = new Flags();
+        
+        this.loaders.forEach( l => l.abort() );
+        this.loaders = [];
+  
+        let symbolsList = this.getAllSymbols();
+
+        // todo: unsubscribe tickers if subscribed
+        for (var t of Object.values(this.tickers)) {
+            t.unsubscribeFromBroker();
+        }
+        this.tickers = {};
+  
+        this.ordersManager.reset();
+        this.analyzersFactory.reloadAll();
+        
+        this.runSymbols(symbolsList,runLive);
+
+    }
+
+    getAllSymbols() {
+        let foundSymbols = {};
+        for (var t of Object.values(this.tickers)) {
+            foundSymbols[ t.symbol ] = 1;
+        }
+        return Object.keys(foundSymbols);
+    }
+
+
     /*
      Ex: dp->runSymbols([
             { symbol: 'SOLUSDT', broker: binance },
@@ -20,10 +55,10 @@ class DataProcessor {
         ]);
     */
 
-    runSymbols(symbolBrokerArray)
+    runSymbols(symbolsArray, runLive)
     {
-        const loader = new SymbolsLoader(symbolBrokerArray, 
-            this, this.ordersManager, this.candlesDB, this.analyzersFactory);   
+        const loader = new SymbolsLoader(symbolsArray, runLive, 
+            this, this.ordersManager, this.candleDB, this.analyzersFactory, this.brokers);   
         this.loaders.push(loader);
     }
 
@@ -31,13 +66,12 @@ class DataProcessor {
  // and probably we don't need loaders[] array, since no API asks if something is loading
  // and then again we should prevent attempts to start loading symbol if it's in progress...
  // think about it
-    loaderFinished(loader) {
+    loaderFinished(newTickers, newFlags, loader) {
  
-        this.flags.merge( loader.getFlags() );
+        this.flags.merge( newFlags );
 
-        for (var ticker of loader.getTickers()) {
+        for (var ticker of newTickers) {
             ticker.setFlagsObject(this.flags);
-            ticker.setLive();
             this.tickers[ ticker.getId() ] = ticker;
         }
  
@@ -65,6 +99,11 @@ class DataProcessor {
         }        
         return t.getCurrentPrice();
     }
+
+    getOrders() {
+        return this.ordersManager.toJSON();
+    }
+
 }
 
 module.exports = DataProcessor;

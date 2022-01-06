@@ -10,10 +10,10 @@ const CDB = require('../../types/CandleDebug');
 class AnDoubleBottom extends AnalyzerIO {
 
     static TF_SETTINGS = {
-        '1m':   { required: 40, ratio: 1.35 },
-        '5m':   { required: 40, ratio: 1.35 },
-        '30m':  { required: 40, ratio: 1.35 },
-        '4h':   { required: 40, ratio: 1.35 } 
+        '1m':   { required: 40, ratio: 1.4 },
+        '5m':   { required: 40, ratio: 1.4 },
+        '30m':  { required: 40, ratio: 1.4 },
+        '4h':   { required: 40, ratio: 1.4 } 
     };
 
     constructor() {
@@ -148,7 +148,7 @@ class AnDoubleBottom extends AnalyzerIO {
     }
 
     makeEntry(candle, flags) {
-
+        
         const tf = candle.timeframe;
         const settings = AnDoubleBottom.TF_SETTINGS[tf];
 

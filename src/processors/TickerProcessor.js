@@ -4,7 +4,7 @@ const { TF } = require('../types/Timeframes.js');
 
 class TickerProcessor {
 
-    constructor(symbol,timeframe,limit,flags,ordersManager,analyzersBox) {
+    constructor(symbol,timeframe,limit,flags,ordersManager,analyzersBox,srcBroker) {
     
         this.ordersManager = ordersManager;
         this.flags = flags;
@@ -14,15 +14,26 @@ class TickerProcessor {
         this.timeframe = timeframe;
         this.limit = limit;
 
+        this.srcBroker = srcBroker;
         this.isLive = false;
         this.analyzersBox = analyzersBox;              
     }
 
-    setLive()
-    {
+    subscribeToBroker()
+    {   
+        if (! this.srcBroker ) { return false; }
+        this.srcBroker.subscribe(this.symbol,this.timeframe,'ticker-'+this.getId(),this);
         this.isLive = true;
     }
 
+    unsubscribeFromBroker() {
+        if (! this.srcBroker) { return false; }
+        this.srcBroker.unsubscribe(this.symbol, this.timeframe,'ticker-'+this.getId());
+        this.isLive = false;
+    }
+
+    isLive() { return this.isLive };
+   
     setFlagsObject(flagsObject) {
         this.flags = flagsObject;
     }
@@ -89,7 +100,10 @@ class TickerProcessor {
              'id': this.getId(),
              'symbol': this.symbol,
              'timeframe': this.timeframe,
-             'limit': this.limit
+             'limit': this.limit,
+             'isLive': this.isLive,
+             'firstTimestamp': this.getFirstTimestamp(),
+             'lastTimestamp': this.getLastTimestamp()
         };
      }
  
@@ -146,6 +160,14 @@ class TickerProcessor {
             return null;
         }
         return this.candles[0].openTime;
+    }
+
+
+    getLastTimestamp() {
+        if (this.candles.length == 0) {
+            return null;
+        }
+        return this.candles[this.candles.length - 1].openTime;
     }
 
 

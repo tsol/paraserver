@@ -4,17 +4,21 @@ const SETTINGS = require('./private/private.js');
 const { Server } = require("socket.io");
 
 const DataProcessor = require('./src/processors/DataProcessor.js');
+const Brokers = require('./src/brokers/Brokers.js');
 const BinanceSource = require('./src/brokers/binance/BinanceSource.js');
 const BinanceClient = require('./src/brokers/binance/BinanceClient.js');
-const OrdersManager = require('./src/processors/OrdersManager.js');
 const MysqlDB = require('./src/db/MysqlDB.js');
 const CandleDB = require('./src/db/CandleDB.js');
-const AnalyzersFactory = require('./src/analyzers/AnalyzersFactory.js');
 
-const brokerSrc = new BinanceSource(SETTINGS.users.harry.brokers.binance);
-const ordersManager = new OrdersManager();
+const brokerBinance = new BinanceSource(SETTINGS.users.harry.brokers.binance);
+const brokers = new Brokers();
+brokers.addBroker(brokerBinance);
+
 const mysqlHandler = new MysqlDB();
-const analyzersFactory = new AnalyzersFactory();
+
+let dataProcessor = null;
+let binanceClient = null;
+let candleDB = null;
 
 const io = new Server({
     cors: {
@@ -25,36 +29,27 @@ const io = new Server({
     allowEIO3: true
 });
 
-let dataProcessor = null;
-let binanceClient = null;
-
 mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
 
-    const candleDB = new CandleDB(mysqlHandler, [ brokerSrc ]);
-    dataProcessor = new DataProcessor(ordersManager,candleDB,analyzersFactory);
+    candleDB = new CandleDB(mysqlHandler, brokers);
+    dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB);
 
-    dataProcessor.runSymbols([
-        { symbol: 'BTCUSDT', broker: brokerSrc },
-    ]);
+    // dataProcessor.runSymbols(['BTCUSDT'], false);
 
-/*
+    dataProcessor.runSymbols(
+        [ 'LUNAUSDT', 'AVAXUSDT', 'BTCUSDT', 'SOLUSDT' ]
+    , true );
     
-    dataProcessor.runSymbols([
-        { symbol: 'LUNAUSDT', broker: brokerSrc },
-        { symbol: 'AVAXUSDT', broker: brokerSrc },
-        { symbol: 'BTCUSDT', broker: brokerSrc },
-        { symbol: 'SOLUSDT', broker: brokerSrc }
-    ]);
-
     binanceClient = new BinanceClient(SETTINGS.users.mona.brokers.binance, dataProcessor);
+
     binanceClient.updateAccountInfo().then( () => {
         binanceClient.updateMyTrades('USDT').then( () => {
             binanceClient.getMyTrades().forEach( (trade) => {
-                dataProcessor.runSymbols([{ symbol: trade.symbol, broker: brokerSrc }]);   
+                dataProcessor.runSymbols([ trade.symbol ], true);   
             })
         })
     })
-*/
+
 
 });
 
@@ -84,6 +79,18 @@ io.on("connection", (socket) => {
         socket.emit("chart", data);
     });
 
+    socket.on('restart_all', (arg) => {
+        if (!dataProcessor) return;
+        
+        dataProcessor.restartAll(arg.runLive);
+        
+        let data = dataProcessor.getOrders();
+        socket.emit("orders", data);
+
+        //let data = dataProcessor.getTickersState();
+        //socket.emit("tickers", data);
+    });
+
     socket.on("list_tickers", (arg) => {
         if (!dataProcessor) return;
         let data = dataProcessor.getTickersState();
@@ -93,7 +100,7 @@ io.on("connection", (socket) => {
 
     socket.on("list_orders", (arg) => {
         if (!dataProcessor) return;
-        let data = ordersManager.toJSON();
+        let data = dataProcessor.getOrders();
         socket.emit("orders", data);
     });
 

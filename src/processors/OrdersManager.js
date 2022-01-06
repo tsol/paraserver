@@ -11,6 +11,10 @@ class OrdersManager {
         this.orders = [];
     }
 
+    reset() {
+        this.orders = [];
+    }
+    
     newEntry(entry, isLive) {
 
         if (entry.type === 'buy') {
