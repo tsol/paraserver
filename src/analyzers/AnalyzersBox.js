@@ -11,9 +11,9 @@ class AnalyzersBox {
 
     }
 
-    addCandle(candle, flags) {
+    addCandle(candle, flags, ordersManager) {
         this.analyzers.forEach( (analyzer) => {
-            analyzer.addCandle(candle, flags);
+            analyzer.addCandle(candle, flags, ordersManager);
         });
     }
 

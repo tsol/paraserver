@@ -3,6 +3,7 @@ const SymbolsLoader = require('./SymbolsLoader.js');
 const Flags = require('./Flags.js');
 const AnalyzersFactory = require('../analyzers/AnalyzersFactory.js');
 const OrdersManager = require('./OrdersManager.js');
+const { TF } = require('../types/Timeframes.js');
 
 
 class DataProcessor {
@@ -12,7 +13,7 @@ class DataProcessor {
         this.loaders = [];
         this.tickers = {};
         this.ordersManager = new OrdersManager();
-        this.analyzersFactory = new AnalyzersFactory();
+        this.analyzersFactory = new AnalyzersFactory(this.ordersManager);
         this.mysqlHandler = mysqlHandler;
         this.brokers = brokers;
         this.candleDB = candleDB;
@@ -35,7 +36,8 @@ class DataProcessor {
         this.ordersManager.reset();
         this.analyzersFactory.reloadAll();
         
-        this.runSymbols(symbolsList,runLive);
+        symbolsList.forEach( s => this.runSymbols([s],runLive) );
+        
 
     }
 
@@ -103,6 +105,17 @@ class DataProcessor {
     getOrders() {
         return this.ordersManager.toJSON();
     }
+
+    getOrdersStatistics(fromTimestamp, toTimestamp) {
+        return this.ordersManager.genStatistics(fromTimestamp, toTimestamp);
+    }
+
+    getTimeframes() {
+        let res = [];
+        TF.TFRAMES.forEach( t => { if (t.trade) { res.push(t.name); } } );
+        return res.reverse();
+    }
+
 
 }
 

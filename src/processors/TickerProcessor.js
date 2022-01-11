@@ -51,14 +51,16 @@ class TickerProcessor {
         return lastCandle.close;
     }
 
-    peekCandle(candle) {
-        this.ordersManager.priceUpdated(candle.symbol, candle.timeframe, candle.close, this.isLive);
+    /* broker IO */
+    newCandleFromBroker(candle) {
+        //console.log('TP: candle from broker '+candle.getId());
+        this.addCandle(candle);
     }
 
     addCandle(candle)
     {
         if (!candle.closed) {
-            return this.peekCandle(candle);
+            this.ordersManager.candleUpdated(candle, this.isLive);
         }
 
         this.candles.push(candle);
@@ -68,26 +70,11 @@ class TickerProcessor {
         }
 
         this.flags.start(this.symbol, this.timeframe);
+        this.flags.set('is_live', this.is_live);
+        
+        this.ordersManager.candleClosed(candle, this.isLive);
         this.analyzersBox.addCandle(candle, this.flags);
-
-        this.ordersManager.lowestPriceOnClose(candle.symbol, candle.timeframe, candle.low, this.isLive);
-        this.ordersManager.highestPriceOnClose(candle.symbol, candle.timeframe, candle.high, this.isLive);
         
-        const newEntry = this.flags.get('entry');
-        if (newEntry) {
-            const currentFlags = this.flags.allFlags(this.getId());
-            newEntry.flags = JSON.parse(JSON.stringify(currentFlags));
-            this.ordersManager.newEntry(newEntry,this.isLive);
-        }
-        
-        // in future: updateEntry
-
-    }
-
-    /* broker IO */
-    newCandleFromBroker(candle) {
-        //console.log('TP: candle from broker '+candle.getId());
-        this.addCandle(candle);
     }
 
     forgetFirstCandle() {
@@ -109,7 +96,7 @@ class TickerProcessor {
  
     getChart(limit, targetTimestamp) {
         
-        const currentTimestamp = TF.currentTimestamp();
+        const currentTimestamp = this.getLastTimestamp();
         const firstTimestamp = this.getFirstTimestamp();
 
         if (! firstTimestamp) {
@@ -150,7 +137,7 @@ class TickerProcessor {
                  c => (c.openTime >= startTimestamp) && (c.closeTime <= endTimestamp)
             ),
             targetTimestamp: (wasTarget ? targetTimestamp : null),
-            flags: this.flags.allFlags(this.getId())
+            flags: this.flags.getAllFlagsByTickerId(this.getId())
         }
     }
 

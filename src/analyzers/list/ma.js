@@ -1,6 +1,18 @@
 /*
 ** Moving Avarage
 **
+** sets flag example:
+
+atr14: { 
+        value: 62.2,
+        wicksAbove: 0,
+        wicksBelow: 0,
+        wicksAboveBroke: 5,
+        wicksBelowBroke: 0
+    }
+
+**  
+** sets candle debug onChart  
 **
 */
 
@@ -15,7 +27,7 @@ class AnMA extends AnalyzerIO {
             this.period = period || 20;
             this.name = 'ma'+this.source+this.period;
             this.values = [];
-
+            this.resetFinder();
         }
 
         getId() {
@@ -28,6 +40,10 @@ class AnMA extends AnalyzerIO {
 
             this.values.push( this.getDataFromCandle(this.source, candle) );
 
+            if (this.values.length < this.period) {
+                return;
+            }
+
             if (this.values.length > this.period) {
                 this.values.shift();
             }
@@ -35,8 +51,21 @@ class AnMA extends AnalyzerIO {
             const sum = this.values.reduce( (a,b) => a + b, 0 );
             const result = sum / this.values.length;
      
-            flags.set(this.name, result);
+            this.countAboveBelow(result, candle);
+
+            flags.set(this.name, {
+                value: result,
+                wicksAbove: this.countWicksAbove,
+                wicksBelow: this.countWicksBelow,
+                wicksAboveBroke: this.countWABroke,
+                wicksBelowBroke: this.countWBBroke
+            });
+
+            this.countWABroke = 0;
+            this.countWBBroke = 0;
+
             CDB.onChart(candle, this.name, result);
+
         }
 
         getDataFromCandle(sourceCode, candle) {
@@ -51,7 +80,34 @@ class AnMA extends AnalyzerIO {
             return data;
         }
 
+        resetFinder() {
+            this.countWicksAbove = 0;
+            this.countWicksBelow = 0;
+            this.countWABroke = 0;
+            this.countWBBroke = 0;
+        }
 
+        countAboveBelow(currentValue, candle)
+        {
+            if (candle.low > currentValue) {
+                this.countWicksAbove++;
+                CDB.labelBottom(candle,'^');                
+            }
+            else {
+                this.countWABroke = this.countWicksAbove;
+                this.countWicksAbove = 0;
+            }
+
+            if (candle.high < currentValue) {
+                this.countWicksBelow++;
+                CDB.labelTop(candle,'v');                
+            }
+            else {
+                this.countWBBroke = this.countWicksBelow;
+                this.countWicksBelow = 0;
+            }
+
+        }
 }
 
 module.exports = AnMA;

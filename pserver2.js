@@ -34,25 +34,27 @@ mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
     candleDB = new CandleDB(mysqlHandler, brokers);
     dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB);
 
-    // dataProcessor.runSymbols(['BTCUSDT'], false);
+    dataProcessor.runSymbols(['BTCUSDT'], false);
+    dataProcessor.runSymbols([ 'LUNAUSDT', 'AVAXUSDT', 'SOLUSDT' ], false );
 
-    dataProcessor.runSymbols(
-        [ 'LUNAUSDT', 'AVAXUSDT', 'BTCUSDT', 'SOLUSDT' ]
-    , true );
-    
+//    dataProcessor.runSymbols( [ 'SRMUSDT', 'ZRXUSDT', 'MFTUSDT' ], false );
+
+/*
     binanceClient = new BinanceClient(SETTINGS.users.mona.brokers.binance, dataProcessor);
-
     binanceClient.updateAccountInfo().then( () => {
         binanceClient.updateMyTrades('USDT').then( () => {
             binanceClient.getMyTrades().forEach( (trade) => {
-                dataProcessor.runSymbols([ trade.symbol ], true);   
+                dataProcessor.runSymbols([ trade.symbol ], false);   
             })
         })
     })
+*/
 
 
 });
 
+
+console.log('===> READY FOR CONNECTIONS')
 
 io.on("connection", (socket) => {
     console.log('client connected')
@@ -81,9 +83,14 @@ io.on("connection", (socket) => {
 
     socket.on('restart_all', (arg) => {
         if (!dataProcessor) return;
+
+        console.log('=====> RESTART START')
         
         dataProcessor.restartAll(arg.runLive);
         
+
+        console.log('=====> RESTART END')
+
         let data = dataProcessor.getOrders();
         socket.emit("orders", data);
 
@@ -102,6 +109,14 @@ io.on("connection", (socket) => {
         if (!dataProcessor) return;
         let data = dataProcessor.getOrders();
         socket.emit("orders", data);
+    });
+
+
+    socket.on("get_orders_stats", (arg) => {
+        if (!dataProcessor) return;
+        let orderStats = dataProcessor.getOrdersStatistics(arg.fromTimestamp, arg.toTimestamp);
+        let timeframes = dataProcessor.getTimeframes();
+        socket.emit("orders_stats", { timeframes: timeframes, stats: orderStats });
     });
 
     socket.on("broker_my_trades", (arg) => {

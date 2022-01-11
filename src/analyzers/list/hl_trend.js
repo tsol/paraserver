@@ -1,9 +1,22 @@
 /*
 ** Sets hl_trend flag by analyzing higher highs and lower lows (and vice versa)
-** Uses: AnExtremum
 **
-** Todo: possibly use previous lastHigh or lastLow as the first in new
-** trend search (not to loose one pre-swing)
+** Sets flags:
+
+alsways:
+
+hl_trend: {
+    trend: false,
+    direction: 0,
+    swings: 1,
+    bias: -1
+}
+
+on condition:
+
+hl_trend.new.high = candleObject
+hl_trend.new.low = candleObject
+
 */
 
 const AnalyzerIO = require("../AnalyzerIO");
@@ -98,13 +111,13 @@ class AnHLTrend extends AnalyzerIO {
             }
         }
         
-        if (this.isInTrend()) {
-            flags.set('hl_trend',{
-                direction: this.trendDirection,
-                swings: Math.abs(this.updateDirection)
-            });
-        }    
-  
+        flags.set('hl_trend',{
+            trend: this.isInTrend(),
+            direction: this.trendDirection,
+            swings: Math.abs(this.updateDirection),
+            bias: this.updateDirection
+        });
+        
     }
 
     processExtremum(extremumFlag,flags)

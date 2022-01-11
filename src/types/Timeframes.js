@@ -6,11 +6,13 @@ class Timeframes
     HOUR_LENGTH = this.MIN_LENGTH * 60;
 
     TFRAMES = [
-        { name: '1d',  levelsLimit: 300, days: 300, limit: 0, levelsLimitTime: 0, length: this.DAY_LENGTH },
-        { name: '4h',  levelsLimit: 500, days: 300,  limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
-        { name: '30m', levelsLimit: 500, days: 30,  limit: 0, levelsLimitTime: 0, length: 30 * this.MIN_LENGTH },
-        { name: '5m',  levelsLimit: 500, days: 30,  limit: 0, levelsLimitTime: 0, length: 5 * this.MIN_LENGTH },
-        { name: '1m',  levelsLimit: 500, days: 30,  limit: 0, levelsLimitTime: 0, length: this.MIN_LENGTH }
+        { name: '1d',  levelsLimit: 300, days: 300,  trade: false, limit: 0, levelsLimitTime: 0, length: this.DAY_LENGTH },
+        { name: '4h',  levelsLimit: 500, days: 90,  trade: true, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
+        { name: '1h',  levelsLimit: 500, days: 90,  trade: true, limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
+        { name: '30m', levelsLimit: 500, days: 90,   trade: true, limit: 0, levelsLimitTime: 0, length: 30 * this.MIN_LENGTH },
+        { name: '15m', levelsLimit: 500, days: 90,   trade: true, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
+        { name: '5m',  levelsLimit: 500, days: 90,   trade: true, limit: 0, levelsLimitTime: 0, length: 5 * this.MIN_LENGTH },
+        { name: '1m',  levelsLimit: 500, days: 90,   trade: true, limit: 0, levelsLimitTime: 0, length: this.MIN_LENGTH }
     ];
 
     constructor() {
@@ -25,9 +27,11 @@ class Timeframes
     next(timeframe) {
         // todo: use static definition in Timeframes
         switch (timeframe) {
-            case '1m': return '5m';
+            case '1m': return '15m';
             case '5m': return '30m';
+            case '15m': return '1h';
             case '30m': return '4h';
+            case '1h': return '4h';
             case '4h': return '1d';
         }
         return undefined;

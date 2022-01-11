@@ -104,6 +104,31 @@ class AnVLevels extends AnalyzerIO {
             this.levels = this.levels.filter( (l) => l.forgetBefore(time) );
         }
 
+
+        findUpperTarget({startPrice, maxPrice, reqWTotal, reqWSupport, reqWResist }) {
+
+            let upperLowerEdge = 0;
+
+            for (let lvl of this.levels) {
+
+                let lowerEdge = lvl.getExactLowerEdge();
+                
+                if ( (lowerEdge > startPrice) && (lowerEdge < maxPrice)) {
+                    
+                    if (reqWTotal && (reqWTotal > lvl.totalWeight)) continue;
+                    if (reqWSupport && (reqWSupport > lvl.supportWeight)) continue;
+                    if (reqWResist && (reqWResist > lvl.resistWeight)) continue;
+                    
+                    if (lowerEdge > upperLowerEdge) {
+                        upperLowerEdge = lowerEdge;
+                    }
+                }
+
+            }     
+            return upperLowerEdge;
+        }
+
+
         getCandleBottomTouch(candle)
         {
             let resistWeight = 0;
@@ -207,6 +232,9 @@ class Level {
         return (y >= this.resY0) && (y <= this.resY1 );
     }
 
+    getExactLowerEdge() {
+        return this.resY0;
+    }
 
     recalcLevel() {
         const count = this.points.length;

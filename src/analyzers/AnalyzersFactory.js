@@ -7,18 +7,25 @@ const AnalyzersBox = require('./AnalyzersBox.js');
 
 class AnalyzersFactory {
 
-    constructor() {
+    constructor(orderManager) {
 
         this.items = [
             ['atr14',       'atr',          14,     null],
             ['mac20',       'ma',           {source:'c', period: 20}, null],
+            ['mac50',       'ma',           {source:'c', period: 50}, null],
+            ['mac100',      'ma',           {source:'c', period: 100}, null],
             ['extremum',    'extremum',     null,   null],
             ['hl_trend',    'hl_trend',     null,   null],
             ['hills',       'hills',        null,   null],
             ['vlevels',     'vlevels',      null,   null],
-            ['candlepatterns',     'candlepatterns',      null,   null],
+            ['cdlpatts',    'cdlpatts',     null,   null],
+
+            ['helper',      'helper',       orderManager, null ],
+
             ['dblbottom',   'dblbottom',    null,   null],
-            ['touchma',     'touchma',      null,   null]
+            ['touchma',     'touchma',      null,   null],
+            ['macross',     'macross',      null,   null]
+            
         ];
         
         this.reloadAll();

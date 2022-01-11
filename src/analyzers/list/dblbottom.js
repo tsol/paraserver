@@ -12,7 +12,9 @@ class AnDoubleBottom extends AnalyzerIO {
     static TF_SETTINGS = {
         '1m':   { required: 40, ratio: 1.4 },
         '5m':   { required: 40, ratio: 1.4 },
+        '15m':   { required: 40, ratio: 1.4 },
         '30m':  { required: 40, ratio: 1.4 },
+        '1h':   { required: 40, ratio: 1.4 },
         '4h':   { required: 40, ratio: 1.4 } 
     };
 
@@ -90,9 +92,7 @@ class AnDoubleBottom extends AnalyzerIO {
             CDB.circleLow(this.firstBottom, { radius: 1.7, color: 'black' });
             CDB.circleLow(this.secondBottom, { radius: 1.7, color: 'black' });
 
-            if ( this.makeEntry(candle, flags) ) {
-                CDB.labelTop(candle,'EN');
-            } else {
+            if ( ! this.makeEntry(candle, flags) ) {
                 CDB.labelTop(candle,'NE');
             }
 
@@ -108,8 +108,10 @@ class AnDoubleBottom extends AnalyzerIO {
         if (! possibleBottom )
             { return false; }
 
+        const atr = flags.get('atr14');
+       
         const wick = possibleBottom.lowerTailSize();
-        if (wick > flags.get('atr14') * 2) {
+        if (atr && wick > atr * 2) {
             return false;
         }
 
@@ -156,20 +158,8 @@ class AnDoubleBottom extends AnalyzerIO {
             console.log('DBLBOTTOM: no entry for timeframe, no settings');
             return false;
         }
-
-        const higherTrend = flags.getHTF('hl_trend');
-        let htMsg = '';
-
-        if (! higherTrend || ! (higherTrend.direction > 0) || (higherTrend.swings < 4) ) {
-            console.log('DBLBOTTOM: no entry higher trend not detected');
-            return false;
-        }
-        else {
-            htMsg = ' HT: '+higherTrend.direction+'/'+higherTrend.swings;
-        }
-
+    
         let levelTouchWeight = 0;
-
         let touchFirst = this.countBottomTouchWeight(this.firstBottom,flags);
         levelTouchWeight += touchFirst.sw;
 
@@ -184,20 +174,13 @@ class AnDoubleBottom extends AnalyzerIO {
 
         CDB.labelBottom(this.firstBottom,JSON.stringify(touchFirst));
         CDB.labelBottom(this.secondBottom,JSON.stringify(touchSecond));
-        CDB.labelTop(candle,'W:'+levelTouchWeight+htMsg);
+        
+        CDB.labelTop(candle,'W:'+levelTouchWeight);
 
-        const entryPrice = candle.close;
-        const stopLoss = this.lowestSecondTail - flags.get('atr14'); 
-        const stopHeight = entryPrice - stopLoss;
-        const takeProfit = entryPrice + stopHeight * settings.ratio;
-
-        flags.set('entry',{
-                strategy: 'dblbottom',
-                atCandle: candle,
-                type: 'buy',
-                takeProfit: takeProfit,
-                stopLoss: stopLoss	
-        });
+        flags.get('helper').makeEntry(this.getId(), {
+            rrRatio: settings.ratio,
+            lowLevel: this.lowestSecondTail
+         });
 
         return true;
 

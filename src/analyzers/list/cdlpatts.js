@@ -10,12 +10,12 @@ const CDB = require('../../types/CandleDebug');
 
 class AnCandlePatterns extends AnalyzerIO {
 
-        constructor(period) {
+        constructor() {
             super();
             this.prevCandle = undefined;
         }
 
-        getId() { return 'candlepatterns'; }
+        getId() { return 'cdlpatts'; }
 
         addCandle(candle,flags) {
             super.addCandle(candle,flags);
@@ -24,12 +24,12 @@ class AnCandlePatterns extends AnalyzerIO {
             if (this.isShootingStar(candle)) {
                 CDB.labelBottom(candle,'SHU');
                 this.debugCircle(candle);
-                flags.set('new.cpatt.star',candle);
+                flags.set(this.getId()+'.new.star',candle);
             }
             else if (this.isHammer(candle)) {
                 CDB.labelBottom(candle,'HAM');
                 this.debugCircle(candle);
-                flags.set('new.cpatt.hamm',candle);
+                flags.set(this.getId()+'.new.hammer',candle);
             }
 
             if (this.prevCandle !== undefined) {

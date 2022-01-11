@@ -22,13 +22,8 @@ class Flags {
         this.tickers[ this.currentId() ] = {};
     }
 
-
     currentId() {
         return this.currentSymbol+'-'+this.currentTimeframe;
-    }
-
-    allFlags(tickerId) {
-        return this.tickers[ tickerId ];
     }
 
     set(field, value) {
@@ -37,6 +32,14 @@ class Flags {
 
     get(field) {
         return this.tickers[ this.currentId() ][ field ];
+    }
+
+    getAll() {
+        return this.getAllFlagsByTickerId( this.currentId() );
+    }
+
+    getAllFlagsByTickerId(tickerId) {
+        return this.tickers[ tickerId ];
     }
 
     /* get Higher Time Frame flag. That way tickers can peek for flags of older brothers */

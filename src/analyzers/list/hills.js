@@ -28,8 +28,14 @@ class AnHills extends AnalyzerIO {
         
         CDB.setSource(this.getId());
 
-        const currentMac = flags.get(this.followMac);
         const atr = flags.get('atr14');
+        const mac = flags.get(this.followMac);
+
+        if ( ! atr || ! mac) {
+            return false;
+        }
+
+        const currentMac = mac.value;
 
         if (this.deltaSwitchLevel == undefined) {
             this.deltaSwitchLevel = currentMac;
