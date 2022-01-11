@@ -10,12 +10,12 @@ const CDB = require('../../types/CandleDebug');
 class AnDoubleBottom extends AnalyzerIO {
 
     static TF_SETTINGS = {
-        '1m':   { required: 40, ratio: 1.4 },
-        '5m':   { required: 40, ratio: 1.4 },
-        '15m':   { required: 40, ratio: 1.4 },
-        '30m':  { required: 40, ratio: 1.4 },
-        '1h':   { required: 40, ratio: 1.4 },
-        '4h':   { required: 40, ratio: 1.4 } 
+        '1m':   { required: 30, ratio: 1.35 },
+        '5m':   { required: 30, ratio: 1.35 },
+        '15m':  { required: 30, ratio: 1.35 },
+        '30m':  { required: 30, ratio: 1.35 },
+        '1h':   { required: 30, ratio: 1.35 },
+        '4h':   { required: 30, ratio: 1.35 } 
     };
 
     constructor() {
