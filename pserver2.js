@@ -35,7 +35,7 @@ mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
     dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB);
 
     dataProcessor.runSymbols(['BTCUSDT'], false);
-    dataProcessor.runSymbols([ 'LUNAUSDT', 'AVAXUSDT', 'SOLUSDT' ], false );
+  //  dataProcessor.runSymbols([ 'LUNAUSDT', 'AVAXUSDT', 'SOLUSDT' ], false );
 
 //    dataProcessor.runSymbols( [ 'SRMUSDT', 'ZRXUSDT', 'MFTUSDT' ], false );
 

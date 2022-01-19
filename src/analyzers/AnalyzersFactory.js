@@ -11,6 +11,7 @@ class AnalyzersFactory {
 
         this.items = [
             ['atr14',       'atr',          14,     null],
+            ['rsi14',       'rsi',          14,     null],
             ['mac20',       'ma',           {source:'c', period: 20}, null],
             ['mac50',       'ma',           {source:'c', period: 50}, null],
             ['mac100',      'ma',           {source:'c', period: 100}, null],
