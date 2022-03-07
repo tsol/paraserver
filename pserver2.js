@@ -29,27 +29,37 @@ const io = new Server({
     allowEIO3: true
 });
 
+const runLive = true;
+
 mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
 
     candleDB = new CandleDB(mysqlHandler, brokers);
     dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB);
 
     dataProcessor.runSymbols(['BTCUSDT'], false);
-  //  dataProcessor.runSymbols([ 'LUNAUSDT', 'AVAXUSDT', 'SOLUSDT' ], false );
 
-//    dataProcessor.runSymbols( [ 'SRMUSDT', 'ZRXUSDT', 'MFTUSDT' ], false );
+    dataProcessor.runSymbols([ 
+        'ANCUSDT',
+        'LUNAUSDT',
+        'WAVESUSDT',
+        'ARUSDT',
+        'ATOMUSDT',
+        'UNIUSDT',
+        'FILUSDT'
+    ], runLive );
 
+    dataProcessor.runSymbols([ 'AVAXUSDT', 'SOLUSDT' ], runLive );
+    dataProcessor.runSymbols( [ 'SRMUSDT', 'ZRXUSDT', 'MFTUSDT' ], runLive );
 /*
     binanceClient = new BinanceClient(SETTINGS.users.mona.brokers.binance, dataProcessor);
     binanceClient.updateAccountInfo().then( () => {
         binanceClient.updateMyTrades('USDT').then( () => {
             binanceClient.getMyTrades().forEach( (trade) => {
-                dataProcessor.runSymbols([ trade.symbol ], false);   
+                dataProcessor.runSymbols([ trade.symbol ], runLive);   
             })
         })
     })
 */
-
 
 });
 

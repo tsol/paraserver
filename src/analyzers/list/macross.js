@@ -18,46 +18,58 @@ class StrategyMACross extends AnalyzerIO {
             super.addCandle(candle,flags);
             CDB.setSource(this.getId());
 
-            const hl_higher_trend = flags.getHTF('hl_trend');
-            const extremum = flags.get('extremum');
+            // if ( candle.timeframe !== '5m' ) { return; }
+
+            const wf = flags.get('wfractals');
+            if (! wf) { return; }
+
+            if (! flags.get('mac100') ) {
+                return;
+            }
+
+            const mac20 = flags.get('mac20').value;
+
+            if ( candle.low > mac20 ) {
+                return;
+            }
+
+            const mac50 = flags.get('mac50').value;
+            const mac100 = flags.get('mac100').value;
+
+            if (! mac100 ) {
+                return false;
+            }
+
+            if (! ((mac20 > mac50) && (mac50 > mac100)) ) {
+                return;
+            }
+
+            if ( candle.low < mac100 ) {
+                return;
+            }
+
+            if (wf.type !== 'low') {
+                return false;
+            }
+
+            const helper = flags.get('helper');
+            const lowLevel = ( candle.low < mac50 ? mac100 : mac50 );
             
-            if (hl_higher_trend && extremum ) {
-                CDB.labelBottom(candle,'B:'+hl_higher_trend.bias);
+            
+            if (helper.getOpenOrder(candle.timeframe, this.getId())) {
+                console.log('MACROSS: order already open');
+                return false;
             }
-
-            /*            
-            let cdlL = flags.get('hl_trend.new.low');
-            let cdlH = flags.get('hl_trend.new.high');
-
-            if (cdlL) {
-                CDB.labelBottom(cdlL,'B:'+hl_trend.bias);
-            }
-            if (cdlH) {
-                CDB.labelBottom(cdlH,'B:'+hl_trend.bias);
-            }
-*/
-
-
-        }
-
-        makeEntry(candle, flags) {
+            
+            helper.makeEntry(this.getId(), {
+                rrRatio: 1.5,
+                lowLevel: lowLevel,
+                noMagic: true
+             });
     
-            /*
 
-            flags.set('entry',{
-                    strategy: 'touchma',
-                    atCandle: candle,
-                    type: 'buy',
-                    takeProfit: takeProfit,
-                    stopLoss: stopLoss,
-                    comment: cmt	
-            });
-
-            CDB.labelTop(candle,'EN');
-            */
-
-            return true;
         }
+
     
 }
 

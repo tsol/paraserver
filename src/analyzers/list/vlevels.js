@@ -23,11 +23,6 @@ class AnVLevels extends AnalyzerIO {
 
             /* cut levels from begining */
             const cutSince = candle.openTime - TF.getLevelLimitTime(candle.timeframe);
-            /*
-            console.log('ANVLEVEL: cut since: '+cutSince+' = '+TF.timestampToDate(cutSince)
-            +' LLT='+TF.getLevelLimitTime(candle.timeframe)+' OT='+candle.openTime
-            + ' timeframe='+candle.timeframe);
-            */
             this.forgetBefore(cutSince);
 
             const extremum = flags.get('extremum');            
@@ -35,35 +30,25 @@ class AnVLevels extends AnalyzerIO {
             
             const hillLow = flags.get('hills.new.low');
             if (hillLow) {
-                this.addBounceLevel(true,
-                    hillLow.openTime,
-                    hillLow.low,
-                    atr,
-                    30, hillLow);
+                this.addBounceLevel(true, hillLow.openTime, hillLow.low,
+                    atr, 30, hillLow);
             }
 
             const hillHigh = flags.get('hills.new.high');
             if (hillHigh) {
-                this.addBounceLevel(false,
-                    hillHigh.openTime,
-                    hillHigh.high,
-                    atr,
-                    30, hillHigh);
+                this.addBounceLevel(false, hillHigh.openTime, hillHigh.high,
+                    atr, 30, hillHigh);
             }
 
             let extremumCandle = flags.get('hl_trend.new.high');
             if ( extremumCandle ) {
-                this.addBounceLevel(false,
-                     extremumCandle.openTime,
-                     extremumCandle.high,
+                this.addBounceLevel(false, extremumCandle.openTime, extremumCandle.high,
                      atr, 10, extremumCandle);
             }
 
             extremumCandle = flags.get('hl_trend.new.low');
             if ( extremumCandle ) {
-                this.addBounceLevel(true,
-                     extremumCandle.openTime,
-                     extremumCandle.low,
+                this.addBounceLevel(true, extremumCandle.openTime, extremumCandle.low,
                      atr, 10, extremumCandle);
             }
 

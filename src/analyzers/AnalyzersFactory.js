@@ -15,20 +15,20 @@ class AnalyzersFactory {
             ['mac20',       'ma',           {source:'c', period: 20}, null],
             ['mac50',       'ma',           {source:'c', period: 50}, null],
             ['mac100',      'ma',           {source:'c', period: 100}, null],
+            ['wfractals',   'wfractals',    null,   null],
             ['extremum',    'extremum',     null,   null],
             ['hl_trend',    'hl_trend',     null,   null],
             ['hills',       'hills',        null,   null],
             ['vlevels',     'vlevels',      null,   null],
             ['cdlpatts',    'cdlpatts',     null,   null],
-
             ['helper',      'helper',       orderManager, null ],
-
-            ['dblbottom',   'dblbottom',    null,   null],
-            ['touchma',     'touchma',      null,   null],
             ['macross',     'macross',      null,   null]
-            
         ];
+
         
+//        ['dblbottom',   'dblbottom',    null,   null],
+//        ['touchma',     'touchma',      null,   null],
+
         this.reloadAll();
 
     }

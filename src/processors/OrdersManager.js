@@ -9,7 +9,9 @@ const { TF } = require('../types/Timeframes.js');
 class OrdersManager {
 
     static STAKE_USD = 100;
-
+    static COST_BUY_PERCENT = 0.001;
+    static COST_SELL_PERCENT = 0.001;
+    
     constructor() {
         this.orders = [];
     }
@@ -120,7 +122,11 @@ class OrdersManager {
 
         const boughtInUSD = order.qty * order.entryPrice;
         const soldInUSD = order.qty * price;
-        const gainInUSD = soldInUSD - boughtInUSD;
+        const gainInUSD = 
+            soldInUSD - 
+            boughtInUSD - 
+            soldInUSD * OrdersManager.COST_SELL_PERCENT -
+            boughtInUSD * OrdersManager.COST_BUY_PERCENT;
 
         order.closePrice = price;
         order.gain = gainInUSD;
@@ -140,6 +146,21 @@ class OrdersManager {
 
     toJSON() {
         return this.orders;
+    }
+
+    getOpenOrder(timeframe, strategy)
+    {
+        if (! this.orders || this.orders.length === 0) { return false; }
+
+        const found = this.orders.find( 
+            (v) => {
+                return     (v.timeframe == timeframe) 
+                        && (v.strategy == strategy)
+                        && (v.active); 
+            }
+        );
+
+        return found;
     }
 
     genStatistics(fromTimestamp, toTimestamp) {

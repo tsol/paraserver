@@ -1,0 +1,5 @@
+DROP DATABASE IF EXISTS paracandles;
+CREATE DATABASE paracandles;
+# GRANT ALL PRIVILEGES ON paracandles.* TO 'para'@localhost;
+# FLUSH PRIVILEGES;
+# SHOW GRANTS FOR 'para'@localhost;

@@ -10,12 +10,12 @@ const CDB = require('../../types/CandleDebug');
 class AnDoubleBottom extends AnalyzerIO {
 
     static TF_SETTINGS = {
-        '1m':   { required: 30, ratio: 1.35 },
-        '5m':   { required: 30, ratio: 1.35 },
-        '15m':  { required: 30, ratio: 1.35 },
-        '30m':  { required: 30, ratio: 1.35 },
-        '1h':   { required: 30, ratio: 1.35 },
-        '4h':   { required: 30, ratio: 1.35 } 
+        '1m':   { required: 40, ratio: 1.35 },
+        '5m':   { required: 40, ratio: 1.35 },
+        '15m':  { required: 40, ratio: 1.35 },
+        '30m':  { required: 40, ratio: 1.35 },
+        '1h':   { required: 40, ratio: 1.35 },
+        '4h':   { required: 40, ratio: 1.35 } 
     };
 
     constructor() {
@@ -27,12 +27,14 @@ class AnDoubleBottom extends AnalyzerIO {
 
     resetFinder() {
         this.firstBottom = undefined;
-        this.firstZoneUpperLevel = undefined;
+        this.firstBottomZoneUp = undefined;
         this.secondBottom = undefined;
         this.greenCount = 0;
         this.redCount = 0;
         this.totalCount = 0;
         this.lowestSecondTail = 0;
+        this.highestNeckline = 0;
+        this.necklineCandle = undefined;
     }
 
  
@@ -47,7 +49,8 @@ class AnDoubleBottom extends AnalyzerIO {
             return;
         }
 
-        if (this.candleBelowZone(candle)) {
+
+        if (this.candleBreaksZone(candle)) {
             CDB.labelBottom(candle,'xB')
             this.resetFinder();
             this.checkFirstBottom(flags);
@@ -56,6 +59,11 @@ class AnDoubleBottom extends AnalyzerIO {
 
         if (this.secondBottom == undefined) {
         
+            if (candle.bodyHigh() > this.highestNeckline) {
+                this.highestNeckline = candle.bodyHigh();
+                this.necklineCandle = candle;
+            }
+    
             if (this.candleAboveZone(candle)) {
                 if (candle.isRed()) {
                     this.redCount++;
@@ -87,7 +95,7 @@ class AnDoubleBottom extends AnalyzerIO {
 
         // we have second bottom and a green candle
 
-        if (this.secondBottom && candle.isGreen() ) {
+        if (this.secondBottom && this.closesAboveNeckline(candle) ) {
             
             CDB.circleLow(this.firstBottom, { radius: 1.7, color: 'black' });
             CDB.circleLow(this.secondBottom, { radius: 1.7, color: 'black' });
@@ -107,6 +115,9 @@ class AnDoubleBottom extends AnalyzerIO {
         const possibleBottom = flags.get('hl_trend.new.low'); 
         if (! possibleBottom )
             { return false; }
+/*
+        if (possibleBottom.lowerTailSize() > possibleBottom.bodySize()*3)
+            { return false; }
 
         const atr = flags.get('atr14');
        
@@ -115,13 +126,23 @@ class AnDoubleBottom extends AnalyzerIO {
             return false;
         }
 
+        const rsi = flags.get('rsi14');
+        if (rsi > 30 ) {
+            return false;
+        } 
+*/
+
         this.firstBottom = possibleBottom;
-        this.firstZoneUpperLevel = Math.min(possibleBottom.open, possibleBottom.close);
+        this.firstBottomZoneUp = Math.min(possibleBottom.open, possibleBottom.close);
         this.lowestSecondTail = this.firstBottom.low;
         CDB.labelBottom(possibleBottom,'B1');
         return true;
     }
 
+
+    closesAboveNeckline(candle) {
+        return candle.bodyHigh() > this.highestNeckline;
+    }
 
     readyToSpotSecondBottom()
     {
@@ -129,18 +150,19 @@ class AnDoubleBottom extends AnalyzerIO {
     }
 
     inZone(y) {
-        return (y >= this.firstBottom.low) && (y <= this.firstZoneUpperLevel);
+        return (y >= this.firstBottom.low) && (y <= this.firstBottomZoneUp);
     }
 
     candleAboveZone(candle)  {
         //const candleLowerBody = Math.min(candle.open, candle.close);
-        //return candleLowerBody > this.firstZoneUpperLevel;       
-        return candle.low > this.firstZoneUpperLevel;       
+        //return candleLowerBody > this.firstBottomZoneUp;       
+        return candle.low > this.firstBottomZoneUp;       
     }
 
-    candleBelowZone(candle) {
+    candleBreaksZone(candle) {
         const candleLowerBody = Math.min(candle.open, candle.close);
-        return candleLowerBody < this.firstBottom.low;       
+        return (candleLowerBody < this.firstBottom.low) 
+                || (candle.low < this.firstBottom.low);       
     }
 
     candleTouchesZone(candle)
@@ -172,6 +194,13 @@ class AnDoubleBottom extends AnalyzerIO {
             return false;
         }
 
+        /*
+        const rsi = flags.get('rsi14');
+        if (! rsi || rsi < 60) {
+            return false;
+        }
+        */
+
         CDB.labelBottom(this.firstBottom,JSON.stringify(touchFirst));
         CDB.labelBottom(this.secondBottom,JSON.stringify(touchSecond));
         
@@ -179,7 +208,8 @@ class AnDoubleBottom extends AnalyzerIO {
 
         flags.get('helper').makeEntry(this.getId(), {
             rrRatio: settings.ratio,
-            lowLevel: this.lowestSecondTail
+            lowLevel: this.necklineCandle.low,
+            noMagic: false
          });
 
         return true;

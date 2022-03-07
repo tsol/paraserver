@@ -35,14 +35,15 @@ class StrategyHelper {
     makeEntry(strategyId, {
             entryPrice, stopLoss, takeProfit, lowLevel, 
             rrRatio, stopAtrRatio, 
-            noMagic, noFilterMAC, noFilterTrend, noTargetLevel 
+            noMagic, noFilterMAC, noFilterTrend, noTargetLevel, noRSI50
         } ) 
     {
-        
+      
         if (noMagic) {
             noFilterMAC = true;
             noFilterTrend = true;
             noTargetLevel = true;
+            noRSI50 = true;
         }
 
         let cmt = '';
@@ -59,15 +60,32 @@ class StrategyHelper {
             return false;
         }
 
-        if ( mac20.value < mac50.value ) { cmt += 'MC[20<50] '; }
+        
+        const rsi = this.flags.get('rsi14');
+
+        if (rsi) {
+            const rsi_tf = rsi.toFixed(2);
+            if (rsi < 50) {
+                cmt += ( rsi < 30 ? ' RSI<30' : ' RSI<50');
+                if (! noRSI50 ) {
+                    return false;
+                }
+            }
+            else {
+                cmt += ( rsi > 70 ? ' RSI>70' : ' RSI>50');
+            }
+            cmt += '('+rsi_tf+')';
+        }
+
+        if ( mac20.value < mac50.value ) { cmt += ' MC[20<50]'; }
         if ( mac50.value < mac100.value) { 
-                cmt += 'MC[50<100] '; 
+                cmt += ' MC[50<100]'; 
                 if (!noFilterMAC) { return false; }
         }
 
         const higherTrend = this.flags.getHTF('hl_trend');
         if ( higherTrend ) {
-            cmt += 'TH['+higherTrend.direction+'/'+higherTrend.swings+']';
+            cmt += ' TH['+higherTrend.direction+'/'+higherTrend.swings+']';
             if (!noFilterTrend && (higherTrend.direction < 0)) {
                 return false;
             }
@@ -76,7 +94,7 @@ class StrategyHelper {
         const trend = this.flags.get('hl_trend');
         if ( trend ) {
             cmt += ' T['+trend.direction+'/'+trend.swings+']';
-            if (!noFilterTrend && (trend.direction < 0) && (higherTrend.direction <= 0) ) {
+            if (!noFilterTrend && (trend.direction < 0)) {
                 return false;
             }
         }
@@ -127,6 +145,11 @@ class StrategyHelper {
         );
 
     }
+
+    getOpenOrder(timeframe,strategy) {
+        return this.ordersManager.getOpenOrder(timeframe,strategy);
+    }
+
 
 }
 

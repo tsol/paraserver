@@ -20,6 +20,11 @@ class Candle {
         return Math.min(this.open, this.close);
     }
 
+    bodyHigh()
+    {
+        return Math.max(this.open, this.close);
+    }
+
     getId() {
         return this.symbol+'-'+this.timeframe+'-'+this.openTime;
     }
