@@ -36,12 +36,13 @@ class AnalyzersFactory {
             ['vlevels',     'vlevels',      null,   null],
             ['cdlpatts',    'cdlpatts',     null,   null],
             ['helper',      'helper',       orderManager, null ],
-
-            ['crossma3',    'crossma3',      null,   null],
-            ['crosswma',    'crosswma',      null,   null],
-            ['cross2wma',    'cross2wma',      null,   null],
-            ['touchma',     'touchma',      null,   null],
-            ['dblbottom',   'dblbottom',    null,   null],
+         
+            ['dblbottom',   'st_dblbottom',    true,    null],
+            ['dbltop',      'st_dblbottom',    false,   null],
+            ['macwfma',     'st_mac_wfma',    null,    null],
+            ['tpcwfma',     'st_tpc_wfma',     null,   null],
+            ['cma3buy',     'st_cma3',         true,   null],
+            ['cma3sell',    'st_cma3',         false,   null],
     
         ];
 /*

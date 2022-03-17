@@ -43,7 +43,7 @@ class AnHills extends AnalyzerIO {
             return false;
         }
 
-        const currentMac = mac.value;
+        const currentMac = mac;
 
         if (this.deltaSwitchLevel == undefined) {
             this.deltaSwitchLevel = currentMac;

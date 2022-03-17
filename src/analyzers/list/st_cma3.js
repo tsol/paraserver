@@ -1,5 +1,5 @@
 /*
-**  Strategy Moving Avarage 200 & 50
+**  Strategy Moving Avarage cross 200 & 50
 **
 **  1. Look for MA50 cross up MA200
 **  2. If 3 or more candles close below MA200 - skip
@@ -14,18 +14,20 @@ const CDB = require('../../types/CandleDebug');
 
 class StrategyCrossMA3 extends StrategyIO {
   
-        constructor() {
+        constructor(isLong) {
             super();
+            this.isLong = isLong;
+            this.name = 'cma3'+(isLong?'buy':'sell');
             this.prevFiftyAbove = undefined;
             this.resetFinder();
         }
 
-        getId() { return 'crossma3'; }
+        getId() { return this.name; }
 
         getParams(timeframe) {
             return {
-                statsMaxOrders: 10,
-                statsOkRatio: 50
+                statsMaxOrders: 4,
+                statsOkRatio: 75
             };
         }
 
@@ -44,9 +46,10 @@ class StrategyCrossMA3 extends StrategyIO {
 
             if (! mac50 || ! mac200 ) { return; }
 
-            const fiftyAbove = mac50.value > mac200.value;
-
-            if (! this.wasCross) {
+            const fiftyAbove = ( this.isLong ? mac50 > mac200 : mac50 < mac200 );
+                    
+            if (! this.wasCross)
+            {
                 if (this.prevFiftyAbove === undefined) {
                     this.prevFiftyAbove = fiftyAbove;
                     return;
@@ -67,7 +70,7 @@ class StrategyCrossMA3 extends StrategyIO {
                 return this.resetFinder();
             }
 
-            if ( candle.bodyLow() < mac200.value ) {
+            if ( this.candleClosesBelow(candle, mac200) ) {
                 if (++this.countCloseBelow200 >= 3) {
                     CDB.labelTop(candle,'A');
                     return this.resetFinder();
@@ -75,8 +78,7 @@ class StrategyCrossMA3 extends StrategyIO {
             }
 
             if (! this.wasTouch ) {
-                if ( flags.get('mac50.new.touch') === 'down') {
-                //if (candle.bodyLow() < mac50.value) {
+                if ( this.candleClosesBelow(candle,mac50) ) {
                     this.wasTouch = true;
                     CDB.labelTop(candle,'T');
                 }
@@ -85,12 +87,14 @@ class StrategyCrossMA3 extends StrategyIO {
                 }
             }            
 
-            if (! ( candle.isGreen() && (candle.close > mac50.value)) ) {
-                return;
+            if (this.isLong) {
+                if (! ( candle.isGreen() && (candle.close > mac50) ) ) { return; }
             }
-
-            const helper = flags.get('helper');            
-            helper.makeEntry(this, 'buy', {
+            else {
+                if (! ( candle.isRed() && (candle.close < mac50) ) ) { return; }
+            }
+              
+            flags.get('helper').makeEntry(this, (this.isLong ? 'buy' : 'sell'), {
                 rrRatio: 1.5,
                 stopATRRatio: 2
              });
@@ -100,6 +104,13 @@ class StrategyCrossMA3 extends StrategyIO {
         }
 
     
+        candleClosesBelow(candle, level)
+        {
+            if (this.isLong) {
+              return candle.bodyLow() < level;
+            }
+            return candle.bodyHigh() > level;
+        }
 }
 
 module.exports = StrategyCrossMA3

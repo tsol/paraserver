@@ -9,6 +9,8 @@ const CDB = require('../../types/CandleDebug');
 
 class StrategyDoubleBottom extends StrategyIO {
 
+    static MAX_LENGTH = 25;
+
     static TF_SETTINGS = {
         '1m':   { reqlvl: 40, ratio: 1.35 },
         '3m':   { reqlvl: 40, ratio: 1.35 },
@@ -19,22 +21,26 @@ class StrategyDoubleBottom extends StrategyIO {
         '4h':   { reqlvl: 40, ratio: 1.35 } 
     };
 
-    constructor() {
+    constructor(isLong) {
         super();
+        this.isLong = isLong;
+        this.name = 'dbl'+(isLong ? 'bottom' : 'top');
         this.resetFinder();
     }
 
-    getId() { return 'dblbottom'; }
+    getId() { return this.name; }
 
     resetFinder() {
         this.firstBottom = undefined;
-        this.firstBottomZoneUp = undefined;
+        this.firstBottomY0 = undefined;
+        this.firstBottomY1 = undefined;
+
         this.secondBottom = undefined;
         this.greenCount = 0;
         this.redCount = 0;
         this.totalCount = 0;
-        this.lowestSecondTail = 0;
-        this.highestNeckline = 0;
+        
+        this.highestNeckline = undefined;
         this.necklineCandle = undefined;
     }
 
@@ -50,9 +56,8 @@ class StrategyDoubleBottom extends StrategyIO {
             return;
         }
 
-
         if (this.candleBreaksZone(candle)) {
-            CDB.labelBottom(candle,'xB')
+            this.label(candle,'xB')
             this.resetFinder();
             this.checkFirstBottom(flags);
             return;
@@ -60,38 +65,26 @@ class StrategyDoubleBottom extends StrategyIO {
 
         if (this.secondBottom == undefined) {
         
-            if (candle.bodyHigh() > this.highestNeckline) {
-                this.highestNeckline = candle.bodyHigh();
-                this.necklineCandle = candle;
-            }
-    
+            this.updateNeckline(candle);
+
             if (this.candleAboveZone(candle)) {
-                if (candle.isRed()) {
-                    this.redCount++;
-                } else {
-                    this.greenCount++;
-                }
+                if (candle.isRed())
+                    { this.redCount++; } else { this.greenCount++; }
             }
 
             this.totalCount++;
 
-            if (this.totalCount > 25) {
-                CDB.labelBottom(candle,'xL')
+            if (this.totalCount > StrategyDoubleBottom.MAX_LENGTH) {
+                this.label(candle,'xL')
                 this.resetFinder();
                 return;
             }
 
             if (this.readyToSpotSecondBottom() && this.candleTouchesZone(candle)) {
                 this.secondBottom = candle;
-                CDB.labelBottom(candle,'B2');
+                this.label(candle,'B2');
             }
 
-        }
-
-        // we have second bottom and now we need to find lowest wick till our entry candle
-
-        if (candle.low < this.lowestSecondTail) {
-            this.lowestSecondTail = candle.low;
         }
 
         // we have second bottom and a green candle
@@ -102,7 +95,7 @@ class StrategyDoubleBottom extends StrategyIO {
             CDB.circleLow(this.secondBottom, { radius: 1.7, color: 'black' });
 
             if ( ! this.makeEntry(candle, flags) ) {
-                CDB.labelTop(candle,'NE');
+                this.label(candle,'NE');
             }
 
             this.resetFinder();
@@ -113,36 +106,51 @@ class StrategyDoubleBottom extends StrategyIO {
  
 
     checkFirstBottom(flags) {
-        const possibleBottom = flags.get('hl_trend.new.low'); 
+        const possibleBottom = flags.get('hl_trend.new.'+(this.isLong ? 'low' : 'high')); 
         if (! possibleBottom )
             { return false; }
-/*
-        if (possibleBottom.lowerTailSize() > possibleBottom.bodySize()*3)
-            { return false; }
-
-        const atr = flags.get('atr14');
-       
-        const wick = possibleBottom.lowerTailSize();
-        if (atr && wick > atr * 2) {
-            return false;
-        }
-
-        const rsi = flags.get('rsi14');
-        if (rsi > 30 ) {
-            return false;
-        } 
-*/
 
         this.firstBottom = possibleBottom;
-        this.firstBottomZoneUp = Math.min(possibleBottom.open, possibleBottom.close);
-        this.lowestSecondTail = this.firstBottom.low;
-        CDB.labelBottom(possibleBottom,'B1');
+
+        if (this.isLong) {
+            this.firstBottomY0 = possibleBottom.low;
+            this.firstBottomY1 = Math.min(possibleBottom.open, possibleBottom.close);
+        }
+        else {
+            this.firstBottomY0 = Math.max(possibleBottom.open, possibleBottom.close);
+            this.firstBottomY1 = possibleBottom.high;
+        }
+        this.label(possibleBottom,'B1');
         return true;
     }
 
+    label(candle,text) {
+        if (this.isLong) {
+            return CDB.labelBottom(candle,text);
+        }
+        return CDB.labelTop(candle,text);
+    }
+
+    updateNeckline(candle)
+    {
+        if (this.isLong) {
+            if ( (this.highestNeckline === undefined) || (candle.bodyHigh() > this.highestNeckline)) {
+                this.highestNeckline = candle.bodyHigh();
+                this.necklineCandle = candle;
+            }
+            return;
+        }
+        if ((this.highestNeckline === undefined) || (candle.bodyLow() < this.highestNeckline)) {
+            this.highestNeckline = candle.bodyLow();
+            this.necklineCandle = candle;
+        }
+    }
 
     closesAboveNeckline(candle) {
-        return candle.bodyHigh() > this.highestNeckline;
+        if (this.isLong) {
+            return candle.bodyHigh() > this.highestNeckline;
+        }
+        return candle.bodyLow() < this.highestNeckline;
     }
 
     readyToSpotSecondBottom()
@@ -151,26 +159,33 @@ class StrategyDoubleBottom extends StrategyIO {
     }
 
     inZone(y) {
-        return (y >= this.firstBottom.low) && (y <= this.firstBottomZoneUp);
+        return (y >= this.firstBottomY0) && (y <= this.firstBottomY1);
     }
 
     candleAboveZone(candle)  {
-        //const candleLowerBody = Math.min(candle.open, candle.close);
-        //return candleLowerBody > this.firstBottomZoneUp;       
-        return candle.low > this.firstBottomZoneUp;       
+        if (this.isLong) {
+            return candle.low > this.firstBottomY1;
+        }
+        return candle.high < this.firstBottomY0;
     }
 
     candleBreaksZone(candle) {
-        const candleLowerBody = Math.min(candle.open, candle.close);
-        return (candleLowerBody < this.firstBottom.low) 
-                || (candle.low < this.firstBottom.low);       
+        if (this.isLong) {
+            return candle.low <= this.firstBottomY0;
+        }
+        return candle.high >= this.firstBottomY1;      
     }
 
     candleTouchesZone(candle)
     {
-        const candleLowerBody = Math.min(candle.open, candle.close);
-        return this.inZone(candleLowerBody) || this.inZone(candle.low);
+        if (this.isLong) {
+            return this.inZone(candle.low);
+        }
+        return this.inZone(candle.high);
     }
+
+    
+
 
     makeEntry(candle, flags) {
         
@@ -183,11 +198,11 @@ class StrategyDoubleBottom extends StrategyIO {
         }
     
         let levelTouchWeight = 0;
-        let touchFirst = this.countBottomTouchWeight(this.firstBottom,flags);
-        levelTouchWeight += touchFirst.sw;
+        let touchFirst = this.countTouchWeights(this.firstBottom,flags);
+        levelTouchWeight += ( this.isLong ? touchFirst.sw : touchFirst.rw );
 
-        let touchSecond = this.countBottomTouchWeight(this.secondBottom,flags);
-        levelTouchWeight += touchSecond.sw;
+        let touchSecond = this.countTouchWeights(this.secondBottom,flags);
+        levelTouchWeight += ( this.isLong ? touchSecond.sw : touchSecond.rw );
 
         if (levelTouchWeight < settings.reqlvl ) {
             console.log('DBLBOTTOM: no entry, weight not enough '+levelTouchWeight+' < '
@@ -195,28 +210,21 @@ class StrategyDoubleBottom extends StrategyIO {
             return false;
         }
 
-        /*
-        const rsi = flags.get('rsi14');
-        if (! rsi || rsi < 60) {
-            return false;
-        }
-        */
-
-        CDB.labelBottom(this.firstBottom,JSON.stringify(touchFirst));
-        CDB.labelBottom(this.secondBottom,JSON.stringify(touchSecond));
+        //this.label(this.firstBottom,JSON.stringify(touchFirst));
+        //this.label(this.secondBottom,JSON.stringify(touchSecond));
         
-        CDB.labelTop(candle,'W:'+levelTouchWeight);
+        this.label(candle,'W:'+levelTouchWeight);
 
-        flags.get('helper').makeEntry(this, 'buy', {
+        flags.get('helper').makeEntry(this, ( this.isLong ? 'buy' : 'sell' ), {
             rrRatio: settings.ratio,
-            stopFrom: this.necklineCandle.low
-         });
+            stopFrom: ( this.isLong ? this.necklineCandle.high : this.necklineCandle.low )
+        });
 
         return true;
 
     }
 
-    countBottomTouchWeight(candle, flags)
+    countTouchWeights(candle, flags)
     {
         let result = {
             rw: 0, sw: 0, rwH: 0, swH: 0
@@ -224,22 +232,26 @@ class StrategyDoubleBottom extends StrategyIO {
 
         const vlevels = flags.get('vlevels');
         if (vlevels) { 
-            let bt = vlevels.getCandleBottomTouch(candle);
+            let bt = ( this.isLong ? 
+                    vlevels.getBottomTouchWeights(candle) :
+                    vlevels.getTopTouchWeights(candle)
+            );
             result.rw += bt.rw;
             result.sw += bt.sw;
         }
 
         const vlevels_high = flags.get('vlevels_high');
         if (vlevels_high) { 
-            let bt = vlevels_high.getCandleBottomTouch(candle);
+            let bt = ( this.isLong ?
+                vlevels_high.getBottomTouchWeights(candle) :
+                vlevels_high.getTopTouchWeights(candle)
+            );
             result.rwH += bt.rw;
             result.swH += bt.sw;
         }
 
         return result;
     }
-
-
 
 }
 

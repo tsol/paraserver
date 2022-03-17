@@ -114,7 +114,7 @@ class AnVLevels extends AnalyzerIO {
         }
 
 
-        getCandleBottomTouch(candle)
+        getBottomTouchWeights(candle)
         {
             let resistWeight = 0;
             let supportWeight = 0;
@@ -134,6 +134,28 @@ class AnVLevels extends AnalyzerIO {
                 sw: supportWeight
             };
         }
+
+        getTopTouchWeights(candle)
+        {
+            let resistWeight = 0;
+            let supportWeight = 0;
+
+            this.levels.forEach( (l) => {
+
+                if (    l.inLevelExact(candle.bodyHigh()) 
+                    ||  l.inLevelExact(candle.high)
+                ) {
+                    resistWeight += l.resistWeight;
+                    supportWeight += l.supportWeight;
+                }
+            })
+
+            return {
+                rw: resistWeight,
+                sw: supportWeight
+            };
+        }
+
 
 
 }
