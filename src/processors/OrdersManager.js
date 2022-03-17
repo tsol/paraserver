@@ -4,6 +4,7 @@
 */
 
 const CDB = require('../types/CandleDebug');
+const OrdersStatFilter = require('./OrdersStatFilter.js');
 const { TF } = require('../types/Timeframes.js');
 
 class OrdersManager {
@@ -14,15 +15,18 @@ class OrdersManager {
     
     constructor() {
         this.orders = [];
+        this.statFilter = new OrdersStatFilter();
     }
 
     reset() {
         this.orders = [];
+        this.statFilter.reset();
     }
     
-    newOrderBuy(
+    newOrder(
+            type,
             flags, 
-            strategyId, 
+            strategyObject, 
             entryPrice, 
             takeProfit, 
             stopLoss,
@@ -33,17 +37,17 @@ class OrdersManager {
     ) {
 
         const tickerId = symbol+'-'+timeframe;
-        const orderId = tickerId+'-'+strategyId+'-'+time;
+        const orderId = tickerId+'-'+strategyObject.getId()+'-'+time;
  
         const flagsSnapshot = JSON.parse(JSON.stringify(flags.getAll()));
 
         const order = {
             id: orderId,
             time: time,
-            type: 'buy',
+            type: type,
             symbol: symbol,
             timeframe: timeframe,
-            strategy: strategyId,
+            strategy: strategyObject.getId(),
             
             entryPrice: entryPrice,
             takeProfit: takeProfit,
@@ -58,14 +62,22 @@ class OrdersManager {
             maxPriceReached: 0,
             reachedPercent: 0,
 
-            comment: comment
+            comment: comment,
+            strategyObject: strategyObject
         };
 
         order.qty = this.riskManageGetQty(order);
     
         this.orders.push(order);
 
-        console.log('OM: new order BUY '+orderId);
+        //console.log('OM: new order BUY '+orderId);
+        
+        const passTrade = this.statFilter.
+            passTrade(order.symbol, order.timeframe, order.strategy);
+
+        if (passTrade) {
+            order.comment += ' REAL';
+        }
 
         return orderId;
     }
@@ -94,15 +106,28 @@ class OrdersManager {
 
         orders.forEach( (o) => {
 
-            if (newPrice > o.maxPriceReached) {
-                o.maxPriceReached = newPrice;
-            }
+            if (o.type === 'buy') {
 
-            if (newPrice >= o.takeProfit) {
-                this.closeOrder(o.id, newPrice, 'won');
+                if (newPrice > o.maxPriceReached)
+                    { o.maxPriceReached = newPrice; }
+
+                if (newPrice >= o.takeProfit)
+                    { this.closeOrder(o.id, newPrice, 'won'); }
+
+                else if (newPrice <= o.stopLoss)
+                    { this.closeOrder(o.id, newPrice, 'lost') }
             }
-            else if (newPrice <= o.stopLoss) {
-                this.closeOrder(o.id, newPrice, 'lost')
+            else { // sell 
+
+                if (newPrice < o.maxPriceReached)
+                    { o.maxPriceReached = newPrice; }
+
+                if (newPrice <= o.takeProfit)
+                    { this.closeOrder(o.id, newPrice, 'won'); }
+                    
+                else if (newPrice >= o.stopLoss)
+                    { this.closeOrder(o.id, newPrice, 'lost') }
+
             }
 
         });
@@ -118,29 +143,37 @@ class OrdersManager {
         if (! price ) {
             throw new Error('OM zero price');
         }
-        order.active = false;
 
         const boughtInUSD = order.qty * order.entryPrice;
         const soldInUSD = order.qty * price;
-        const gainInUSD = 
-            soldInUSD - 
-            boughtInUSD - 
-            soldInUSD * OrdersManager.COST_SELL_PERCENT -
-            boughtInUSD * OrdersManager.COST_BUY_PERCENT;
+        const commissionInUSD = soldInUSD * OrdersManager.COST_SELL_PERCENT -
+                                boughtInUSD * OrdersManager.COST_BUY_PERCENT;
 
+        order.active = false;                
         order.closePrice = price;
-        order.gain = gainInUSD;
         order.result = result;
-        
-        if ( (result === 'lost') && (order.type === 'buy')) {
-            let z = (order.maxPriceReached - order.entryPrice);
-            let target = (order.takeProfit - order.entryPrice);
-            let coef = toFixedNumber( (z / target) * 100, 2);
+        order.reachedPercent = 100;
+
+        if ( result === 'lost' ) {
+            let height = Math.abs(order.maxPriceReached - order.entryPrice);
+            let target = Math.abs(order.takeProfit - order.entryPrice);
+            let coef = toFixedNumber( (height / target) * 100, 2);
             order.reachedPercent = coef;
         }
-        else {
-            order.reachedPercent = 100;
+
+        if (order.type === 'buy') {
+            order.gain = soldInUSD - boughtInUSD - commissionInUSD;
+
         }
+        else { // sell
+            order.gain = boughtInUSD - soldInUSD - commissionInUSD;
+        }
+
+        this.statFilter.addTrade(
+            order.symbol, order.timeframe, order.strategy, 
+            (result === 'won' ? true : false ),
+            order.strategyObject
+        );
 
     }
 
@@ -148,13 +181,14 @@ class OrdersManager {
         return this.orders;
     }
 
-    getOpenOrder(timeframe, strategy)
+    getOpenOrder(symbol, timeframe, strategy)
     {
         if (! this.orders || this.orders.length === 0) { return false; }
 
         const found = this.orders.find( 
             (v) => {
-                return     (v.timeframe == timeframe) 
+                return     (v.symbol == symbol)
+                        && (v.timeframe == timeframe) 
                         && (v.strategy == strategy)
                         && (v.active); 
             }

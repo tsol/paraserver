@@ -1,3 +1,9 @@
+/*
+** This is mysql backend for CandleDB candle proxy class.
+**
+**
+*/
+
 const mysql = require('mysql2');
 
 const Candle = require('../types/Candle.js');

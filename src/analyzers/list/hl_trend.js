@@ -1,22 +1,23 @@
 /*
-** Sets hl_trend flag by analyzing higher highs and lower lows (and vice versa)
+** Indicator: hl_trend (High-Low Trend Detection)
 **
-** Sets flags:
-
-alsways:
-
-hl_trend: {
-    trend: false,
-    direction: 0,
-    swings: 1,
-    bias: -1
-}
-
-on condition:
-
-hl_trend.new.high = candleObject
-hl_trend.new.low = candleObject
-
+** Detecting uptrend when candles make higher highs and lower lows
+** And downtrend visa-versa
+**
+** Always sets flag:
+** 
+** hl_trend: {
+**     trend: false,
+**     direction: 0,
+**     swings: 1,
+**     bias: -1
+** }
+** 
+** on new highs or lows detections generates following flags:
+** 
+** hl_trend.new.high = candleObject
+** hl_trend.new.low = candleObject
+** 
 */
 
 const AnalyzerIO = require("../AnalyzerIO");

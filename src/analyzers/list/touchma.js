@@ -1,13 +1,13 @@
 /*
-** 38.2 candle wick off MA20 Strategy
-** demands: AnMA, AnCandlePatterns
+** Strategy: 38.2 candle (hammer) wick off MA20
+** Depends on: mac20, atr14, cdlpatts
 **
 */
 
-const AnalyzerIO = require("../AnalyzerIO");
+const StrategyIO = require("../StrategyIO");
 const CDB = require('../../types/CandleDebug');
 
-class AnTouchMA extends AnalyzerIO {
+class StrategyTouchMA extends StrategyIO {
 
         static MIN_LENGTH = 5; /* minumum candles to close above ma20 */
 
@@ -26,9 +26,9 @@ class AnTouchMA extends AnalyzerIO {
 
             if (! ma || ! atr ) { return false; }
 
-            if (ma.wicksAboveBroke > AnTouchMA.MIN_LENGTH) {
+            if (ma.wicksAboveBroke > StrategyTouchMA.MIN_LENGTH) {
           
-                const hammer = flags.get('cdlpatts.new.hammer');
+                const hammer = flags.get('cdlpatts.new.ham');
 
                 if (hammer) {
 
@@ -37,7 +37,7 @@ class AnTouchMA extends AnalyzerIO {
                         return;
                     }
 
-                    flags.get('helper').makeEntry(this.getId(), { rrRatio: 1 });
+                    flags.get('helper').makeEntry(this, 'buy', { rrRatio: 1 });
 
                 }
             }
@@ -47,4 +47,4 @@ class AnTouchMA extends AnalyzerIO {
     
 }
 
-module.exports = AnTouchMA;
+module.exports = StrategyTouchMA;

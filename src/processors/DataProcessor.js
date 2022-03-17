@@ -50,13 +50,6 @@ class DataProcessor {
     }
 
 
-    /*
-     Ex: dp->runSymbols([
-            { symbol: 'SOLUSDT', broker: binance },
-            { symbol: 'BTCUSDT', broker: binance }
-        ]);
-    */
-
     runSymbols(symbolsArray, runLive)
     {
         const loader = new SymbolsLoader(symbolsArray, runLive, 

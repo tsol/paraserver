@@ -3,7 +3,12 @@
 ** creates tickers and flag object, create tickers runs
 ** all them in orderly fashion and returns all tickers and flags to dataProcessor
 ** to merge to the list of tickers and flags already in dataProcessor.
-** 
+**
+** The main task of this class is to allow a group of different symbols
+** to be loaded and PROCESSED together with correct time order (as a little time machine)
+** so that analyzers of one symbol (say SOLUSDT) can request flags data from
+** another symbol (say hl_trend on BTCUSDT)
+**
 */
 
 const TickerProcessor = require('./TickerProcessor.js');
@@ -39,10 +44,6 @@ class SymbolsLoader {
     isRunLive() {
         return this.runLive;
     }
-
-/*    [ { symbol: 'SOLUSDT', broker: binance },
-        { symbol: 'BTCUSDT', broker: binance } ]
-*/
 
     async load(symbols) {
         symbols.forEach( (s) => {
@@ -193,8 +194,6 @@ class SymbolsLoader {
         console.log('SL: processing all loaded candles...');
         candles.forEach( candle => this.processByTicker(candle) );
 
-        // todo: here is a GAP i was trying to avoid still possible!
-        // fuck im lost
         if (this.runLive) { 
             console.log('SL: subscribing all tickers to broker live candles...');
             for (var t of Object.values(this.tickers)) {

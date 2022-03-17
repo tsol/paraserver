@@ -4,6 +4,15 @@
 **
 ** Allows every ticker to request info from siblings and larger timeframes.
 **
+** There is only one instance of this class in dataprocessor
+** so analyzers of different timeframes or even symbols can access
+** flags of every other timeframe or symbol
+**
+** Another instance, however, breifly created upon adding a bunch of new symbols
+** to existing symbols in DataProcessor (inside of SymbolsLoader class).
+** When loading finishes new temporarily flags object gets merged to primary one
+** in DataProcessor.
+**
 */
 
 const { TF } = require('../types/Timeframes.js');
@@ -44,7 +53,7 @@ class Flags {
 
     /* get Higher Time Frame flag. That way tickers can peek for flags of older brothers */
     getHTF(field) {
-        const ntf = TF.next(this.currentTimeframe);
+        const ntf = TF.getHigherTimeframe(this.currentTimeframe);
         if (ntf == undefined) {
             return undefined;
         }

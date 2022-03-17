@@ -36,10 +36,10 @@ mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
     candleDB = new CandleDB(mysqlHandler, brokers);
     dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB);
 
-    dataProcessor.runSymbols(['BTCUSDT'], false);
-
-    dataProcessor.runSymbols([ 
-        'ANCUSDT',
+    dataProcessor.runSymbols(['BTCUSDT'], runLive);
+/*
+    dataProcessor.runSymbols([
+        'ANCUSDT', 
         'LUNAUSDT',
         'WAVESUSDT',
         'ARUSDT',
@@ -50,7 +50,8 @@ mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
 
     dataProcessor.runSymbols([ 'AVAXUSDT', 'SOLUSDT' ], runLive );
     dataProcessor.runSymbols( [ 'SRMUSDT', 'ZRXUSDT', 'MFTUSDT' ], runLive );
-/*
+*/
+    /*
     binanceClient = new BinanceClient(SETTINGS.users.mona.brokers.binance, dataProcessor);
     binanceClient.updateAccountInfo().then( () => {
         binanceClient.updateMyTrades('USDT').then( () => {

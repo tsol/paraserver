@@ -21,6 +21,10 @@ class AnalyzerIO {
     /* rotation. we must remove all events/flags with time equal or below */
     forgetBefore(time) {
     }
+
+    toJSON() {
+        return [];
+    }
   
 }
 

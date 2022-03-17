@@ -1,6 +1,5 @@
 /*
-** Relative Strength Index
-**
+** Indicator: Relative Strength Index (RSI)
 **
 */
 

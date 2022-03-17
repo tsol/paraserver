@@ -1,5 +1,5 @@
 /*
-** Avarage True Range
+** Indicator: Avarage True Range (ATR)
 **
 **
 */

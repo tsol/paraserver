@@ -1,24 +1,22 @@
 /*
-**  moving AVG 20, 50, 100 crossing strategy
-** 
+**  Strategy Moving Avarage 50/100 + Williams Fractals Entry
+**  Trading Pro Channel (https://www.youtube.com/watch?v=0Q6iENmeUys)
 */
 
-const AnalyzerIO = require("../AnalyzerIO");
+const StrategyIO = require("../StrategyIO");
 const CDB = require('../../types/CandleDebug');
 
-class StrategyMACross extends AnalyzerIO {
+class StrategyCrossWMA extends StrategyIO {
   
         constructor() {
             super();
         }
 
-        getId() { return 'macross'; }
+        getId() { return 'crosswma'; }
 
         addCandle(candle,flags) {
             super.addCandle(candle,flags);
             CDB.setSource(this.getId());
-
-            // if ( candle.timeframe !== '5m' ) { return; }
 
             const wf = flags.get('wfractals');
             if (! wf) { return; }
@@ -56,15 +54,9 @@ class StrategyMACross extends AnalyzerIO {
             const lowLevel = ( candle.low < mac50 ? mac100 : mac50 );
             
             
-            if (helper.getOpenOrder(candle.timeframe, this.getId())) {
-                console.log('MACROSS: order already open');
-                return false;
-            }
-            
-            helper.makeEntry(this.getId(), {
+            helper.makeEntry(this, 'buy', {
                 rrRatio: 1.5,
-                lowLevel: lowLevel,
-                noMagic: true
+                stopLoss: lowLevel,
              });
     
 
@@ -73,4 +65,4 @@ class StrategyMACross extends AnalyzerIO {
     
 }
 
-module.exports = StrategyMACross;
+module.exports = StrategyCrossWMA;

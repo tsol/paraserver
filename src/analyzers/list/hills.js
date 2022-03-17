@@ -1,6 +1,14 @@
 /*
-**  More humanly readable extremums.
-**  depends on mac and hl_trend and atr
+**  Indicator: hills - detects noticible hill tops and botoms (extremums).
+**  Depends on: mac20, hl_trend, atr14
+**
+**  Generates flags:
+**
+**      hills.new.low = candle_object - just found hill bottom
+**      hills.new.high = candle_object - just found hill top
+**
+**  New hill is never current candle. This indicator can tell the extremum
+**  by detecting noticable decline or incline in moving avarage 20 indicator.
 **
 */
 

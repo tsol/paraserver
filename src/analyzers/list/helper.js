@@ -1,5 +1,5 @@
 /*
-** Strategy helper toolbox - hidden in analyzers to benefit runtime reload
+** Strategy helper toolbox - wrapped as analyzer to benefit runtime reload
 ** 
 ** Can check (filter) common ENTRY conditions
 ** Can create common STOPLOSS / TAKE configuration entries
@@ -8,7 +8,7 @@
 
 const AnalyzerIO = require("../AnalyzerIO");
 const CDB = require('../../types/CandleDebug');
-
+const { TF } = require('../../types/Timeframes.js');
 
 class StrategyHelper {
 
@@ -32,84 +32,72 @@ class StrategyHelper {
     toJSON() { return null; }
 
     // enters at current candles close
-    makeEntry(strategyId, {
-            entryPrice, stopLoss, takeProfit, lowLevel, 
-            rrRatio, stopAtrRatio, 
-            noMagic, noFilterMAC, noFilterTrend, noTargetLevel, noRSI50
+    makeEntry(strategyObject, type, {
+            entryPrice, stopLoss, takeProfit,
+            stopFrom, rrRatio, stopATRRatio,
+            useTargetLevel
         } ) 
     {
-      
-        if (noMagic) {
-            noFilterMAC = true;
-            noFilterTrend = true;
-            noTargetLevel = true;
-            noRSI50 = true;
-        }
-
-        let cmt = '';
-
-        const atr14 = this.flags.get('atr14');
-        if (! atr14 ) { return console.log('HELPER: no entry atr14 not ready.'); }
-
-        const mac20 = this.flags.get('mac20');
-        const mac50 = this.flags.get('mac50');
-        const mac100 = this.flags.get('mac100');
-
-        if (! mac20 || ! mac50 || ! mac100 ) {
-            console.log('HELPER: mac20/50/100 no ready.');
+        if (!TF.get(this.candle.timeframe).trade) { return; }
+        
+        if (this.getOpenOrder(
+            this.candle.symbol, this.candle.timeframe, strategyObject.getId()
+            )) {
+            //console.log('HELPER: order already open');
             return false;
         }
 
-        
+        const isBuy = ( type === 'buy' );
+        const direction = ( isBuy ? 1 : -1 );
+
+        const atr14 = this.flags.get('atr14');
+        if (! atr14 ) { return console.log('HELPER: atr14 not ready.'); }
+
         const rsi = this.flags.get('rsi14');
 
-        if (rsi) {
-            const rsi_tf = rsi.toFixed(2);
-            if (rsi < 50) {
-                cmt += ( rsi < 30 ? ' RSI<30' : ' RSI<50');
-                if (! noRSI50 ) {
-                    return false;
-                }
-            }
-            else {
-                cmt += ( rsi > 70 ? ' RSI>70' : ' RSI>50');
-            }
-            cmt += '('+rsi_tf+')';
-        }
+        let filtered = false;
+        let cmt = '';
 
-        if ( mac20.value < mac50.value ) { cmt += ' MC[20<50]'; }
-        if ( mac50.value < mac100.value) { 
-                cmt += ' MC[50<100]'; 
-                if (!noFilterMAC) { return false; }
+        if (rsi) {
+            if (rsi < 50)
+                { cmt += ( rsi < 30 ? ' RSI<30' : ' RSI<50'); }
+            else
+                { cmt += ( rsi > 70 ? ' RSI>70' : ' RSI>50'); }
+            cmt += ' ('+rsi.toFixed(2)+')';
         }
 
         const higherTrend = this.flags.getHTF('hl_trend');
         if ( higherTrend ) {
+            if (higherTrend.direction < 0)
+                { cmt += ' TH_DN'; }
+            else if (higherTrend.direction > 0)
+                { cmt += ' TH_UP'; }
+            else  { cmt += ' TH_NO'; }
             cmt += ' TH['+higherTrend.direction+'/'+higherTrend.swings+']';
-            if (!noFilterTrend && (higherTrend.direction < 0)) {
-                return false;
-            }
         }
 
         const trend = this.flags.get('hl_trend');
         if ( trend ) {
+            if ( trend.direction < 0 )
+            { cmt += ' T_DN'; }
+            else if ( trend.direction > 0 )
+            { cmt += ' T_UP'; }
+            else { cmt += ' T_NO'; }
             cmt += ' T['+trend.direction+'/'+trend.swings+']';
-            if (!noFilterTrend && (trend.direction < 0)) {
-                return false;
-            }
         }
         
         if (! rrRatio) { rrRatio = StrategyHelper.DEF_RR_RATIO; }
-        if (! stopAtrRatio) { stopAtrRatio = StrategyHelper.STOP_ATR_RATIO; }
-        if (! lowLevel ) { lowLevel = this.candle.low; };
+        if (! stopATRRatio) { stopATRRatio = StrategyHelper.STOP_ATR_RATIO; }
+        if (! stopFrom ) { stopFrom = (isBuy ? this.candle.low : this.candle.high ); };
         if (! entryPrice) { entryPrice = this.candle.close; }
 
-        if (! stopLoss ) { stopLoss = lowLevel - atr14 * stopAtrRatio; } 
-        const stopHeight = entryPrice - stopLoss;
-        if (! takeProfit) { takeProfit = entryPrice + stopHeight * rrRatio; }
+        if (! stopLoss ) { stopLoss = stopFrom - direction * atr14 * stopATRRatio; } 
+        const stopHeight = Math.abs(entryPrice - stopLoss);
 
+        if (! takeProfit) { takeProfit = entryPrice + direction * stopHeight * rrRatio; }
 
-        if (! noTargetLevel ) {
+        /*
+        if ( useTargetLevel ) {
 
             const hlevels = this.flags.get('vlevels_high');
             if (hlevels) {
@@ -127,14 +115,17 @@ class StrategyHelper {
                 }
             }
         }
-        
+        */
+
+
         CDB.labelTop(this.candle,'EN');
         CDB.circleMiddle(this.candle,{ color: 'blue', radius: 5, alpha: 0.1 });
         CDB.entry(this.candle,takeProfit,stopLoss);
 
-        return this.ordersManager.newOrderBuy(
+        return this.ordersManager.newOrder(
+            type,
             this.flags, 
-            strategyId, 
+            strategyObject, 
             entryPrice, 
             takeProfit, 
             stopLoss,
@@ -146,13 +137,12 @@ class StrategyHelper {
 
     }
 
-    getOpenOrder(timeframe,strategy) {
-        return this.ordersManager.getOpenOrder(timeframe,strategy);
+    getOpenOrder(symbol,timeframe,strategy) {
+        return this.ordersManager.getOpenOrder(symbol,timeframe,strategy);
     }
 
 
 }
-
 
 class AnStrategyHelper extends AnalyzerIO {
         constructor(ordersManager) {

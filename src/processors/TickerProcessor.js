@@ -53,14 +53,25 @@ class TickerProcessor {
 
     /* broker IO */
     newCandleFromBroker(candle) {
-        //console.log('TP: candle from broker '+candle.getId());
+
+        const d = new Date().toLocaleTimeString();
+
+        console.log(
+                'TICKER: '+
+                candle.symbol+'-'+candle.timeframe
+                + ' ('+ d + ' == ' + TF.timestampToDate(candle.closeTime)
+                + ') IsClosed: '+candle.closed
+        );
+
         this.addCandle(candle);
     }
 
     addCandle(candle)
     {
+
         if (!candle.closed) {
             this.ordersManager.candleUpdated(candle, this.isLive);
+            return;
         }
 
         this.candles.push(candle);
@@ -154,7 +165,7 @@ class TickerProcessor {
         if (this.candles.length == 0) {
             return null;
         }
-        return this.candles[this.candles.length - 1].openTime;
+        return this.candles[this.candles.length - 1].closeTime;
     }
 
 
