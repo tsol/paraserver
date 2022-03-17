@@ -1,21 +1,22 @@
 /*
-** Double Bottom pattern, depends on AnHLTrend flags 'hl_trend.new.low'
+** Strategy: Double Bottom pattern, depends on AnHLTrend flags 'hl_trend.new.low'
 **
 **
 */
 
-const AnalyzerIO = require("../AnalyzerIO");
+const StrategyIO = require("../StrategyIO");
 const CDB = require('../../types/CandleDebug');
 
-class AnDoubleBottom extends AnalyzerIO {
+class StrategyDoubleBottom extends StrategyIO {
 
     static TF_SETTINGS = {
-        '1m':   { required: 40, ratio: 1.35 },
-        '5m':   { required: 40, ratio: 1.35 },
-        '15m':  { required: 40, ratio: 1.35 },
-        '30m':  { required: 40, ratio: 1.35 },
-        '1h':   { required: 40, ratio: 1.35 },
-        '4h':   { required: 40, ratio: 1.35 } 
+        '1m':   { reqlvl: 40, ratio: 1.35 },
+        '3m':   { reqlvl: 40, ratio: 1.35 },
+        '5m':   { reqlvl: 40, ratio: 1.35 },
+        '15m':  { reqlvl: 40, ratio: 1.35 },
+        '30m':  { reqlvl: 40, ratio: 1.35 },
+        '1h':   { reqlvl: 40, ratio: 1.35 },
+        '4h':   { reqlvl: 40, ratio: 1.35 } 
     };
 
     constructor() {
@@ -174,7 +175,7 @@ class AnDoubleBottom extends AnalyzerIO {
     makeEntry(candle, flags) {
         
         const tf = candle.timeframe;
-        const settings = AnDoubleBottom.TF_SETTINGS[tf];
+        const settings = StrategyDoubleBottom.TF_SETTINGS[tf];
 
         if (! settings ) {
             console.log('DBLBOTTOM: no entry for timeframe, no settings');
@@ -188,9 +189,9 @@ class AnDoubleBottom extends AnalyzerIO {
         let touchSecond = this.countBottomTouchWeight(this.secondBottom,flags);
         levelTouchWeight += touchSecond.sw;
 
-        if (levelTouchWeight < settings.required ) {
+        if (levelTouchWeight < settings.reqlvl ) {
             console.log('DBLBOTTOM: no entry, weight not enough '+levelTouchWeight+' < '
-                + settings.required );
+                + settings.reqlvl );
             return false;
         }
 
@@ -206,10 +207,9 @@ class AnDoubleBottom extends AnalyzerIO {
         
         CDB.labelTop(candle,'W:'+levelTouchWeight);
 
-        flags.get('helper').makeEntry(this.getId(), {
+        flags.get('helper').makeEntry(this, 'buy', {
             rrRatio: settings.ratio,
-            lowLevel: this.necklineCandle.low,
-            noMagic: false
+            stopFrom: this.necklineCandle.low
          });
 
         return true;
@@ -243,4 +243,4 @@ class AnDoubleBottom extends AnalyzerIO {
 
 }
 
-module.exports = AnDoubleBottom;
+module.exports = StrategyDoubleBottom;
