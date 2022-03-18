@@ -32,6 +32,21 @@ class OrdersStatFilter {
         return null;
     }
 
+
+    passBTCFilter(orderType, flags)
+    {
+        const btcflag = flags.getTickerFlag('BTCUSDT-1h','btctrend');
+        if (!btcflag) {
+            return 'N';
+        } 
+        const doFilter = (
+             ( (btcflag > 0) && (orderType == 'sell') ) ||
+             ( (btcflag < 0) && (orderType == 'buy' ) )
+        );
+        return ( doFilter ? 'F' : 'P') + ' ['+btcflag+']';
+    }
+
+
     addTrade(symbol, timeframe, strategyName, wasWin, strategyObject) // add to statistics
     {
         const id = symbol+'-'+timeframe+'-'+strategyName;

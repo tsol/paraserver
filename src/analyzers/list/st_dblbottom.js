@@ -9,7 +9,10 @@ const CDB = require('../../types/CandleDebug');
 
 class StrategyDoubleBottom extends StrategyIO {
 
-    static MAX_LENGTH = 25;
+    static MAX_BOTTOMS_LENGTH   = 25;
+    static MAX_ENTRY_LENGTH     = 40;
+    
+    static DBG_BOTTOMS          = { radius: 1.7, color: 'black' };
 
     static TF_SETTINGS = {
         '1m':   { reqlvl: 40, ratio: 1.35 },
@@ -74,7 +77,7 @@ class StrategyDoubleBottom extends StrategyIO {
 
             this.totalCount++;
 
-            if (this.totalCount > StrategyDoubleBottom.MAX_LENGTH) {
+            if (this.totalCount > StrategyDoubleBottom.MAX_BOTTOMS_LENGTH) {
                 this.label(candle,'xL')
                 this.resetFinder();
                 return;
@@ -87,19 +90,27 @@ class StrategyDoubleBottom extends StrategyIO {
 
         }
 
-        // we have second bottom and a green candle
+        // we have second bottom and a closure above neckline
 
         if (this.secondBottom && this.closesAboveNeckline(candle) ) {
             
-            CDB.circleLow(this.firstBottom, { radius: 1.7, color: 'black' });
-            CDB.circleLow(this.secondBottom, { radius: 1.7, color: 'black' });
-
+            this.circle(this.firstBottom, StrategyDoubleBottom.DBG_BOTTOMS);
+            this.circle(this.secondBottom, StrategyDoubleBottom.DBG_BOTTOMS);
+            
             if ( ! this.makeEntry(candle, flags) ) {
                 this.label(candle,'NE');
             }
 
-            this.resetFinder();
+            return this.resetFinder();
         }
+
+        // Limit length search for breaking neck
+
+        if (++this.totalCount > StrategyDoubleBottom.MAX_ENTRY_LENGTH) {
+            this.label(candle,'xN')
+            return this.resetFinder();
+        }
+
 
     }
 
@@ -129,6 +140,13 @@ class StrategyDoubleBottom extends StrategyIO {
             return CDB.labelBottom(candle,text);
         }
         return CDB.labelTop(candle,text);
+    }
+
+    circle(candle,param) {
+        if (this.isLong) {
+            return CDB.circleLow(candle, param);
+        }
+        return CDB.circleHigh(candle,param);
     }
 
     updateNeckline(candle)

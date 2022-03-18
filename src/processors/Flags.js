@@ -51,6 +51,13 @@ class Flags {
         return this.tickers[ tickerId ];
     }
 
+    getTickerFlag(tickerId,flag) {
+        const ticker = this.tickers[ tickerId ];
+        if (! ticker ) { return null; }
+        return ticker[ flag ];
+    }
+
+
     /* get Higher Time Frame flag. That way tickers can peek for flags of older brothers */
     getHTF(field) {
         const ntf = TF.getHigherTimeframe(this.currentTimeframe);

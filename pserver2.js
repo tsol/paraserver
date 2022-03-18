@@ -30,26 +30,18 @@ const io = new Server({
 });
 
 const runLive = true;
+const coins = [ 'BTCUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT',
+                'ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT',
+                'AVAXUSDT','SOLUSDT','SRMUSDT','ZRXUSDT'
+];
+
 
 mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
 
     candleDB = new CandleDB(mysqlHandler, brokers);
     dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB);
 
-    dataProcessor.runSymbols(['BTCUSDT'], runLive);
-
-    dataProcessor.runSymbols([
-        'ANCUSDT', 
-        'LUNAUSDT',
-        'WAVESUSDT',
-        'ARUSDT',
-        'ATOMUSDT',
-        'UNIUSDT',
-        'FILUSDT'
-    ], runLive );
-
-    dataProcessor.runSymbols([ 'AVAXUSDT', 'SOLUSDT' ], runLive );
-    dataProcessor.runSymbols( [ 'SRMUSDT', 'ZRXUSDT', 'MFTUSDT' ], runLive );
+    dataProcessor.runSymbols(coins, runLive);
 
     /*
     binanceClient = new BinanceClient(SETTINGS.users.mona.brokers.binance, dataProcessor);
@@ -83,10 +75,9 @@ io.on("connection", (socket) => {
         let param = {
             symbol: symbol,
             timeframe: timeframe,
-            limit: 1000
+            limit: (arg.limit ? arg.limit : 1000)
         }
     
-        if (arg.limit) { param.limit = arg.limit; };
         if (arg.timestamp) { param.timestamp = arg.timestamp; }
 
         let data = dataProcessor.getTickerChart(param);
@@ -100,7 +91,6 @@ io.on("connection", (socket) => {
         
         dataProcessor.restartAll(arg.runLive);
         
-
         console.log('=====> RESTART END')
 
         let data = dataProcessor.getOrders();

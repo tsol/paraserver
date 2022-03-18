@@ -73,11 +73,13 @@ class OrdersManager {
         //console.log('OM: new order BUY '+orderId);
         
         const passTrade = this.statFilter.
-            passTrade(order.symbol, order.timeframe, order.strategy);
+            passTrade(order.symbol, order.timeframe, order.strategy, flags);
 
         if (passTrade) {
             order.comment += ' REAL';
         }
+
+        order.comment += ' BTC_' + this.statFilter.passBTCFilter(order.type, flags);
 
         return orderId;
     }

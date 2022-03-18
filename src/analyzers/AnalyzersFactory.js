@@ -12,6 +12,8 @@ class AnalyzersFactory {
         this.items = [
             ['atr14',       'atr',          14,     null],
             ['rsi14',       'rsi',          14,     null],
+
+            ['mac9',       'ma',            {source:'c', period: 9}, null],
             ['mac20',       'ma',           {source:'c', period: 20}, null],
             ['mac50',       'ma',           {source:'c', period: 50}, null],
             ['mac100',      'ma',           {source:'c', period: 100}, null],
@@ -28,6 +30,8 @@ class AnalyzersFactory {
             ['rmac75',     'rma',          {source:'c', period: 75}, null],
             ['rmac150',    'rma',          {source:'c', period: 150}, null],
 
+
+            ['btctrend',   'btctrend',    null,   null],
 
             ['wfractals',   'wfractals',    null,   null],
             ['extremum',    'extremum',     null,   null],
