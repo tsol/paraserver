@@ -16,8 +16,9 @@ class StrategyCrossWMA extends StrategyIO {
 
         getParams(timeframe) {
             return {
-                statsMaxOrders: 4,
-                statsOkRatio: 75
+                statsMaxOrders: 50,
+                statsOkRatio: 35,
+                useBtc: 'F'
             };
         }
 

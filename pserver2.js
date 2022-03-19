@@ -29,10 +29,10 @@ const io = new Server({
     allowEIO3: true
 });
 
-const runLive = true;
+const runLive = false;
 const coins = [ 'BTCUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT',
-                'ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT',
-                'AVAXUSDT','SOLUSDT','SRMUSDT','ZRXUSDT'
+ //               'ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT',
+ //               'AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'
 ];
 
 
@@ -84,6 +84,11 @@ io.on("connection", (socket) => {
         socket.emit("chart", data);
     });
 
+    socket.on("get_flags", (arg) => {
+        if (!dataProcessor) return;
+        socket.emit("chart_flags", dataProcessor.getTickerFlags(arg.tickerId) );
+    });
+
     socket.on('restart_all', (arg) => {
         if (!dataProcessor) return;
 
@@ -109,8 +114,15 @@ io.on("connection", (socket) => {
 
     socket.on("list_orders", (arg) => {
         if (!dataProcessor) return;
-        let data = dataProcessor.getOrders();
+        let data = dataProcessor.getOrdersList();
         socket.emit("orders", data);
+    });
+
+
+    socket.on("get_order", (arg) => {
+        if (!dataProcessor) return;
+        let data = dataProcessor.getOrder(arg.orderId);
+        socket.emit("order", data);
     });
 
 

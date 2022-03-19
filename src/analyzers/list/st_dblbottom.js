@@ -15,15 +15,15 @@ class StrategyDoubleBottom extends StrategyIO {
     static DBG_BOTTOMS          = { radius: 1.7, color: 'black' };
 
     static TF_SETTINGS = {
-        '1m':   { reqlvl: 40, ratio: 1.35 },
-        '3m':   { reqlvl: 40, ratio: 1.35 },
-        '5m':   { reqlvl: 40, ratio: 1.35 },
-        '15m':  { reqlvl: 40, ratio: 1.35 },
-        '30m':  { reqlvl: 40, ratio: 1.35 },
-        '1h':   { reqlvl: 40, ratio: 1.35 },
-        '4h':   { reqlvl: 40, ratio: 1.35 } 
+        '5m':   { reqlvl: 40, ratio: 1.35 }
     };
 
+    getParams(timeframe) {
+        return {
+            statsMaxOrders: 1,
+            statsOkRatio: 0
+        };
+    }
     constructor(isLong) {
         super();
         this.isLong = isLong;

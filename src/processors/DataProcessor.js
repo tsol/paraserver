@@ -73,6 +73,10 @@ class DataProcessor {
         this.loaders = this.loaders.filter( l => l !== loader);
     }
 
+    getTickerFlags(tickerId) {
+        return this.flags.getAllFlagsByTickerId(tickerId);
+    }
+
     getTickerChart({ symbol, timeframe, limit, timestamp } ) {
         const ticker = this.tickers[ symbol+'-'+timeframe ];
         if (! ticker ) {
@@ -95,9 +99,14 @@ class DataProcessor {
         return t.getCurrentPrice();
     }
 
-    getOrders() {
+    getOrdersList() {
         return this.ordersManager.toJSON();
     }
+
+    getOrder(orderId) {
+        return this.ordersManager.getOrderById(orderId);
+    }
+
 
     getOrdersStatistics(fromTimestamp, toTimestamp) {
         return this.ordersManager.genStatistics(fromTimestamp, toTimestamp);

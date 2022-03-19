@@ -105,6 +105,7 @@ class TickerProcessor {
         };
      }
  
+
     getChart(limit, targetTimestamp) {
         
         const currentTimestamp = this.getLastTimestamp();
@@ -147,8 +148,7 @@ class TickerProcessor {
             candles: this.candles.filter(
                  c => (c.openTime >= startTimestamp) && (c.closeTime <= endTimestamp)
             ),
-            targetTimestamp: (wasTarget ? targetTimestamp : null),
-            flags: this.flags.getAllFlagsByTickerId(this.getId())
+            targetTimestamp: (wasTarget ? targetTimestamp : null)
         }
     }
 

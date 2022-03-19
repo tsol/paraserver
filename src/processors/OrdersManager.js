@@ -72,14 +72,11 @@ class OrdersManager {
 
         //console.log('OM: new order BUY '+orderId);
         
-        const passTrade = this.statFilter.
-            passTrade(order.symbol, order.timeframe, order.strategy, flags);
+        order.comment += ' BTC_' + this.statFilter.getBtcTrendString(order.type, flags);
 
-        if (passTrade) {
+        if ( this.statFilter.passTrade(order, flags) ) {
             order.comment += ' REAL';
         }
-
-        order.comment += ' BTC_' + this.statFilter.passBTCFilter(order.type, flags);
 
         return orderId;
     }
@@ -180,7 +177,33 @@ class OrdersManager {
     }
 
     toJSON() {
-        return this.orders;
+        return this.orders.map( (v) => {
+            return {
+                id: v.id,
+                time: v.time,
+                type: v.type,
+                symbol: v.symbol,
+                timeframe: v.timeframe,
+                strategy: v.strategy,
+                entryPrice: v.entryPrice,
+                takeProfit: v.takeProfit,
+                stopLoss: v.stopLoss,
+                active: v.active,
+                result: v.result,
+                closePrice: v.closePrice,
+                gain: v.gain,
+                maxPriceReached: v.maxPriceReached,
+                reachedPercent: v.reachedPercent,
+                comment:  v.comment,
+                qty: v.qty ,
+                flags: {}   
+            }
+        });
+    }
+
+    getOrderById(orderId) {
+        if (! this.orders || this.orders.length === 0) { return null; }
+        return this.orders.find( v => v.id == orderId );
     }
 
     getOpenOrder(symbol, timeframe, strategy)

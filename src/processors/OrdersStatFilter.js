@@ -11,12 +11,19 @@ class OrdersStatFilter {
         this.sts = [];
     }
  
-    passTrade(symbol, timeframe, strategyName) // is ok to pass trade to real broker
+    passTrade(order, flags)
+    {
+        return  this.passStats(order.symbol, order.timeframe, order.strategy)
+            &&  this.passBtcTrend(order.type, order.timeframe, order.strategyObject, flags);
+    }
+
+    passStats(symbol, timeframe, strategyName) // is ok to pass trade to real broker
     {
         const id = symbol+'-'+timeframe+'-'+strategyName;
         if (! this.sts[id] ) {
-            return null;
+            return false;
         }
+        
         const sts = this.sts[id];
         const len = sts.winsHistory.length;
         if (len < sts.maxOrders) { return null; };
@@ -26,14 +33,34 @@ class OrdersStatFilter {
         const ratio = calcWinLooseRatio(wins, lost);
 
         if (ratio >= sts.okRatio) {
-            return ratio;
+            return true;
         }
 
-        return null;
+        return false;
     }
 
+    passBtcTrend(orderType, timeframe, strategy, flags)
+    {
+        const useBtc = strategy.getParams(timeframe).useBtc;
+        if (! useBtc ) { return true; }
+        const currentBtcFP = this.getBtcFP(orderType, flags);
+        return (useBtc == currentBtcFP);
+    }
 
-    passBTCFilter(orderType, flags)
+    getBtcFP(orderType, flags)
+    {
+        const btcflag = flags.getTickerFlag('BTCUSDT-1h','btctrend');
+        if (!btcflag) {
+            return '';
+        } 
+        const doFilter = (
+             ( (btcflag > 0) && (orderType == 'sell') ) ||
+             ( (btcflag < 0) && (orderType == 'buy' ) )
+        );
+        return ( doFilter ? 'F' : 'P');
+    }
+
+    getBtcTrendString(orderType, flags)
     {
         const btcflag = flags.getTickerFlag('BTCUSDT-1h','btctrend');
         if (!btcflag) {
@@ -45,7 +72,6 @@ class OrdersStatFilter {
         );
         return ( doFilter ? 'F' : 'P') + ' ['+btcflag+']';
     }
-
 
     addTrade(symbol, timeframe, strategyName, wasWin, strategyObject) // add to statistics
     {

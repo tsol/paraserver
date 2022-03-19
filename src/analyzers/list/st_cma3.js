@@ -26,8 +26,9 @@ class StrategyCrossMA3 extends StrategyIO {
 
         getParams(timeframe) {
             return {
-                statsMaxOrders: 4,
-                statsOkRatio: 75
+                statsMaxOrders: 15,
+                statsOkRatio: 38,
+                useBtc: 'F'
             };
         }
 
@@ -96,7 +97,8 @@ class StrategyCrossMA3 extends StrategyIO {
               
             flags.get('helper').makeEntry(this, (this.isLong ? 'buy' : 'sell'), {
                 rrRatio: 1.5,
-                stopATRRatio: 2
+                stopATRRatio: 2,
+                //stopFrom: candle.close
              });
 
             this.resetFinder();
