@@ -15,7 +15,8 @@ class StrategyDoubleBottom extends StrategyIO {
     static DBG_BOTTOMS          = { radius: 1.7, color: 'black' };
 
     static TF_SETTINGS = {
-        '5m':   { reqlvl: 40, ratio: 1.35 }
+        '5m':   { reqlvl: 40, ratio: 1.35 },
+        '15m':   { reqlvl: 40, ratio: 1.35 }
     };
 
     getParams(timeframe) {
@@ -114,7 +115,6 @@ class StrategyDoubleBottom extends StrategyIO {
 
     }
 
- 
 
     checkFirstBottom(flags) {
         const possibleBottom = flags.get('hl_trend.new.'+(this.isLong ? 'low' : 'high')); 
@@ -202,8 +202,6 @@ class StrategyDoubleBottom extends StrategyIO {
         return this.inZone(candle.high);
     }
 
-    
-
 
     makeEntry(candle, flags) {
         
@@ -211,7 +209,7 @@ class StrategyDoubleBottom extends StrategyIO {
         const settings = StrategyDoubleBottom.TF_SETTINGS[tf];
 
         if (! settings ) {
-            console.log('DBLBOTTOM: no entry for timeframe, no settings');
+            //console.log('DBLBOTTOM: no entry for timeframe, no settings');
             return false;
         }
     
@@ -223,8 +221,8 @@ class StrategyDoubleBottom extends StrategyIO {
         levelTouchWeight += ( this.isLong ? touchSecond.sw : touchSecond.rw );
 
         if (levelTouchWeight < settings.reqlvl ) {
-            console.log('DBLBOTTOM: no entry, weight not enough '+levelTouchWeight+' < '
-                + settings.reqlvl );
+            // console.log('DBLBOTTOM: no entry, weight not enough '+levelTouchWeight+' < '
+            //    + settings.reqlvl );
             return false;
         }
 

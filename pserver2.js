@@ -29,10 +29,10 @@ const io = new Server({
     allowEIO3: true
 });
 
-const runLive = false;
+const runLive = true;
 const coins = [ 'BTCUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT',
- //               'ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT',
- //               'AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'
+                'ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT',
+                'AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'
 ];
 
 
@@ -98,7 +98,7 @@ io.on("connection", (socket) => {
         
         console.log('=====> RESTART END')
 
-        let data = dataProcessor.getOrders();
+        let data = dataProcessor.getOrdersList();
         socket.emit("orders", data);
 
         //let data = dataProcessor.getTickersState();

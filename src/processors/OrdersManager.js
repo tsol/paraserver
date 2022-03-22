@@ -19,6 +19,7 @@ class OrdersManager {
     }
 
     reset() {
+        this.lastUpdateTime = null;
         this.orders = [];
         this.statFilter.reset();
     }
@@ -72,14 +73,18 @@ class OrdersManager {
 
         //console.log('OM: new order BUY '+orderId);
         
-        order.comment += ' BTC_' + this.statFilter.getBtcTrendString(order.type, flags);
-
         if ( this.statFilter.passTrade(order, flags) ) {
             order.comment += ' REAL';
         }
 
+        order.comment += this.statFilter.getComment(order, flags);
+
+        this.statFilter.addTrade( order );
+
         return orderId;
     }
+
+
 
     riskManageGetQty(order) {
         const inUSD = OrdersManager.STAKE_USD;
@@ -88,12 +93,27 @@ class OrdersManager {
         return qty;
     }
 
+    getLastUpdateTime()
+    {
+        return this.lastUpdateTime;
+    }
+
     candleClosed(candle,isLive) {
+        
+        if (this.lastUpdateTime < candle.closeTime) {
+            this.lastUpdateTime = candle.closeTime;
+        }
+
         this.priceUpdated(candle.symbol, candle.timeframe, candle.high, isLive);
         this.priceUpdated(candle.symbol, candle.timeframe, candle.low, isLive);
     }
 
     candleUpdated(candle,isLive) {
+
+        if (this.lastUpdateTime < candle.openTime) {
+            this.lastUpdateTime = candle.openTime;
+        }
+
         this.priceUpdated(candle.symbol, candle.timeframe, candle.close, isLive);
     }
 
@@ -105,16 +125,18 @@ class OrdersManager {
 
         orders.forEach( (o) => {
 
+            this.recalcOrderGain(o, newPrice);
+
             if (o.type === 'buy') {
 
                 if (newPrice > o.maxPriceReached)
                     { o.maxPriceReached = newPrice; }
 
                 if (newPrice >= o.takeProfit)
-                    { this.closeOrder(o.id, newPrice, 'won'); }
+                    { this.closeOrder(o, newPrice, 'won'); }
 
                 else if (newPrice <= o.stopLoss)
-                    { this.closeOrder(o.id, newPrice, 'lost') }
+                    { this.closeOrder(o, newPrice, 'lost') }
             }
             else { // sell 
 
@@ -122,10 +144,10 @@ class OrdersManager {
                     { o.maxPriceReached = newPrice; }
 
                 if (newPrice <= o.takeProfit)
-                    { this.closeOrder(o.id, newPrice, 'won'); }
+                    { this.closeOrder(o, newPrice, 'won'); }
                     
                 else if (newPrice >= o.stopLoss)
-                    { this.closeOrder(o.id, newPrice, 'lost') }
+                    { this.closeOrder(o, newPrice, 'lost') }
 
             }
 
@@ -133,9 +155,28 @@ class OrdersManager {
 
     }
 
-    closeOrder(orderId,price,result) {
-        const order = this.orders.find( o => o.id === orderId );
 
+
+    recalcOrderGain(order,currentPrice)
+    {
+        
+        const boughtInUSD = order.qty * order.entryPrice;
+        const soldInUSD = order.qty * currentPrice;
+        const commissionInUSD = soldInUSD * OrdersManager.COST_SELL_PERCENT -
+                                boughtInUSD * OrdersManager.COST_BUY_PERCENT;
+
+        if (order.type === 'buy') {
+            order.gain = soldInUSD - boughtInUSD - commissionInUSD;
+        }
+        else { // sell
+            order.gain = boughtInUSD - soldInUSD - commissionInUSD;
+        }
+
+
+    }
+
+    closeOrder(order,price,result) {
+ 
         if (! order) {
             throw new Error('OM: order not found on close order: '+orderId);
         }
@@ -143,36 +184,19 @@ class OrdersManager {
             throw new Error('OM zero price');
         }
 
-        const boughtInUSD = order.qty * order.entryPrice;
-        const soldInUSD = order.qty * price;
-        const commissionInUSD = soldInUSD * OrdersManager.COST_SELL_PERCENT -
-                                boughtInUSD * OrdersManager.COST_BUY_PERCENT;
+        this.recalcOrderGain(order,price);
 
         order.active = false;                
         order.closePrice = price;
         order.result = result;
         order.reachedPercent = 100;
-
+    
         if ( result === 'lost' ) {
             let height = Math.abs(order.maxPriceReached - order.entryPrice);
             let target = Math.abs(order.takeProfit - order.entryPrice);
             let coef = toFixedNumber( (height / target) * 100, 2);
             order.reachedPercent = coef;
         }
-
-        if (order.type === 'buy') {
-            order.gain = soldInUSD - boughtInUSD - commissionInUSD;
-
-        }
-        else { // sell
-            order.gain = boughtInUSD - soldInUSD - commissionInUSD;
-        }
-
-        this.statFilter.addTrade(
-            order.symbol, order.timeframe, order.strategy, 
-            (result === 'won' ? true : false ),
-            order.strategyObject
-        );
 
     }
 

@@ -53,11 +53,11 @@ class StrategyHelper {
         const atr14 = this.flags.get('atr14');
         if (! atr14 ) { return console.log('HELPER: atr14 not ready.'); }
 
-        const rsi = this.flags.get('rsi14');
-
-        let filtered = false;
         let cmt = '';
 
+        /*
+        const rsi = this.flags.get('rsi14');
+        
         if (rsi) {
             if (rsi < 50)
                 { cmt += ( rsi < 30 ? ' RSI<30' : ' RSI<50'); }
@@ -85,7 +85,8 @@ class StrategyHelper {
             else { cmt += ' T_NO'; }
             cmt += ' T['+trend.direction+'/'+trend.swings+']';
         }
-        
+        */
+
         if (! rrRatio) { rrRatio = StrategyHelper.DEF_RR_RATIO; }
         if (! stopATRRatio) { stopATRRatio = StrategyHelper.STOP_ATR_RATIO; }
         if (! stopFrom ) { stopFrom = (isBuy ? this.candle.low : this.candle.high ); };
@@ -116,7 +117,6 @@ class StrategyHelper {
             }
         }
         */
-
 
         CDB.labelTop(this.candle,'EN');
         CDB.circleMiddle(this.candle,{ color: 'blue', radius: 5, alpha: 0.1 });

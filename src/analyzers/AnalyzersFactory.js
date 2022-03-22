@@ -19,18 +19,10 @@ class AnalyzersFactory {
             ['mac100',      'ma',           {source:'c', period: 100}, null],
             ['mac200',      'ma',           {source:'c', period: 200}, null],
             
-            ['rmac21',      'rma',          {source:'c', period: 21}, null],
-            ['rmac50',      'rma',          {source:'c', period: 50}, null],
-            ['rmac100',     'rma',          {source:'c', period: 100}, null],
-            ['rmac200',     'rma',          {source:'c', period: 200}, null],
-
-            ['rmac7',      'rma',          {source:'c', period:  7}, null],
             ['rmac9',      'rma',          {source:'c', period:  9}, null],
             ['rmac30',     'rma',          {source:'c', period: 30}, null],
             ['rmac75',     'rma',          {source:'c', period: 75}, null],
-            ['rmac150',    'rma',          {source:'c', period: 150}, null],
-
-
+ 
             ['btctrend',   'btctrend',    null,   null],
 
             ['wfractals',   'wfractals',    null,   null],
@@ -46,7 +38,6 @@ class AnalyzersFactory {
             ['macwfma',     'st_mac_wfma',    null,    null],
             ['tpcwfma',     'st_tpc_wfma',     null,   null],
             ['cma3buy',     'st_cma3',         true,   null],
-            ['cma3sell',    'st_cma3',         false,   null],
     
         ];
 /*

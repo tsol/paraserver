@@ -192,7 +192,21 @@ class SymbolsLoader {
         this.createTickers();
 
         console.log('SL: processing all loaded candles...');
-        candles.forEach( candle => this.processByTicker(candle) );
+        let countAll = 0;
+        let countBreak = 0;
+
+        candles.forEach( (candle) => {
+            
+            this.processByTicker(candle);
+            countAll++;
+
+            if (++countBreak > 1000) {
+                countBreak = 0;
+                console.log("SL: processed "+countAll+" of "+candles.length+" candles, date: "+
+                    TF.timestampToDate(candle.openTime) );
+            }
+            
+        });
 
         if (this.runLive) { 
             console.log('SL: subscribing all tickers to broker live candles...');
@@ -233,5 +247,18 @@ class SymbolsLoader {
         };
     }
 }
+
+/*
+
+TODO: split process of processing candles and invoke
+this every N loops to avoid event-loop and network congestion
+
+function setImmediatePromise() {
+    return new Promise((resolve) => {
+      setImmediate(() => resolve());
+    });
+}
+
+*/
 
 module.exports = SymbolsLoader;
