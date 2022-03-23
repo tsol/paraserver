@@ -1,13 +1,8 @@
-/*
-    In future this should  be subscription dispatcher
 
-*/
-
-const CDB = require('../types/CandleDebug');
 const OrdersStatFilter = require('./OrdersStatFilter.js');
-const { TF } = require('../types/Timeframes.js');
+const { TF } = require('../../types/Timeframes.js');
 
-class OrdersManager {
+class OrdersEmulator {
 
     static STAKE_USD = 100;
     static COST_BUY_PERCENT = 0.001;
@@ -81,13 +76,13 @@ class OrdersManager {
 
         this.statFilter.addTrade( order );
 
-        return orderId;
+        return order;
     }
 
 
 
     riskManageGetQty(order) {
-        const inUSD = OrdersManager.STAKE_USD;
+        const inUSD = OrdersEmulator.STAKE_USD;
         const priceInUSD = order.entryPrice;
         const qty = inUSD / priceInUSD;
         return qty;
@@ -162,8 +157,8 @@ class OrdersManager {
         
         const boughtInUSD = order.qty * order.entryPrice;
         const soldInUSD = order.qty * currentPrice;
-        const commissionInUSD = soldInUSD * OrdersManager.COST_SELL_PERCENT -
-                                boughtInUSD * OrdersManager.COST_BUY_PERCENT;
+        const commissionInUSD = soldInUSD * OrdersEmulator.COST_SELL_PERCENT -
+                                boughtInUSD * OrdersEmulator.COST_BUY_PERCENT;
 
         if (order.type === 'buy') {
             order.gain = soldInUSD - boughtInUSD - commissionInUSD;
@@ -357,5 +352,5 @@ function toFixedNumber(num, digits){
 }
 
 
-module.exports = OrdersManager;
+module.exports = OrdersEmulator;
 

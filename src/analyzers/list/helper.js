@@ -138,7 +138,7 @@ class StrategyHelper {
     }
 
     getOpenOrder(symbol,timeframe,strategy) {
-        return this.ordersManager.getOpenOrder(symbol,timeframe,strategy);
+        return this.ordersManager.emulator.getOpenOrder(symbol,timeframe,strategy);
     }
 
 

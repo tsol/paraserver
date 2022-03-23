@@ -4,19 +4,26 @@ const SETTINGS = require('./private/private.js');
 const { Server } = require("socket.io");
 
 const DataProcessor = require('./src/processors/DataProcessor.js');
+const OrdersManager = require('./src/processors/orders/OrdersManager.js');
+
 const Brokers = require('./src/brokers/Brokers.js');
 const BinanceSource = require('./src/brokers/binance/BinanceSource.js');
-const BinanceClient = require('./src/brokers/binance/BinanceClientSpot.js');
+const BinanceClientUSDM = require('./src/brokers/binance/BinanceClientUSDM');
+
+//const BinanceClient = require('./src/brokers/binance/BinanceClientSpot.js');
+
 const MysqlDB = require('./src/db/MysqlDB.js');
 const CandleDB = require('./src/db/CandleDB.js');
 
-const brokerBinance = new BinanceSource(SETTINGS.users.harry.brokers.binance);
+const brokerBinanceSrc = new BinanceSource(SETTINGS.users.harry.brokers.binance);
+const brokerClientUSDM = new BinanceClientUSDM(SETTINGS.users.utah.brokers.binance);
 const brokers = new Brokers();
-brokers.addBroker(brokerBinance);
+brokers.addBroker(brokerBinanceSrc);
 
 const mysqlHandler = new MysqlDB();
 
 let dataProcessor = null;
+let ordersManager = null;
 let binanceClient = null;
 let candleDB = null;
 
@@ -39,8 +46,10 @@ const coins = [ 'BTCUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT',
 mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
 
     candleDB = new CandleDB(mysqlHandler, brokers);
-    dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB);
 
+    ordersManager = new OrdersManager(brokerClientUSDM);
+    dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB,ordersManager);
+    
     dataProcessor.runSymbols(coins, runLive);
 
     /*
@@ -125,6 +134,13 @@ io.on("connection", (socket) => {
         socket.emit("order", data);
     });
 
+
+    socket.on("make_real_order", (arg) => {
+        if (!dataProcessor) return;
+        socket.emit("new_real_order", 
+            dataProcessor.doMakeOrderFromEmulated(arg.orderId)
+        );
+    });
 
     socket.on("get_orders_stats", (arg) => {
         if (!dataProcessor) return;

@@ -2,17 +2,16 @@
 const SymbolsLoader = require('./SymbolsLoader.js');
 const Flags = require('./Flags.js');
 const AnalyzersFactory = require('../analyzers/AnalyzersFactory.js');
-const OrdersManager = require('./OrdersManager.js');
-const { TF } = require('../types/Timeframes.js');
 
+const { TF } = require('../types/Timeframes.js');
 
 class DataProcessor {
 
-    constructor(mysqlHandler, brokers, candleDB) {
+    constructor(mysqlHandler, brokers, candleDB, ordersManager) {
         this.flags = new Flags();
         this.loaders = [];
         this.tickers = {};
-        this.ordersManager = new OrdersManager();
+        this.ordersManager = ordersManager;
         this.analyzersFactory = new AnalyzersFactory(this.ordersManager);
         this.mysqlHandler = mysqlHandler;
         this.brokers = brokers;
@@ -73,6 +72,8 @@ class DataProcessor {
         this.loaders = this.loaders.filter( l => l !== loader);
     }
 
+
+    /* user io */
     getTickerFlags(tickerId) {
         return this.flags.getAllFlagsByTickerId(tickerId);
     }
@@ -100,16 +101,15 @@ class DataProcessor {
     }
 
     getOrdersList() {
-        return this.ordersManager.toJSON();
+        return this.ordersManager.getEmulatedOrdersList();
     }
 
     getOrder(orderId) {
-        return this.ordersManager.getOrderById(orderId);
+        return this.ordersManager.getEmulatedOrder(orderId);
     }
 
-
     getOrdersStatistics(fromTimestamp, toTimestamp) {
-        return this.ordersManager.genStatistics(fromTimestamp, toTimestamp);
+        return this.ordersManager.getEmulatedStatistics(fromTimestamp, toTimestamp);
     }
 
     getTimeframes() {
@@ -118,6 +118,9 @@ class DataProcessor {
         return res.reverse();
     }
 
+    doMakeOrderFromEmulated(emOrderId) {
+        return this.ordersManager.doMakeOrderFromEmulated(emOrderId);
+    }
 
 }
 
