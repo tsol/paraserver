@@ -1,4 +1,3 @@
-
 const { Spot } = require('@binance/connector')
 const Candle = require('../../types/Candle.js');
 const { TF } = require('../../types/Timeframes.js');
@@ -17,7 +16,6 @@ class BinanceSource {
         // todo: here we should really agree only on symbols binance has ))
         return true;
     }
-
 
     // this function might return not yet closed candle
     async loadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp)
@@ -146,7 +144,7 @@ class BinanceSource {
 
 }
 
-class PIO 
+class PIO // private IO
 {
 
     static markUnclosedLastCandle(candles)

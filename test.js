@@ -1,69 +1,69 @@
-const BinanceSource = require('./src/brokers/binance/BinanceSource.js');
 const SETTINGS = require('./private/private.js');
-const brokerSrc = new BinanceSource(SETTINGS.users.harry.brokers.binance);
-const { TF } = require('./src/types/Timeframes.js');
-const MysqlDB = require('./src/db/MysqlDB.js');
-const CandleDB = require('./src/db/CandleDB.js');
+//const { USDMClient } = require('binance');
 
-const mysqlHandler = new MysqlDB();
-const candleDB = new CandleDB(mysqlHandler, [ brokerSrc ]);
+const BrokerOrder = require('./src/types/BrokerOrder.js');
+const Broker = require('./src/brokers/binance/BinanceClientUSDM.js');
 
-console.log('5 days ago was: ' + TF.timestampToDate( TF.timestampDaysBack(5 )));
+const broker = new Broker(SETTINGS.users.utah.brokers.binance);
 
-mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
-    
-    //candleDB.getCandlesSince('BTCUSDT','1m', '2021-12-29 00:00:00').then( (candles) => {
-    
-    candleDB.getClosedCandlesSince('BTCUSDT','1d',TF.timestampDaysBack(30))
-        .then( (candles) => {
-    
-        console.log('CANDLES:');
-        console.log(candles);
+const entryPrice = 27.89;
+const takePrice = entryPrice*1.1;
+const stopPrice = entryPrice*0.9;
 
-        let lastCandle = candles[ candles.length - 1]; 
-        let firstCandle = candles[0];
-    
-        displayCandle('FIRST: ',firstCandle);
-        displayCandle('LAST: ',lastCandle);
-    
+broker.init().then( () => {
+    let info = broker.getSymbolInfo('ATOMUSDT');
+    console.log("INFO:");
+    console.log(info);
+/*
+    broker.closeOrderIds('ATOMUSDT', [11002507004, 11002507005])
+        .then( (res) => {
+            console.log('res');
+            console.log(res);
+        })
+        .catch( (err) => {
+            console.log('err');
+            console.log(err);
+        });
+*/
 
-        //mysqlHandler.disconnect();
+    broker.makeFullOrder('ATOMUSDT',true,entryPrice,30,stopPrice,takePrice)
+    .then( (result)  => {
+        console.log('main_loop:');
+        console.log(result);
+    }).catch( (err) => {
+        console.log('main_loop_error:');
+        console.log(err);
+    })
 
-    });       
 });
 
+
+
 /*
-brokerSrc.loadCandlesPeriod(
-    'BTCUSDT','1m',
-    TF.dateToTimestamp('2021-12-27 00:00:00'),
-    TF.currentTimestamp()
-).then( (candles) => {
+client.submitNewOrder({
+    symbol: 'ATOMUSDT',
+    side: 'BUY',
+//    positionSide: 'LONG',
+    type: 'MARKET',
+    quantity: 1,
+}).then(result => {
+    console.log("newOrder: ", result);
+]
+  })
+  .catch(err => {
+    console.error("newOrder error: ", err);
+});
+
+console.log("DONE!");
 */
 
-/* 
-candleDB.getCandlesSince('BTCUSDT','1m','2021-12-01 00:00:00')
-  .then( (candles) => {
 
-    console.log('COUNT CANDLES: '+candles.length);    
-    let lastCandle = candles[ candles.length - 1]; 
-    let firstCandle = candles[0];
-
-    displayCandle('FIRST: ',firstCandle);
-    displayCandle('LAST: ',lastCandle);
-    
-
-})
-
+/*
+client.get24hrChangeStatististics()
+  .then(result => {
+    console.log("get24hrChangeStatististics inverse futures result: ", result);
+  })
+  .catch(err => {
+    console.error("get24hrChangeStatististics inverse futures error: ", err);
+  });
 */
-console.log("hello there!");
-
-function displayCandle(msg, candle) {
-    console.log(msg+' FROM: '
-        +TF.timestampToDate(candle.openTime)+' to '
-        +TF.timestampToDate(candle.closeTime)
-    );
-    console.log(candle);
-}
-
-
-

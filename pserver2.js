@@ -6,7 +6,7 @@ const { Server } = require("socket.io");
 const DataProcessor = require('./src/processors/DataProcessor.js');
 const Brokers = require('./src/brokers/Brokers.js');
 const BinanceSource = require('./src/brokers/binance/BinanceSource.js');
-const BinanceClient = require('./src/brokers/binance/BinanceClient.js');
+const BinanceClient = require('./src/brokers/binance/BinanceClientSpot.js');
 const MysqlDB = require('./src/db/MysqlDB.js');
 const CandleDB = require('./src/db/CandleDB.js');
 

@@ -1,3 +1,4 @@
+/* this is not standart client */
 
 const { Spot } = require('@binance/connector')
 
