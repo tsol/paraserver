@@ -53,15 +53,17 @@ class TickerProcessor {
 
     /* broker IO */
     newCandleFromBroker(candle) {
-
-        const d = new Date().toLocaleTimeString();
-
-        console.log(
+        
+        if (candle.closed)
+        {
+            const d = new Date().toLocaleTimeString();
+            console.log(
                 'TICKER: '+
                 candle.symbol+'-'+candle.timeframe
                 + ' ('+ d + ' == ' + TF.timestampToDate(candle.closeTime)
                 + ') IsClosed: '+candle.closed
-        );
+            );
+        };
 
         this.addCandle(candle);
     }

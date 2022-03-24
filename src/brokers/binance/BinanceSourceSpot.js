@@ -2,7 +2,7 @@ const { Spot } = require('@binance/connector')
 const Candle = require('../../types/Candle.js');
 const { TF } = require('../../types/Timeframes.js');
 
-class BinanceSource {
+class BinanceSourceSpot {
 
     static MAX_CANDLES_PER_REQUEST = 1000;
 
@@ -284,4 +284,4 @@ class Stream {
 
 
 
-module.exports = BinanceSource;
+module.exports = BinanceSourceSpot;

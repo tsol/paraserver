@@ -7,7 +7,7 @@ const { TF } = require('../types/Timeframes.js');
 
 class DataProcessor {
 
-    constructor(mysqlHandler, brokers, candleDB, ordersManager) {
+    constructor(mysqlHandler, brokers, candleDB, ordersManager, clients) {
         this.flags = new Flags();
         this.loaders = [];
         this.tickers = {};
@@ -16,6 +16,7 @@ class DataProcessor {
         this.mysqlHandler = mysqlHandler;
         this.brokers = brokers;
         this.candleDB = candleDB;
+        this.clients = clients;
     }
  
     restartAll(runLive) {
@@ -92,7 +93,7 @@ class DataProcessor {
     }
     
     getCurrentPrice(symbol) {
-        const t = this.tickers[ symbol+'-1m' ];
+        const t = this.tickers[ symbol+'-'+TF.getSmallest().name ];
         if (! t) {
             console.error('cannot get current price of '+symbol);
             return 0;

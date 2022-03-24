@@ -39,6 +39,11 @@ class Timeframes
         });
     }
 
+    getSmallest()
+    {
+        return this.TFRAMES[ this.TFRAMES.length-1 ];
+    }
+
     get(timeframe) {
         return this.TFRAMES.find( t => t.name == timeframe );
     }

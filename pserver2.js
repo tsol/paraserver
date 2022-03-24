@@ -2,21 +2,25 @@
 const SETTINGS = require('./private/private.js');
 
 const { Server } = require("socket.io");
+const SocketClients = require("./src/processors/SocketClients.js");
 
 const DataProcessor = require('./src/processors/DataProcessor.js');
 const OrdersManager = require('./src/processors/orders/OrdersManager.js');
 
 const Brokers = require('./src/brokers/Brokers.js');
-const BinanceSource = require('./src/brokers/binance/BinanceSource.js');
-const BinanceClientUSDM = require('./src/brokers/binance/BinanceClientUSDM');
+const BinanceSourceUSDM = require('./src/brokers/binance/BinanceSourceUSDM.js');
+const BinanceClientUSDM = require('./src/brokers/binance/BinanceClientUSDM.js');
 
-//const BinanceClient = require('./src/brokers/binance/BinanceClientSpot.js');
+const BinanceSpotKoto = require('./src/brokers/binance/BinanceSpotKoto.js');
 
 const MysqlDB = require('./src/db/MysqlDB.js');
 const CandleDB = require('./src/db/CandleDB.js');
 
-const brokerBinanceSrc = new BinanceSource(SETTINGS.users.harry.brokers.binance);
+const brokerBinanceSrc = new BinanceSourceUSDM(SETTINGS.users.harry.brokers.binance);
 const brokerClientUSDM = new BinanceClientUSDM(SETTINGS.users.utah.brokers.binance);
+
+brokerClientUSDM.init();
+
 const brokers = new Brokers();
 brokers.addBroker(brokerBinanceSrc);
 
@@ -24,8 +28,9 @@ const mysqlHandler = new MysqlDB();
 
 let dataProcessor = null;
 let ordersManager = null;
-let binanceClient = null;
 let candleDB = null;
+
+const clients = new SocketClients();
 
 const io = new Server({
     cors: {
@@ -41,28 +46,33 @@ const coins = [ 'BTCUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT',
                 'ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT',
                 'AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'
 ];
+//const coins = [ 'BTCUSDT' ];
 
 
 mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
 
     candleDB = new CandleDB(mysqlHandler, brokers);
 
-    ordersManager = new OrdersManager(brokerClientUSDM);
-    dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB,ordersManager);
+    ordersManager = new OrdersManager(brokerClientUSDM, clients);
+    dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB,ordersManager,clients);
     
     dataProcessor.runSymbols(coins, runLive);
-
-    /*
-    binanceClient = new BinanceClient(SETTINGS.users.mona.brokers.binance, dataProcessor);
-    binanceClient.updateAccountInfo().then( () => {
-        binanceClient.updateMyTrades('USDT').then( () => {
-            binanceClient.getMyTrades().forEach( (trade) => {
-                dataProcessor.runSymbols([ trade.symbol ], runLive);   
+/*
+    binanceKoto = new BinanceSpotKoto(SETTINGS.users.mona.brokers.binance, dataProcessor);
+    binanceKoto.updateAccountInfo().then( () => {
+        binanceKoto.updateMyTrades('USDT').then( () => {
+            
+            binanceKoto.getMyTrades().forEach( (trade) => {
+                if (! coins.find(c => c === trade.symbol) )
+                    { coins.push(trade.symbol); }
             })
+
+            console.log('SYMBOLS: '+JSON.stringify(coins));
+            dataProcessor.runSymbols(coins, runLive);
+
         })
     })
 */
-
 
 });
 
@@ -70,7 +80,12 @@ mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
 console.log('===> READY FOR CONNECTIONS')
 
 io.on("connection", (socket) => {
-    console.log('client connected')
+    
+    clients.connect(socket);
+
+    socket.on('disconnect', (arg) => {
+        clients.disconnect(socket);
+    });
 
     socket.on("get_chart", (arg) => {
         if (!dataProcessor) return;
@@ -150,8 +165,8 @@ io.on("connection", (socket) => {
     });
 
     socket.on("broker_my_trades", (arg) => {
-        if (!binanceClient) return;
-        let data = binanceClient.getMyTradesJSON();
+        if (!binanceKoto) return;
+        let data = binanceKoto.getMyTradesJSON();
         socket.emit('broker_my_trades', data);
     });
 

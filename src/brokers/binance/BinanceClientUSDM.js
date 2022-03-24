@@ -5,14 +5,96 @@ const { BrokerOrdersIO } = require('../BrokerIO.js');
 const BrokerOrder = require('../../types/BrokerOrder.js');
 // const { TF } = require('../../types/Timeframes.js');
 
+const { WebsocketClient } = require('binance');
+
+
 class BinanceClientUSDM extends BrokerOrdersIO {
 
     constructor ({ apiKey, secretKey })
     {
         super();
         this.client = new USDMClient({ api_key: apiKey, api_secret: secretKey });
+        this.eventProcessors = [];
+
         this.exchangeInfo = null;
 
+        this.wsClient = new WebsocketClient({
+            api_key: apiKey,
+            api_secret: secretKey,
+            beautify: true,
+            // Disable ping/pong ws heartbeat mechanism (not recommended)
+            // disableHeartbeat: true
+        });
+
+        this.wsClient.subscribeUsdFuturesUserDataStream();
+
+        this.wsClient.on('message', (data) => {
+            this.dispatchEvent(data);
+        });
+/*
+        {
+            "e": "ORDER_TRADE_UPDATE",
+            "T": 1648051860903,
+            "E": 1648051860910,
+            "o": {
+              "s": "FILUSDT",
+              "c": "x-15PC4ZJyCALO0RqYJ1VSz1xXFQ-9erZsL",
+              "S": "SELL",
+              "o": "TAKE_PROFIT_MARKET",
+              "f": "GTC",
+              "q": "0",
+              "p": "0",
+              "ap": "0",
+              "sp": "19.595",
+              "x": "CANCELED",
+              "X": "CANCELED",
+              "i": 16909129428,
+              "l": "0",
+              "z": "0",
+              "L": "0",
+              "T": 1648051860903,
+              "t": 0,
+              "b": "0",
+              "a": "0",
+              "m": false,
+              "R": true,
+              "wt": "CONTRACT_PRICE",
+              "ot": "TAKE_PROFIT_MARKET",
+              "ps": "LONG",
+              "cp": true,
+              "rp": "0",
+              "pP": false,
+              "si": 0,
+              "ss": 0
+            },
+            "wsMarket": "usdm",
+            "wsKey": "usdm_userData_smPrVtsn5J66T4msrkKtbUsSbl9iJypPAj5Cb7LvbIZN0bYPArWRNbQ0zoDUf05l"
+          }
+*/
+
+    }
+
+    addEventProcessor(object)
+    {
+        this.eventProcessors.push(object);
+    }
+
+
+    dispatchEvent(data)
+    {
+        //console.log('raw message received ', JSON.stringify(data, null, 2));
+        if ( data.e && data.e == "ORDER_TRADE_UPDATE") {
+            if (data.o) {
+                const id = data.o.i;
+                if (data.o.X == "CANCELED") {
+                    this.eventProcessors.forEach( (ep) => ep.onBrokerOrderCanceled(id) );
+                } else 
+                if (data.o.X == "FILLED") {
+                    this.eventProcessors.forEach( (ep) => ep.onBrokerOrderFilled(id) );
+                } 
+            }
+        }
+       
     }
 
     async init()
@@ -48,7 +130,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
 
         let filter = info.filters.find( (v) => v.filterType == 'MARKET_LOT_SIZE' );
         if (! filter ) { return null; }
-
+        
         return filter.minQty;
     }
 
@@ -77,8 +159,8 @@ class BinanceClientUSDM extends BrokerOrdersIO {
         const quantity = (usdAmount / entryPrice).toFixed(qPrescision);
         const minQty = this.getSymbolMinimumQuantity(symbol);
 
-        if (quantity <= minQty ) {
-            throw new Error('Quantity problem: '+symbol+' q='+quantity+' < minq='+minQty);
+        if (quantity < minQty ) {
+            throw Error('quantity problem: '+symbol+' q='+quantity+' < minq='+minQty);
         }
 
         result.quantity = quantity;
@@ -93,7 +175,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                 quantity: quantity,
             },
             {
-                symbol: 'ATOMUSDT',
+                symbol: symbol,
                 side: stopSide,
                 type: 'STOP_MARKET',
                 positionSide: positionSide,
@@ -101,7 +183,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                 stopPrice: stopLoss.toFixed(3)
             },
             {
-                symbol: 'ATOMUSDT',
+                symbol: symbol,
                 side: stopSide,
                 type: 'TAKE_PROFIT_MARKET',
                 positionSide: positionSide,

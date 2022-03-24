@@ -2,7 +2,7 @@
 
 const { Spot } = require('@binance/connector')
 
-class BinanceClient {
+class BinanceSpotKoto {
 
     constructor ({ apiKey, secretKey }, dataProcessor)
     {
@@ -145,4 +145,4 @@ class BinanceClient {
 
 }
 
-module.exports = BinanceClient;
+module.exports = BinanceSpotKoto;

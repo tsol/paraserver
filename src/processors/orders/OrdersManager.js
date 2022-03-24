@@ -3,9 +3,10 @@ const OrdersReal = require('./OrdersReal.js');
 
 class OrdersManager {
     
-    constructor(brokerOrderClient) {
+    constructor(brokerOrderClient, clients) {
         this.emulator = new OrdersEmulator();
-        this.real = new OrdersReal(brokerOrderClient);
+        this.clients = clients;
+        this.real = new OrdersReal(brokerOrderClient, clients);
     }
 
     reset() {
@@ -72,6 +73,11 @@ class OrdersManager {
     }
 
 
+    clientsRefreshOrders()
+    {
+        this.clients.emit('orders',this.getEmulatedOrdersList());
+    }
+
     /* user interface io */
    
     getEmulatedOrdersList()
@@ -87,16 +93,21 @@ class OrdersManager {
         return this.emulator.getOrderById(orderId);
     }
 
+
+
     doMakeOrderFromEmulated(emulatedOrderId) {
         const emulatedOrder = this.emulator.getOrderById(emulatedOrderId);
         if (emulatedOrder) {
-            const realOrder = this.real.newOrderFromEmu(emulatedOrder);
-            if (realOrder) {
-                emulatedOrder.comment += ' [BROK]';
-                return realOrder;
-            }
+            this.real.newOrderFromEmu(emulatedOrder).then((result) => {
+                emulatedOrder.comment += ' [BROK] '+JSON.stringify(result);
+                this.clientsRefreshOrders();
+            }).catch( (err) => {
+                console.log('MAKE_EMULATE_ORDER: ERROR');
+                console.log(err);
+                emulatedOrder.comment += ' [BRER] '+err.message;
+                this.clientsRefreshOrders();
+            });
         }
-        return null;
     }
 
 }
