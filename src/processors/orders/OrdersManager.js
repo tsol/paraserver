@@ -41,21 +41,12 @@ class OrdersManager {
             comment
         );
 
-/*
-        const realOrder = this.real.newOrder(
-            type,
-            flags, 
-            strategyObject, 
-            entryPrice, 
-            takeProfit, 
-            stopLoss,
-            symbol,
-            timeframe,
-            time,
-            comment,
-            emulatedOrder
-        );
-*/
+        if (emulatedOrder.tags && flags.get('is_live'))
+        {
+            if (emulatedOrder.tags.fp && emulatedOrder.tags.fp.value === '_F') {
+                this.doMakeOrderFromEmulated( emulatedOrder.id );
+            }
+        }
 
         return emulatedOrder;
     }

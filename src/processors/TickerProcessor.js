@@ -83,7 +83,7 @@ class TickerProcessor {
         }
 
         this.flags.start(this.symbol, this.timeframe);
-        this.flags.set('is_live', this.is_live);
+        this.flags.set('is_live', this.isLive);
         
         this.ordersManager.candleClosed(candle, this.isLive);
         this.analyzersBox.addCandle(candle, this.flags);
