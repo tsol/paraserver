@@ -7,13 +7,26 @@ const { WebsocketClient } = require('binance');
 
 class BinanceSourceUSDM extends CandleSourceIO {
 
-    static MAX_CANDLES_PER_REQUEST = 1500;
+    static MAX_CANDLES_PER_REQUEST = 499;
+    
+    static DEFAULT_1M_WEIGHT_LIMIT = 2400;
+
+    static KEEP_PERCENT     = 50;
+    static KAPUT_PERCENT    = 90;
 
     constructor ({ apiKey, secretKey })
     {
         super();
         this.client = new USDMClient({ api_key: apiKey, api_secret: secretKey });
         this.streams = {};
+
+        this.WEIGHT_LIMIT = BinanceSourceUSDM.DEFAULT_1M_WEIGHT_LIMIT;
+        this.WEIGHT_KEEP = Math.floor( (this.WEIGHT_LIMIT / 100) * BinanceSourceUSDM.KEEP_PERCENT );
+        this.WEIGHT_KAPUT = Math.floor( (this.WEIGHT_LIMIT / 100) * BinanceSourceUSDM.KAPUT_PERCENT );
+
+        this.weightQueue = [];
+
+        this.serverTime = TF.currentTimestamp();
 
         this.wsClient = new WebsocketClient({
             api_key: apiKey,
@@ -25,9 +38,53 @@ class BinanceSourceUSDM extends CandleSourceIO {
             this.dispatchWSData(data);
         });
 
+        var _self = this;
+        setInterval(function () { _self.updateServerTime() }, 30000);
+
     }
 
     hasSymbol(symbol) { return true; }
+
+    async updateServerTime()
+    {
+        this.serverTime = await this.client.getServerTime();
+        console.log("BS_USDM: server time updated is now: "+TF.timestampToDate(this.serverTime));
+    }
+
+/*
+[
+    {
+        "symbol": "BTCUSDT",
+        "priceChange": "-94.99999800",
+        "priceChangePercent": "-95.960",
+        "weightedAvgPrice": "0.29628482",
+        "lastPrice": "4.00000200",
+        "lastQty": "200.00000000",
+        "openPrice": "99.00000000",
+        "highPrice": "100.00000000",
+        "lowPrice": "0.10000000",
+        "volume": "8913.30000000",
+        "quoteVolume": "15.30000000",
+        "openTime": 1499783499040,
+        "closeTime": 1499869899040,
+        "firstId": 28385,   // First tradeId
+        "lastId": 28460,    // Last tradeId
+        "count": 76         // Trade count
+    }
+]
+*/
+    async getTradableSymbols() {
+        const result = await this.client.get24hrChangeStatististics();
+        let cnt = 1;
+        return result.filter( s => {
+            if ( ( s.count > 10 ) && (s.symbol.endsWith('USDT')) ) {
+                console.log('BC-USDM: SYMBOL: '+cnt+': '+s.symbol+' price='+s.weightedAvgPrice+' vol='+s.volume);
+                cnt++;
+                return true;
+            }
+            return false;
+        }).map( s => s.symbol );
+    }
 
     // this function might return not yet closed candle
     async loadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp)
@@ -64,24 +121,100 @@ class BinanceSourceUSDM extends CandleSourceIO {
         return allCandles;
     }
 
+   async waitQueue(sId, weight)
+   {
+        while (true)
+        {
+            let states = this.client.getRateLimitStates();
+            if (! states ) { return }
+            
+            const upd = states.lastUpdated;
+            let usedWeight = states['x-mbx-used-weight-1m'];
+          
+            if (usedWeight < this.WEIGHT_KEEP) {
+                console.log('BS-USD: PASSED NO SLEEP used weight='+usedWeight);
+                return;
+            }
+
+            if (usedWeight > this.WEIGHT_KAPUT) {
+                throw new Error('KAPUT percent reached on '+sId);
+            }
+
+            // update queue
+            const currentTimestamp = TF.currentTimestamp();
+            this.weightQueue = this.weightQueue.filter( (w) => w.time > currentTimestamp );
+            let plannedTime = null;
+
+            if (this.weightQueue.length > 0) {
+                const schedule = this.weightQueue[ this.weightQueue.length - 1 ];
+                if (schedule.weight + weight <= this.WEIGHT_KEEP ) {
+                    schedule.weight += weight;
+                    plannedTime = schedule.time+100;
+                }
+                else {
+                    plannedTime = schedule.time + 30000;
+                    this.weightQueue.push({ time: plannedTime, weight: weight });
+                }
+            }
+            else {
+                plannedTime = currentTimestamp + 30000;
+                this.weightQueue.push({ time: plannedTime, weight: weight });
+            }
+
+            const delayMs = plannedTime - currentTimestamp;
+            const delaySec = Math.floor(delayMs/1000);
+            const queueSize = this.weightQueue.length;
+
+            console.log('BS-USDM: ('+sId+') SAFE_SLEEP='+delaySec
+                +' usedWeight='+usedWeight
+                +' queueSize='+queueSize
+                +' cur='+TF.currentDatetime() + ' upd='+TF.timestampToDate(upd)
+            );
+
+            await PIO.sleep(delayMs);
+            //await this.updateServerTime();
+        }
+
+    }
 
     async tryLoadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp)
     {
+        const sId = symbol+'-'+timeframe;
+        console.log('BS-USDM: ('+sId+') TRY TO LOAD FROM '
+            +TF.timestampToDate(startTimestamp)+' TO '+
+             TF.timestampToDate(endTimestamp));
 
-        console.log('BS-USDM: ('+symbol+'-'+timeframe
-            +') TRY TO LOAD FROM '
-            +TF.timestampToDate(startTimestamp));
+        const params = {
+            symbol: symbol,
+            interval: timeframe,
+            limit: BinanceSourceUSDM.MAX_CANDLES_PER_REQUEST,
+            startTime: startTimestamp,
+            endTime: endTimestamp
+        };
 
-       let data = await this.client.getKlines({
-                symbol: symbol,
-                interval: timeframe,
-                limit: BinanceSourceUSDM.MAX_CANDLES_PER_REQUEST,
-                startTime: startTimestamp,
-                endTime: endTimestamp
-        });
-  
+        let data = null;
+        let attempts = 0;
+        
+        while (! data && (attempts < 10) )
+        {
+            try {
+                
+                console.log('BS-USDM: ('+sId+') prepare to wait! '+TF.currentDatetime());
+                await this.waitQueue(sId, 2);
+                console.log('BS-USDM: ('+sId+') SAFE_SLEEP is done! '+TF.currentDatetime());
+                data = await this.client.getKlines(params);
+            }
+            catch (err) {
+                console.log('BS-USDM: try load candles exception:')
+                console.log(err);
+            }
+            if (data) { break; }
+            
+            attempts++
+            console.log('BS-USDM: try_load new attempt on '+symbol+' #'+attempts);
+        }  
 
-        if (! data ) { return []; }
+        if (! data ) { throw new Error('could not load '+symbol); }
         let candles = [];
 
         data.forEach( oneCandle => {
@@ -96,27 +229,7 @@ class BinanceSourceUSDM extends CandleSourceIO {
     }
 
     
-    async loadLastCandles(symbol, timeframe, limit)
-    {
-       let data = await this.client.getKlines({
-            symbol: symbol,
-            interval: timeframe,
-            limit: limit
-        });
-
-        if (! data ) { return []; }
-        let candles = [];
-
-        data.forEach( oneCandle => {
-            let objectCandle = PIO.parseCandleFromREST(symbol,timeframe,oneCandle);;
-            candles.push(objectCandle);    
-        });
-
-        PIO.markUnclosedLastCandle(candles);
-        return candles;
-    }
-
-
+  
     subscribe(symbol, timeframe, subscriberId, subscriberObject)
     {
         const sid = symbol+'-'+timeframe;
@@ -197,6 +310,10 @@ class BinanceSourceUSDM extends CandleSourceIO {
 class PIO // private IO
 {
 
+    static sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     static markUnclosedLastCandle(candles)
     {
         if (candles.length === 0) return false;
@@ -204,7 +321,7 @@ class PIO // private IO
         let lastCandle = candles[candles.length-1];
                
         if ( TF.checkCandleCloseTimeInFuture(lastCandle)) {
-            console.log('BINANCE_SRC: close in future, marking unclosed '
+            console.log('BS-USDM: close in future, marking unclosed '
             +lastCandle.symbol+'-'+lastCandle.timeframe+' close:'
             +TF.timestampToDate(lastCandle.closeTime));
             lastCandle.closed = false;

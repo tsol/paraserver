@@ -6,7 +6,8 @@ class CandleSourceIO {
 
     /* theese must return array of Candle objects (types/Candle.js) */
     async loadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp) {}
-    async loadLastCandles(symbol, timeframe, limit) {}
+  
+    async getTradableSymbols() {}
 
     /* after subscription 
     ** subscriberObject.newCandleFromBroker(candleObject)

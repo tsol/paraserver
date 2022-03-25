@@ -55,7 +55,7 @@ class OrdersEmulator {
             result: 'active',
             closePrice: 0,
             gain: 0,
-            maxPriceReached: 0,
+            maxPriceReached: entryPrice,
             reachedPercent: 0,
 
             comment: comment,
@@ -64,17 +64,12 @@ class OrdersEmulator {
 
         order.qty = this.riskManageGetQty(order);
     
+        const tags = this.statFilter.getTags(order, flags, this.orders);
+        order.comment += this.statFilter.tagsStringify(tags);
+        order.tags = tags;
+
         this.orders.push(order);
 
-        //console.log('OM: new order BUY '+orderId);
-        
-        if ( this.statFilter.passTrade(order, flags) ) {
-            order.comment += ' REAL';
-        }
-
-        order.comment += this.statFilter.getComment(order, flags);
-
-        this.statFilter.addTrade( order );
 
         return order;
     }
@@ -124,9 +119,6 @@ class OrdersEmulator {
 
             if (o.type === 'buy') {
 
-                if (newPrice > o.maxPriceReached)
-                    { o.maxPriceReached = newPrice; }
-
                 if (newPrice >= o.takeProfit)
                     { this.closeOrder(o, newPrice, 'won'); }
 
@@ -134,9 +126,6 @@ class OrdersEmulator {
                     { this.closeOrder(o, newPrice, 'lost') }
             }
             else { // sell 
-
-                if (newPrice < o.maxPriceReached)
-                    { o.maxPriceReached = newPrice; }
 
                 if (newPrice <= o.takeProfit)
                     { this.closeOrder(o, newPrice, 'won'); }
@@ -162,12 +151,25 @@ class OrdersEmulator {
 
         if (order.type === 'buy') {
             order.gain = soldInUSD - boughtInUSD - commissionInUSD;
+
+            if ( currentPrice > order.maxPriceReached)
+                { order.maxPriceReached = currentPrice; }
         }
         else { // sell
             order.gain = boughtInUSD - soldInUSD - commissionInUSD;
+
+            if ( currentPrice < order.maxPriceReached)
+                { order.maxPriceReached = currentPrice; }    
         }
+        
+        const priceDiff = order.maxPriceReached - order.entryPrice;
 
-
+        if ( priceDiff > 0 ) {
+            const target = Math.abs(order.takeProfit - order.entryPrice);
+            const coef = toFixedNumber( (priceDiff / target) * 100, 2);
+            order.reachedPercent = ( coef < 100 ? coef : 100 );
+        }
+      
     }
 
     closeOrder(order,price,result) {
@@ -184,14 +186,6 @@ class OrdersEmulator {
         order.active = false;                
         order.closePrice = price;
         order.result = result;
-        order.reachedPercent = 100;
-    
-        if ( result === 'lost' ) {
-            let height = Math.abs(order.maxPriceReached - order.entryPrice);
-            let target = Math.abs(order.takeProfit - order.entryPrice);
-            let coef = toFixedNumber( (height / target) * 100, 2);
-            order.reachedPercent = coef;
-        }
 
     }
 
@@ -210,7 +204,7 @@ class OrdersEmulator {
                 active: v.active,
                 result: v.result,
                 closePrice: v.closePrice,
-                gain: v.gain,
+                gain: toFixedNumber(v.gain, 3),
                 maxPriceReached: v.maxPriceReached,
                 reachedPercent: v.reachedPercent,
                 comment:  v.comment,

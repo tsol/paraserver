@@ -14,17 +14,6 @@ broker.init().then( () => {
     let info = broker.getSymbolInfo('ATOMUSDT');
     console.log("INFO:");
     console.log(info);
-/*
-    broker.closeOrderIds('ATOMUSDT', [11002507004, 11002507005])
-        .then( (res) => {
-            console.log('res');
-            console.log(res);
-        })
-        .catch( (err) => {
-            console.log('err');
-            console.log(err);
-        });
-*/
 
     broker.makeFullOrder('ATOMUSDT',true,entryPrice,30,stopPrice,takePrice)
     .then( (result)  => {
@@ -36,26 +25,6 @@ broker.init().then( () => {
     })
 
 });
-
-
-
-/*
-client.submitNewOrder({
-    symbol: 'ATOMUSDT',
-    side: 'BUY',
-//    positionSide: 'LONG',
-    type: 'MARKET',
-    quantity: 1,
-}).then(result => {
-    console.log("newOrder: ", result);
-]
-  })
-  .catch(err => {
-    console.error("newOrder error: ", err);
-});
-
-console.log("DONE!");
-*/
 
 
 /*

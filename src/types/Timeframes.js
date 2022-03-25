@@ -26,9 +26,8 @@ class Timeframes
 */
     TFRAMES = [
         { name: '4h',  htf: null,  levelsLimit: 500, days: 60,   trade: false, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
-        { name: '1h',  htf: '4h',  levelsLimit: 500, days: 30,   trade: false, limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
-        { name: '15m', htf: '4h',  levelsLimit: 500, days: 30,   trade: true, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
-        { name: '5m',  htf: '1h',  levelsLimit: 500, days: 30,   trade: true, limit: 0, levelsLimitTime: 0, length: 5 * this.MIN_LENGTH },
+        { name: '1h',  htf: '4h',  levelsLimit: 500, days: 10,   trade: false, limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
+        { name: '15m', htf: '4h',  levelsLimit: 500, days: 10,   trade: true, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
     ];
 
     constructor() {
@@ -63,8 +62,8 @@ class Timeframes
 
     /* REST of functions probably should be somewhere else :) */
 
-    mysqlFormat(datetime) {
-        var now     = new Date(datetime); 
+    mysqlFormat(dateObject) {
+        const now     = dateObject;
         var year    = now.getFullYear();
         var month   = now.getMonth()+1; 
         var day     = now.getDate();
@@ -92,7 +91,7 @@ class Timeframes
 
     currentDatetime()
     {
-        return this.mysqlFormat(null);
+        return this.mysqlFormat(new Date());
     }
 
     currentTimestamp()

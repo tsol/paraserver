@@ -1,31 +1,39 @@
 
 const BFP = require('./statfilters/bfp.js');
+const HOURLY = require('./statfilters/hourly.js');
 
 class OrdersStatFilter {
 
     constructor() {
         this.bfp = new BFP();
+        this.hourly = new HOURLY();
     }
 
     reset() {
         this.bfp.reset();
+        this.hourly.reset();
     }
  
-    passTrade(order, flags)
+    getTags(order, flags, orders)
     {
-          return this.bfp.passTrade(order,flags);
+        // merge flags from different stat Filters
+        return {
+             ... this.bfp.getTags(order,flags,orders),
+             ... this.hourly.getTags(order,flags,orders)
+        }
+
     }
 
-    addTrade( order ) // add to statistics
+    tagsStringify(tagsObject)
     {
-        this.bfp.addTrade(order);
-        
+        let res = '';
+        for (const tag in tagsObject) {
+            res += ' '+tag+':'+tagsObject[tag].value+
+                ( tagsObject[tag].comment ? ' ['+tagsObject[tag].comment+']' : '');
+        }
+        return res;         
     }
 
-    getComment(order,flags)
-    {
-        return this.bfp.getComment(order,flags);
-    }
 
 }
 

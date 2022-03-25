@@ -111,27 +111,11 @@ class BinanceClientUSDM extends BrokerOrdersIO {
         const info = this.exchangeInfo.symbols.find( (v) => v.symbol == symbol );
         return info;
     }
-/*
-    "pricePrecision": 5,    // please do not use it as tickSize
-    "quantityPrecision": 0, // please do not use it as stepSize
-    "baseAssetPrecision": 8,
-    "quotePrecision": 8, 
-*/
-    getSymbolQuantityPrescision(symbol)
-    {
-        const info = this.getSymbolInfo(symbol);
-        if (info) { return info.quantityPrecision }
-        return null;
-    }
 
-    getSymbolMinimumQuantity(symbol) {
-        const info = this.getSymbolInfo(symbol);
-        if (!info) { return null; }
-
-        let filter = info.filters.find( (v) => v.filterType == 'MARKET_LOT_SIZE' );
+    getSymbolFilter(symbolInfo,filterType,param) {
+        let filter = symbolInfo.filters.find( (v) => v.filterType == filterType );
         if (! filter ) { return null; }
-        
-        return filter.minQty;
+        return filter[param];
     }
 
     async makeFullOrder(symbol,isLong,entryPrice,usdAmount,stopLoss,takeProfit)
@@ -155,9 +139,19 @@ class BinanceClientUSDM extends BrokerOrdersIO {
             positionSide = 'LONG';
         }
 
-        const qPrescision = this.getSymbolQuantityPrescision(symbol) || 0;
-        const quantity = (usdAmount / entryPrice).toFixed(qPrescision);
-        const minQty = this.getSymbolMinimumQuantity(symbol);
+/*
+    "pricePrecision": 5,    // please do not use it as tickSize
+    "quantityPrecision": 0, // please do not use it as stepSize
+    "baseAssetPrecision": 8,
+    "quotePrecision": 8, 
+*/
+        const info = this.getSymbolInfo(symbol);
+        if (! info) { throw new Error('BC-USDM: no exchangeInfo on '+symbol); }
+
+        const qPrecision = info.quantityPrecision;
+        const quantity = (usdAmount / entryPrice).toFixed(qPrecision);
+        const minQty = this.getSymbolFilter(info,'MARKET_LOT_SIZE','minQty');
+        const pricePrecision = info.pricePrecision;  
 
         if (quantity < minQty ) {
             throw Error('quantity problem: '+symbol+' q='+quantity+' < minq='+minQty);
@@ -180,7 +174,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                 type: 'STOP_MARKET',
                 positionSide: positionSide,
                 closePosition: 'true',
-                stopPrice: stopLoss.toFixed(3)
+                stopPrice: stopLoss.toFixed(pricePrecision)
             },
             {
                 symbol: symbol,
@@ -188,7 +182,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                 type: 'TAKE_PROFIT_MARKET',
                 positionSide: positionSide,
                 closePosition: 'true',
-                stopPrice: takeProfit.toFixed(3)
+                stopPrice: takeProfit.toFixed(pricePrecision)
             }
         ];
         
@@ -207,8 +201,8 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                 { result.orders.tp.id = o[2].orderId; }
         else    { error = 'take-profit: '+( o[2].msg ? o[2].msg : '' ); }
 
-        console.log('RAW_REPLY submitMultiplyOrders:');
-        console.log(o);
+        //console.log('RAW_REPLY submitMultiplyOrders:');
+        //console.log(o);
 
         if (error) {
             const ids = getCreatedOrdersIds(result);
@@ -223,8 +217,8 @@ class BinanceClientUSDM extends BrokerOrdersIO {
   
     async closeOrderIds(symbol, orderIdsArray) {
         
-        console.log('closeOrderIds '+symbol+':');
-        console.log(orderIdsArray);
+        //console.log('closeOrderIds '+symbol+':');
+        //console.log(orderIdsArray);
 
         return await this.client.cancelMultipleOrders({
             symbol: symbol,

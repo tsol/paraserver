@@ -18,25 +18,46 @@ class BFP {
         this.accept = 'N'; // F - only F, P - only P, A - All, N - none
     }
  
-    passTrade(order, flags) // return if order should pass
+    getTags(order, flags, orders) // return if order should pass
     {
-        const curBFP = this.getBFP(order,flags);
+        const btcTrend = flags.getTickerFlag('BTCUSDT-1h','btctrend');
+        const curBFP = this.getBFP(order.type,btcTrend);
+
         order.fp = curBFP;
+        let accept = this.calcAccept(order.time);
+        let bfpass = 'N';
 
-        this.calculate(order.time);
+        if (accept === 'A') { bfpass='Y'; }
+        else
+        if (accept === 'N') { bfpass='N'; }
+        else
+            { bfpass = ( curBFP === accept ? 'Y' : 'N' ); }
 
-        if (this.accept === 'A') { return true; } // it is determined that all orders should pass
-        if (this.accept === 'N') { return false; }
+        const tags = {
+            fp: { value: '_'+curBFP },
+            BFP: { value: bfpass, comment: 'A='+accept },
+        };
 
-        return ( curBFP === this.accept );
+        this.history.push(order);
+
+        return tags;
+
     }
 
-    addTrade(order) // add to statistics closed trade
+
+    getBFP(orderType, btcTrend)
     {
-        this.history.push(order)
-    }
+        if (!btcTrend) { return 'N'; }
 
-    calculate(currentTime)
+        const doFilter = (
+             ( (btcTrend > 0) && (orderType == 'sell') ) ||
+             ( (btcTrend < 0) && (orderType == 'buy' ) )
+        );
+        return ( doFilter ? 'F' : 'P');
+    }
+   
+
+    calcAccept(currentTime)
     {
         const forgetTime = currentTime - BFP.ANALYZE_TIME;
         this.history = this.history.filter( (p) => p.time > forgetTime );
@@ -47,19 +68,22 @@ class BFP {
         this.sum.P = this.sumHistory( closedOrders.filter( (o) => o.fp === 'P' ) );
         this.sum.A = this.sumHistory( closedOrders );
 
+        let accept = 'N';
+
         if ( (this.sum.F > this.sum.P.gain) && (this.sum.F.gain > this.sum.A.gain) ) 
-            { this.accept = 'F'; }
+            { accept = 'F'; }
 
         if ( (this.sum.P.gain > this.sum.F.gain) && (this.sum.P.gain > this.sum.A.gain) ) 
-            { this.accept = 'P'; }
+            { accept = 'P'; }
 
         if ( (this.sum.A.gain > this.sum.F.gain) && (this.sum.A.gain > this.sum.P.gain) )
-            { this.accept = 'A';}
+            { accept = 'A';}
 
         if ( (this.accept !== 'N') && (this.sum[this.accept].gain < 0)) {
-            this.accept = 'N';
+            accept = 'N';
         }
 
+        return accept;
     }
 
     ordersDump()
@@ -85,41 +109,8 @@ class BFP {
         return sum;
     }
    
-    getBFP(order, flags)
-    {
-        const btcTrendValue = flags.getTickerFlag('BTCUSDT-1h','btctrend');
-        if (!btcTrendValue) {
-            return 'N';
-        }
-        const orderType = order.type;
 
-        const doFilter = (
-             ( (btcTrendValue > 0) && (orderType == 'sell') ) ||
-             ( (btcTrendValue < 0) && (orderType == 'buy' ) )
-        );
-        return ( doFilter ? 'F' : 'P');
-    }
-
-    getComment(order, flags)
-    {
-        const btcTrendValue = flags.getTickerFlag('BTCUSDT-1h','btctrend');
-        const bfp = this.getBFP(order,flags);
-
-        let res = {
-            acpt: this.accept,
-            fp: bfp,
-            p_gain: this.sum.P.gain,
-            f_gain: this.sum.F.gain,
-            a_gain: this.sum.A.gain,
-            orders: this.ordersDump()
-        }
-
-//        return JSON.stringify(res);
-
-        return ' BTC_' + bfp + ' ['+btcTrendValue+'] ACPT:'+this.accept/*+' '+JSON.stringify(res)*/;
-    }
-
-
+ 
 }
 
 
