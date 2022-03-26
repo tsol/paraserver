@@ -6,33 +6,33 @@ const Broker = require('./src/brokers/binance/BinanceClientUSDM.js');
 
 const broker = new Broker(SETTINGS.users.utah.brokers.binance);
 
-const entryPrice = 27.89;
-const takePrice = entryPrice*1.1;
-const stopPrice = entryPrice*0.9;
+//const client = broker.getClient();
+//setAllIsolated(broker);
 
-broker.init().then( () => {
-    let info = broker.getSymbolInfo('ATOMUSDT');
-    console.log("INFO:");
-    console.log(info);
-
-    broker.makeFullOrder('ATOMUSDT',true,entryPrice,30,stopPrice,takePrice)
-    .then( (result)  => {
-        console.log('main_loop:');
-        console.log(result);
-    }).catch( (err) => {
-        console.log('main_loop_error:');
-        console.log(err);
-    })
-
+broker.startCleanup().then( () => {
+  console.log('START OK');
 });
 
 
-/*
-client.get24hrChangeStatististics()
-  .then(result => {
-    console.log("get24hrChangeStatististics inverse futures result: ", result);
+
+function createTestOrder(broker)
+{
+
+const symbol='BTCUSDT';
+const entryPrice = 44350;
+const isLong = true;
+const takeProfit = entryPrice+70;
+const stopLoss = entryPrice-70;
+const usdAmount = 30;
+
+broker.makeFullOrder(symbol,isLong,entryPrice,usdAmount,stopLoss,takeProfit)
+  .then( (res) => {
+    console.log('ORDER MADE!');
+    console.log(res);
   })
-  .catch(err => {
-    console.error("get24hrChangeStatististics inverse futures error: ", err);
+  .catch( (err)  => {
+    console.log('ORDER ERROR!');
+    console.log(err.message);
   });
-*/
+}
+
