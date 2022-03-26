@@ -32,7 +32,7 @@ const clients = new SocketClients();
 
 const io = new Server({
     cors: {
-        origin: [ /localhost/, /192\.168/, "http://192.168.1.10:8080" ],
+        origin: [ /localhost/, /192\.168/, /176\.112\.193\.180/ ],
         methods: ["GET", "POST"],
         credentials: true
       },
