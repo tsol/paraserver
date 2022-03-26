@@ -8,8 +8,8 @@ const mysql = require('mysql2');
 
 const Candle = require('../types/Candle.js');
 
-const PRICE_STORE_FORMAT = 'DECIMAL(16,8) NOT NULL';
-const VOLUME_STORE_FORMAT = 'DECIMAL(16,8) NOT NULL';
+const PRICE_STORE_FORMAT = 'DECIMAL(18,8) NOT NULL';
+const VOLUME_STORE_FORMAT = 'DECIMAL(18,8) NOT NULL';
 const TIMESTAMP_STORE_FORMAT = 'BIGINT NOT NULL';
 
 class MysqlDB {
