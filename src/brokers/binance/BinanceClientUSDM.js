@@ -294,6 +294,13 @@ class BinanceClientUSDM extends BrokerOrdersIO {
         });
     };
 
+    async closeOrderCLID(symbol, clientOrderId) {
+        return this.client.cancelOrder({
+            symbol: symbol,
+            origClientOrderId: clientOrderId
+        });
+    };
+
     async moveStopLoss(symbol, orderId, newPrice){};
     async moveTakeProfit(symbol, orderId, newPrice){};
 
@@ -350,10 +357,12 @@ updateTime:1647991575371
                 
         orders.forEach( (order) => {
             if (! uniq[ order.symbol ]) {
-                let txtInfo = +order.symbol+' id='+order.orderId;
+                let txtInfo = order.symbol+' id='+order.clientOrderId;
                 console.log('KILL_ASTRAY_ORDER: [TRY] '+txtInfo);
-                this.closeOrderIds( order.symbol, [ order.orderId ] ).then(() => {
+                console.log(order);
+                this.closeOrderCLID( order.symbol, order.clientOrderId ).then((res) => {
                     console.log('KILL_ASTRAY_ORDER: [DONE] '+txtInfo);
+                    //console.log(res);
                 })
                 .catch( (err) => {
                     console.log('KILL_ASTRAY_ORDER: [ERROR] '+txtInfo+' '+err.message);

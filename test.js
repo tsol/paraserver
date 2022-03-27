@@ -11,7 +11,7 @@ const broker = new Broker(SETTINGS.users.utah.brokers.binance);
 
 broker.periodicCleanup().then( () => {
   console.log('CLEANUP FINISHED OK');
-  process.exit();
+ // process.exit();
 });
 
 function createTestOrder(broker)
