@@ -124,8 +124,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
         return filter[param];
     }
 
-/*
-    async makeFullOrder2(symbol,isLong,entryPrice,usdAmount,stopLoss,takeProfit)
+    async makeFullOrder(symbol,isLong,entryPrice,usdAmount,stopLoss,takeProfit)
     {
         const result = {
             quantity: 0,
@@ -174,8 +173,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                 type: 'STOP_MARKET',
                 positionSide: positionSide,
                 closePosition: 'false',
-                stopPrice: stopLoss.toFixed(pricePrecision),
-                timeInForce: 'GTE_GTC',                
+                stopPrice: stopLoss.toFixed(pricePrecision),                
                 quantity: quantity        
         };
 
@@ -185,11 +183,12 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                 type: 'TAKE_PROFIT_MARKET',
                 positionSide: positionSide,
                 closePosition: 'false',
-                stopPrice: takeProfit.toFixed(pricePrecision),
-                timeInForce: 'GTE_GTC',
+                stopPrice: takeProfit.toFixed(pricePrecision),     
                 quantity: quantity
         };
                 
+        // timeInForce: 'GTE_GTC';
+
         return this.client.submitNewOrder(entryOrder).then( (o) => {
             if ( o && o.orderId ) {
                 result.orders.entry.id = o.orderId;
@@ -204,7 +203,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                     result.orders.sl.id = o.orderId;
                 }
                 else { 
-                    error = 'stoploss: '+ ( o.msg ? o.msg : '' );
+                    error = 'stop-loss: '+ ( o.msg ? o.msg : '' );
                     throw new Error(error);
                 }
 
@@ -213,7 +212,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                         result.orders.tp.id = o.orderId;
                     }
                     else { 
-                        error = 'takeprofit: '+ ( o.msg ? o.msg : '' );
+                        error = 'take-profit: '+ ( o.msg ? o.msg : '' );
                         throw new Error(error);
                     }
                     return result;
@@ -226,8 +225,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
 
     }
 
-*/
-
+    /*
     async makeFullOrder(symbol,isLong,entryPrice,usdAmount,stopLoss,takeProfit)
     {
         const result = {
@@ -319,7 +317,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
 
         return result;
     }
-    
+    */
 
   
     async closeOrderIds(symbol, orderIdsArray) {
