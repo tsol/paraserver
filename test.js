@@ -9,10 +9,9 @@ const broker = new Broker(SETTINGS.users.utah.brokers.binance);
 //const client = broker.getClient();
 //setAllIsolated(broker);
 
-broker.startCleanup().then( () => {
-  console.log('START OK');
+broker.periodicCleanup().then( () => {
+  console.log('CLEANUP FINISHED OK');
 });
-
 
 
 function createTestOrder(broker)
