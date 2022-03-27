@@ -20,6 +20,7 @@ class BinanceSourceUSDM extends CandleSourceIO {
         this.client = new USDMClient({ api_key: apiKey, api_secret: secretKey });
         this.streams = {};
 
+        // todo: update from exchangeInfo
         this.WEIGHT_LIMIT = BinanceSourceUSDM.DEFAULT_1M_WEIGHT_LIMIT;
         this.WEIGHT_KEEP = Math.floor( (this.WEIGHT_LIMIT / 100) * BinanceSourceUSDM.KEEP_PERCENT );
         this.WEIGHT_KAPUT = Math.floor( (this.WEIGHT_LIMIT / 100) * BinanceSourceUSDM.KAPUT_PERCENT );

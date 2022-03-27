@@ -31,47 +31,6 @@ class BinanceClientUSDM extends BrokerOrdersIO {
         this.wsClient.on('message', (data) => {
             this.dispatchEvent(data);
         });
-/*
-        {
-            "e": "ORDER_TRADE_UPDATE",
-            "T": 1648051860903,
-            "E": 1648051860910,
-            "o": {
-              "s": "FILUSDT",
-              "c": "x-15PC4ZJyCALO0RqYJ1VSz1xXFQ-9erZsL",
-              "S": "SELL",
-              "o": "TAKE_PROFIT_MARKET",
-              "f": "GTC",
-              "q": "0",
-              "p": "0",
-              "ap": "0",
-              "sp": "19.595",
-              "x": "CANCELED",
-              "X": "CANCELED",
-              "i": 16909129428,
-              "l": "0",
-              "z": "0",
-              "L": "0",
-              "T": 1648051860903,
-              "t": 0,
-              "b": "0",
-              "a": "0",
-              "m": false,
-              "R": true,
-              "wt": "CONTRACT_PRICE",
-              "ot": "TAKE_PROFIT_MARKET",
-              "ps": "LONG",
-              "cp": true,
-              "rp": "0",
-              "pP": false,
-              "si": 0,
-              "ss": 0
-            },
-            "wsMarket": "usdm",
-            "wsKey": "usdm_userData_smPrVtsn5J66T4msrkKtbUsSbl9iJypPAj5Cb7LvbIZN0bYPArWRNbQ0zoDUf05l"
-          }
-*/
-
     }
 
     getClient() {
@@ -107,7 +66,10 @@ class BinanceClientUSDM extends BrokerOrdersIO {
             this.exchangeInfo = result;
         });
 
-        return this.startCleanup();
+        var _self = this;
+        setInterval(function () { _self.periodicCleanup() }, 5*60*1000);
+
+        return this.periodicCleanup();
     }
 
     getSymbolInfo(symbol)
@@ -357,7 +319,7 @@ maxWithdrawAmount:'21.99286741'
 updateTime:1647991575371
     */
 
-    async startCleanup()
+    async periodicCleanup()
     {
         try {
 
@@ -368,7 +330,7 @@ updateTime:1647991575371
             
         }
         catch(err) {
-            console.log('START_CLEANUP: FAIL: '+err.message);
+            console.log('PERIODIC_CLEANUP: ERROR: '+err.message);
         }
     }
 
