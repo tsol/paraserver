@@ -1,12 +1,15 @@
+/*
+** Binance Futures USD-M 'BrokerOrdersIO' client
+**
+**
+*/
 
-const { USDMClient } = require('binance');
 const { BrokerOrdersIO } = require('../BrokerIO.js');
 
-const BrokerOrder = require('../../types/BrokerOrder.js');
-// const { TF } = require('../../types/Timeframes.js');
-
+const { USDMClient } = require('binance');
 const { WebsocketClient } = require('binance');
 
+const SETTINGS = require('../../../private/private.js');
 
 class BinanceClientUSDM extends BrokerOrdersIO {
 
@@ -37,10 +40,14 @@ class BinanceClientUSDM extends BrokerOrdersIO {
             this.dispatchEvent(data);
         });
 
-        await this.periodicCleanup();
+        if ( ! SETTINGS.dev ) {
 
-        var _self = this;
-        setInterval(function () { _self.periodicCleanup() }, 5*60*1000);
+            await this.periodicCleanup();
+
+            var _self = this;
+            setInterval(function () { _self.periodicCleanup() }, 5*60*1000);
+        
+        }
 
         return true;
     }

@@ -1,6 +1,9 @@
 const OrdersEmulator = require('./OrdersEmulator.js');
 const OrdersReal = require('./OrdersReal.js');
 
+const SETTINGS = require('../../../private/private.js');
+
+
 class OrdersManager {
     
     constructor(brokerOrderClient, clients) {
@@ -41,10 +44,12 @@ class OrdersManager {
             comment
         );
 
-        if (emulatedOrder.tags && flags.get('is_live'))
-        {
-            if (emulatedOrder.tags.fp && emulatedOrder.tags.fp.value === '_F') {
-                this.doMakeOrderFromEmulated( emulatedOrder.id );
+        if (! SETTINGS.dev) {
+            if (emulatedOrder.tags && flags.get('is_live'))
+            {
+                if (emulatedOrder.tags.fp && emulatedOrder.tags.fp.value === '_F') {
+                    this.doMakeOrderFromEmulated( emulatedOrder.id );
+                }
             }
         }
 
@@ -63,12 +68,6 @@ class OrdersManager {
         this.real.candleUpdated(candle,isLive);
     }
 
-
-    clientsRefreshOrders()
-    {
-        this.clients.emit('orders',this.getEmulatedOrdersList());
-    }
-
     /* user interface io */
    
     getEmulatedOrdersList()
@@ -84,22 +83,35 @@ class OrdersManager {
         return this.emulator.getOrderById(orderId);
     }
 
-
-
     doMakeOrderFromEmulated(emulatedOrderId) {
         const emulatedOrder = this.emulator.getOrderById(emulatedOrderId);
-        if (emulatedOrder) {
-            this.real.newOrderFromEmu(emulatedOrder).then((result) => {
-                emulatedOrder.comment += ' [BROK] '+JSON.stringify(result);
-                this.clientsRefreshOrders();
-            }).catch( (err) => {
-                console.log('MAKE_EMULATE_ORDER: ERROR');
-                console.log(err);
-                emulatedOrder.comment += ' [BRER] '+err.message;
-                this.clientsRefreshOrders();
-            });
+        if (!emulatedOrder) { return; }
+
+        if (emulatedOrder.real) {
+            console.log('MAKE_EMULATE_ORDER: order already real!');
+            return;
         }
+    
+        this.real.newOrderFromEmu(emulatedOrder).then((result) => {
+            emulatedOrder.comment += ' [BROK] '+JSON.stringify(result);
+            this.clientsRefreshOrders();
+        }).catch( (err) => {
+            console.log('MAKE_EMULATE_ORDER: ERROR');
+            console.log(err);
+            emulatedOrder.comment += ' [BRER] '+err.message;
+            this.clientsRefreshOrders();
+        });
+
     }
+
+
+    /* helpers */
+
+    clientsRefreshOrders()
+    {
+        this.clients.emit('orders',this.getEmulatedOrdersList());
+    }
+
 
 }
 

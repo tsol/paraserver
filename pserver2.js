@@ -18,6 +18,7 @@ const CandleDB = require('./src/db/CandleDB.js');
 
 const brokerBinanceSrc = new BinanceSourceUSDM(SETTINGS.users.harry.brokers.binance);
 const brokerClientUSDM = new BinanceClientUSDM(SETTINGS.users.utah.brokers.binance);
+const binanceKoto = null;
 
 const brokers = new Brokers();
 brokers.addBroker(brokerBinanceSrc);
@@ -55,9 +56,16 @@ mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
         ordersManager = new OrdersManager(brokerClientUSDM, clients);
         dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB,ordersManager,clients);
     
-        brokerBinanceSrc.getTradableSymbols().then( (symbols) => {
-            dataProcessor.runSymbols(symbols, runLive);
-        });
+        if (!SETTINGS.dev) {
+
+            brokerBinanceSrc.getTradableSymbols().then( (symbols) => {
+                dataProcessor.runSymbols(symbols, runLive);
+            });
+    
+        }
+        else {
+            dataProcessor.runSymbols(coins, runLive);
+        }
 /*
     binanceKoto = new BinanceSpotKoto(SETTINGS.users.mona.brokers.binance, dataProcessor);
     binanceKoto.updateAccountInfo().then( () => {
@@ -74,6 +82,7 @@ mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
         })
     })
 */
+
     })
 });
 

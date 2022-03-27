@@ -1,3 +1,9 @@
+/*
+** Binance Futures USD-M 'CandleSourceIO' client
+**
+**
+*/
+
 const { CandleSourceIO } = require('../BrokerIO.js');
 const Candle = require('../../types/Candle.js');
 const { TF } = require('../../types/Timeframes.js');
@@ -8,9 +14,8 @@ const { WebsocketClient } = require('binance');
 class BinanceSourceUSDM extends CandleSourceIO {
 
     static MAX_CANDLES_PER_REQUEST = 499;
-    
+    static CANDLES_REQUEST_WEIGHT = 2;
     static DEFAULT_1M_WEIGHT_LIMIT = 2400;
-
     static KEEP_PERCENT     = 50;
     static KAPUT_PERCENT    = 90;
 
@@ -201,7 +206,7 @@ class BinanceSourceUSDM extends CandleSourceIO {
             try {
                 
                 console.log('BS-USDM: ('+sId+') prepare to wait! '+TF.currentDatetime());
-                await this.waitQueue(sId, 2);
+                await this.waitQueue(sId, BinanceSourceUSDM.CANDLES_REQUEST_WEIGHT);
                 console.log('BS-USDM: ('+sId+') SAFE_SLEEP is done! '+TF.currentDatetime());
                 data = await this.client.getKlines(params);
             }
