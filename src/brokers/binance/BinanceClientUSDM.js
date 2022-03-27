@@ -13,25 +13,38 @@ class BinanceClientUSDM extends BrokerOrdersIO {
     constructor ({ apiKey, secretKey })
     {
         super();
-        this.client = new USDMClient({ api_key: apiKey, api_secret: secretKey });
+        this.credentials = { api_key: apiKey, api_secret: secretKey };
+        this.client = new USDMClient(this.credentials);
         this.eventProcessors = [];
-
         this.exchangeInfo = null;
 
-        this.wsClient = new WebsocketClient({
-            api_key: apiKey,
-            api_secret: secretKey,
-            beautify: true,
-            // Disable ping/pong ws heartbeat mechanism (not recommended)
-            // disableHeartbeat: true
+    }
+
+    async init()
+    {
+        await this.client.getExchangeInfo().then(result => {
+            this.exchangeInfo = result;
         });
 
-        this.wsClient.subscribeUsdFuturesUserDataStream();
+        this.wsClient = new WebsocketClient({
+            ... this.credentials, 
+            ... { beautify: true }
+        });
+
+        await this.wsClient.subscribeUsdFuturesUserDataStream();
 
         this.wsClient.on('message', (data) => {
             this.dispatchEvent(data);
         });
+
+        await this.periodicCleanup();
+
+        var _self = this;
+        setInterval(function () { _self.periodicCleanup() }, 5*60*1000);
+
+        return true;
     }
+
 
     getClient() {
         return this.client;
@@ -41,7 +54,6 @@ class BinanceClientUSDM extends BrokerOrdersIO {
     {
         this.eventProcessors.push(object);
     }
-
 
     dispatchEvent(data)
     {
@@ -60,18 +72,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
        
     }
 
-    async init()
-    {
-        await this.client.getExchangeInfo().then(result => {
-            this.exchangeInfo = result;
-        });
-
-        var _self = this;
-        setInterval(function () { _self.periodicCleanup() }, 5*60*1000);
-
-        return this.periodicCleanup();
-    }
-
+ 
     getSymbolInfo(symbol)
     {
         if (! this.exchangeInfo || ! this.exchangeInfo.symbols )
