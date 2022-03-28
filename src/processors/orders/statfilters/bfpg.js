@@ -1,6 +1,6 @@
 const { TF } = require('../../../types/Timeframes.js');
 
-class HOURLY {
+class BFPG {
 
     constructor() {
         this.reset();
@@ -12,27 +12,33 @@ class HOURLY {
  
     getTags(order, flags, orders, tags) // return if order should pass
     {
-        const hrs = [1,3,6,9,12,24,48,96,168];
+        const hrs = [1,2,3,6];
         this.tags = {};
 
         hrs.forEach( (h) => {
-            this.tags[ h+'h' ] = this.makeTag( h, order, orders )
+            let bhf = this.makeTag( h, order, orders, '_F' );
+            let bhp = this.makeTag( h, order, orders, '_P' );
+
+            this.tags[ h+'hgbf' ] = bhf;
+            this.tags[ h+'hgbp' ] = bhp;
+
+            let winner = 'F';
+
+            if (   (bhp.ratio > bhf.ratio)
+                && (bhp.num >= 10)
+                && ( (bhp.gain > 0) && (bhp.gain > bhf.gain))
+            ) {
+                winner = 'P';
+            }
+
+            this.tags[ h+'hgbw' ] = { value: winner };
+
+            this.tags[ h+'H' ] = {
+                value: ( tags.fp.value == '_'+winner ? 'Y' : 'N' )
+            }
+            
         });
 
-        let master = 'N';
-/*
-        if ( this.is(168) && this.is(96)  &&
-            ( this.is(1) || this.is(3) || this.is(6) )
-        ) { master = 'Y'; }
-*/
-        const weekly = this.tags[ '168h' ];
-        const daily = this.tags[ '24h' ];
-
-        if ( (weekly.num >= 14) && (weekly.ratio > 42.5) && ( daily.gain > 3) ) {
-            master = 'Y';
-        }
-
-        this.tags.HR = { value: master };
         return this.tags;
     }
 
@@ -48,18 +54,13 @@ class HOURLY {
         return this.tags[ hour + 'h' ].gain;
     }
 
-    makeTag( hours, order, orders ) {
+    makeTag( hours, order, orders, fp ) {
         const since = order.time - hours * TF.HOUR_LENGTH;
     
         let fOrders = orders.filter( (o) => {
             return ( o.time > since )
-                &&  ( o.symbol == order.symbol )
-                &&  ( o.timeframe == order.timeframe )
-                &&  ( o.strategy == order.strategy ) ;
+                && (o.tags.fp.value == fp);
         });
-
-        //console.log('FORDERS:');
-        //console.log(fOrders);
 
         const res = fOrders.reduce( (t, order) => { 
                 t.gain+=order.gain;
@@ -72,8 +73,7 @@ class HOURLY {
         const ratio = calcWinLooseRatio( res.win, res.lost );
 
         let yes = 'N';
-        //if (num <= 0 && hours < 6) { yes = 'Y'; }
-        if ( gain / hours > 0.05 ) { yes = 'Y'; };
+        if ( (num > 16) && (gain > 0) ) { yes = 'Y'; };
 
         return {   value: yes,
                    comment: num+'='+ratio.toFixed(2)+'/'+gain.toFixed(2)+'$',
@@ -91,5 +91,5 @@ function calcWinLooseRatio(win, loose)
 }
 
 
-module.exports = HOURLY;
+module.exports = BFPG;
 

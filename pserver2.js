@@ -40,7 +40,7 @@ const io = new Server({
     allowEIO3: true
 });
 
-const runLive = true;
+let runLive = true;
 
 const coins = [ 'BTCUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT',
                 'ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT',
@@ -64,7 +64,15 @@ mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
     
         }
         else {
-            dataProcessor.runSymbols(coins, runLive);
+
+            runLive = false;
+
+            brokerBinanceSrc.getTradableSymbols().then( (symbols) => {
+                dataProcessor.runSymbols(symbols, runLive);
+            });
+
+
+//            dataProcessor.runSymbols(coins, runLive);
         }
 /*
     binanceKoto = new BinanceSpotKoto(SETTINGS.users.mona.brokers.binance, dataProcessor);

@@ -18,7 +18,7 @@ class BFP {
         this.accept = 'N'; // F - only F, P - only P, A - All, N - none
     }
  
-    getTags(order, flags, orders) // return if order should pass
+    getTags(order, flags, orders, tags) // return if order should pass
     {
         const btcTrend = flags.getTickerFlag('BTCUSDT-1h','btctrend');
         const curBFP = this.getBFP(order.type,btcTrend);
@@ -33,14 +33,14 @@ class BFP {
         else
             { bfpass = ( curBFP === accept ? 'Y' : 'N' ); }
 
-        const tags = {
+        const newTags = {
             fp: { value: '_'+curBFP },
             BFP: { value: bfpass, comment: 'A='+accept },
         };
 
         this.history.push(order);
 
-        return tags;
+        return newTags;
 
     }
 
