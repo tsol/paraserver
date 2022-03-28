@@ -1,6 +1,6 @@
 const { TF } = require('../../../types/Timeframes.js');
 
-class BFPG {
+class FPG_H {
 
     constructor() {
         this.reset();
@@ -12,7 +12,7 @@ class BFPG {
  
     getTags(order, flags, orders, tags) // return if order should pass
     {
-        const hrs = [1,2,3,6];
+        const hrs = [1,2,3,4,6];
         this.tags = {};
 
         hrs.forEach( (h) => {
@@ -91,5 +91,5 @@ function calcWinLooseRatio(win, loose)
 }
 
 
-module.exports = BFPG;
+module.exports = FPG_H
 

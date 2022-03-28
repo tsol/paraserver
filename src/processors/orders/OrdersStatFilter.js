@@ -1,33 +1,39 @@
 
 const BFP = require('./statfilters/bfp.js');
-const BFPG = require('./statfilters/bfpg.js');
-const HOURLY = require('./statfilters/hourly.js');
+const FPG_B = require('./statfilters/fpg-b.js');
+const FPG_H = require('./statfilters/fpg-h.js');
+
+// const HOURLY = require('./statfilters/hourly.js');
 
 class OrdersStatFilter {
 
     constructor() {
-        this.bfp = new BFP();
-        this.hourly = new HOURLY();
-        this.bfpg = new BFPG();
+
+        this.filters = [
+            new BFP(),
+            new FPG_B(1),
+            new FPG_B(2),
+            new FPG_B(3),
+            new FPG_B(4),
+            new FPG_B(6),
+            new FPG_H()
+        ];
+
     }
 
     reset() {
-        this.bfp.reset();
-        this.hourly.reset();
-        this.bfpg.reset();
+        this.filters.forEach( f => f.reset() );
     }
  
     getTags(order, flags, orders)
     {
-        const bfp  = this.bfp.getTags(order,flags,orders, {});
-        const bfpg = this.bfpg.getTags(order,flags,orders, bfp);  
- 
-        // merge flags from different stat Filters
-        return {
-             ... bfp,
-             ... bfpg
-        }
+        let tags = {};
 
+        this.filters.forEach( f => {
+            tags = { ... tags, ... f.getTags(order,flags,orders,tags) };
+        });
+
+        return tags;
     }
 
     tagsStringify(tagsObject)

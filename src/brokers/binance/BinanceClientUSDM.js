@@ -17,7 +17,15 @@ class BinanceClientUSDM extends BrokerOrdersIO {
     {
         super();
         this.credentials = { api_key: apiKey, api_secret: secretKey };
-        this.client = new USDMClient(this.credentials);
+        
+        this.client = new USDMClient({
+            ... this.credentials,
+            ... {
+                disableTimeSync: true,
+                recvWindow: 30000
+            }
+        });
+
         this.eventProcessors = [];
         this.exchangeInfo = null;
 
