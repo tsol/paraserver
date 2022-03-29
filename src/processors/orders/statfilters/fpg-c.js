@@ -1,10 +1,9 @@
 const { TF } = require('../../../types/Timeframes.js');
 
-class FPG_H {
+class FPG_C {
 
     constructor() {
         this.reset();
-        this.tags = {};
     }
 
     reset() {
@@ -13,56 +12,48 @@ class FPG_H {
     getTags(order, flags, orders, tags) // return if order should pass
     {
         const hrs = [1,2,3,4,6,9,12];
-        this.tags = {};
+        let newTags = {};
 
         hrs.forEach( (h) => {
             let bhf = this.makeTag( h, order, orders, '_F' );
             let bhp = this.makeTag( h, order, orders, '_P' );
 
-            this.tags[ h+'HF' ] = bhf;
-            this.tags[ h+'HP' ] = bhp;
-
             let winner = 'F';
 
             if (   (bhp.ratio > bhf.ratio)
-                && (bhp.num >= 10)
+                && (bhp.num >= 4)
                 && ( (bhp.gain > 0) && (bhp.gain > bhf.gain))
             ) {
                 winner = 'P';
             }
 
-            this.tags[ h+'H' ] = {
-                value: ( tags.fp.value == '_'+winner ? 'Y' : 'N' )
+
+            newTags[ h+'C' ] = {
+                value: ( tags.fp.value == '_'+winner ? 'Y' : 'N' ),
+
+                comment: 'F:'+bhf.num+'='+bhf.ratio.toFixed(2)+'/'+bhf.gain.toFixed(2)+'$ '+ 
+                         'P:'+bhp.num+'='+bhp.ratio.toFixed(2)+'/'+bhp.gain.toFixed(2)+'$ '
+
             }
             
         });
 
-        return this.tags;
+        return newTags;
     }
 
-    is(hour) {
-        return this.tags[ hour + 'h' ].value === 'Y';
-    }
-
-    ratio(hour) {
-        return this.tags[ hour + 'h' ].ratio;
-    }
-
-    gain(hour) {
-        return this.tags[ hour + 'h' ].gain;
-    }
-
+  
     makeTag( hours, order, orders, fp ) {
         const since = order.time - hours * TF.HOUR_LENGTH;
     
         let fOrders = orders.filter( (o) => {
             return ( o.time > since )
-                && (o.tags.fp.value == fp);
+                && (o.tags.fp.value == fp)
+                && (!o.active)
         });
 
         const res = fOrders.reduce( (t, order) => { 
-                t.gain+=order.gain;
-                if (order.gain>0) {t.win++} else {t.lost++};
+                t.gain += order.gain;
+                if ( order.gain > 0 ) { t.win++ } else { t.lost++ };
                 return t;
         }, { gain: 0, win: 0, lost: 0 });
 
@@ -70,13 +61,7 @@ class FPG_H {
         const num = fOrders.length;
         const ratio = calcWinLooseRatio( res.win, res.lost );
 
-        let yes = 'N';
-        if ( (num > 16) && (gain > 0) ) { yes = 'Y'; };
-
-        return {   value: yes,
-                   comment: num+'='+ratio.toFixed(2)+'/'+gain.toFixed(2)+'$',
-                   num: num, gain: gain, ratio: ratio
-        };
+        return { num: num, gain: gain, ratio: ratio };
     }
  
 }
@@ -89,5 +74,5 @@ function calcWinLooseRatio(win, loose)
 }
 
 
-module.exports = FPG_H
+module.exports = FPG_C
 

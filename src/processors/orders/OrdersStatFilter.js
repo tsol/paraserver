@@ -2,6 +2,8 @@
 const BFP = require('./statfilters/bfp.js');
 const FPG_B = require('./statfilters/fpg-b.js');
 const FPG_H = require('./statfilters/fpg-h.js');
+const FPG_C2 = require('./statfilters/fpg-c2.js');
+//const FPG_C = require('./statfilters/fpg-c2.js');
 
 // const HOURLY = require('./statfilters/hourly.js');
 
@@ -9,15 +11,18 @@ class OrdersStatFilter {
 
     constructor() {
 
+        const hrs = [1,2,3,4,6,9,12];
+
         this.filters = [
             new BFP(),
-            new FPG_B(1),
-            new FPG_B(2),
-            new FPG_B(3),
-            new FPG_B(4),
-            new FPG_B(6),
-            new FPG_H()
+            new FPG_H(),
         ];
+
+        hrs.forEach( (h) => {
+            this.filters.push( new FPG_B(h) );
+            this.filters.push( new FPG_C2(h) );
+
+        })
 
     }
 

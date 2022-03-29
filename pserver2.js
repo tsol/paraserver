@@ -65,7 +65,7 @@ mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
         }
         else {
 
-            runLive = false;
+            runLive = true;
 
             brokerBinanceSrc.getTradableSymbols().then( (symbols) => {
                 dataProcessor.runSymbols(symbols, runLive);
