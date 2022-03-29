@@ -1,4 +1,6 @@
+
 const { TF } = require('../../../types/Timeframes.js');
+const { winRatio } = require('./helper.js');
 
 class FPG_H {
 
@@ -9,6 +11,11 @@ class FPG_H {
 
     reset() {
     }
+
+
+    hourlyTick(order,flags,orders,hour) {
+    }
+ 
  
     getTags(order, flags, orders, tags) // return if order should pass
     {
@@ -68,26 +75,20 @@ class FPG_H {
 
         const gain = res.gain;
         const num = fOrders.length;
-        const ratio = calcWinLooseRatio( res.win, res.lost );
+        const wl_ratio = winRatio( res.win, res.lost );
+
 
         let yes = 'N';
         if ( (num > 16) && (gain > 0) ) { yes = 'Y'; };
 
         return {   value: yes,
-                   comment: num+'='+ratio.toFixed(2)+'/'+gain.toFixed(2)+'$',
-                   num: num, gain: gain, ratio: ratio
+                   comment: num+'='+wl_ratio.toFixed(2)+'/'+gain.toFixed(2)+'$',
+                   num: num, gain: gain, ratio: wl_ratio
         };
     }
  
 }
 
-function calcWinLooseRatio(win, loose)
-{
-    let ratio = 0;
-    if (win > 0) { ratio = (win / (win+loose)) * 100; }
-    return  ratio;
-}
 
-
-module.exports = FPG_H
+module.exports = FPG_H;
 

@@ -34,11 +34,10 @@ class AnalyzersFactory {
             ['helper',      'helper',       orderManager, null ],
          
             ['dblbottom',   'st_dblbottom',    true,    null],
-            ['dbltop',      'st_dblbottom',    false,   null],
             ['macwfma',     'st_mac_wfma',    null,    null],
             ['tpcwfma',     'st_tpc_wfma',     null,   null],
             ['cma3buy',     'st_cma3',         true,   null],
-    
+
         ];
 /*
         ['crossma3',    'crossma3',      null,   null],
@@ -48,7 +47,6 @@ class AnalyzersFactory {
         ['dblbottom',   'dblbottom',    null,   null],
 
 */
-
 
         this.reloadAll();
 

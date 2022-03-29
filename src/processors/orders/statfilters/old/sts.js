@@ -1,4 +1,4 @@
-const { TF } = require('../../../types/Timeframes.js');
+const { TF } = require('../../../../types/Timeframes.js');
 
 class STS {
 

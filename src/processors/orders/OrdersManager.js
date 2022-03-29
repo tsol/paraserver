@@ -47,8 +47,9 @@ class OrdersManager {
         if (! SETTINGS.dev) {
             if (emulatedOrder.tags && flags.get('is_live'))
             {
-                if (emulatedOrder.tags.fp && emulatedOrder.tags.fp.value === '_F') {
-                //if (emulatedOrder.tags.fp && emulatedOrder.tags['6H'].value === 'Y') {
+                if (emulatedOrder.tags && emulatedOrder.tags.CU.value === 'Y') {
+//                if (emulatedOrder.tags.fp && emulatedOrder.tags.fp.value === '_F') {
+//                if (emulatedOrder.tags.fp && emulatedOrder.tags['6H'].value === 'Y') {
                     this.doMakeOrderFromEmulated( emulatedOrder.id );
                 }
             }
