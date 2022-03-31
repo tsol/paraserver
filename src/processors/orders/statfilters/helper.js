@@ -19,4 +19,9 @@ function orderStats(orders)
     return res;
 }
 
-module.exports = { winRatio, orderStats };
+function fnum(num, digits){
+    var pow = Math.pow(10, digits);
+    return Math.round(num*pow) / pow;
+}
+
+module.exports = { winRatio, orderStats, fnum };

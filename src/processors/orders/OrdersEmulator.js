@@ -2,14 +2,20 @@
 const OrdersStatFilter = require('./OrdersStatFilter.js');
 const { TF } = require('../../types/Timeframes.js');
 
+const SETTINGS = require('../../../private/private.js');
+const { winRatio, fnum } = require('./statfilters/helper.hs');
+
 class OrdersEmulator {
 
     static STAKE_USD = 100;
+    static LEVERAGE = 20;
+    static MARGINCALL_GAIN = -1*(OrdersEmulator.STAKE_USD / OrdersEmulator.LEVERAGE);
     static COST_BUY_PERCENT = 0.001;
     static COST_SELL_PERCENT = 0.001;
     
     constructor() {
         this.orders = [];
+        this.activeOrders = [];
         this.statFilter = new OrdersStatFilter();
     }
 
@@ -35,7 +41,11 @@ class OrdersEmulator {
         const tickerId = symbol+'-'+timeframe;
         const orderId = tickerId+'-'+strategyObject.getId()+'-'+time;
  
-        const flagsSnapshot = JSON.parse(JSON.stringify(flags.getAll()));
+        let flagsSnapshot = null;
+        
+        if (! SETTINGS.fast) {
+            flagsSnapshot = JSON.parse(JSON.stringify(flags.getAll()));
+        }
 
         const order = {
             id: orderId,
@@ -69,7 +79,7 @@ class OrdersEmulator {
         order.tags = tags;
 
         this.orders.push(order);
-
+        this.activeOrders.push(order);
 
         return order;
     }
@@ -110,14 +120,17 @@ class OrdersEmulator {
     priceUpdated(symbol, timeframe, newPrice, isLive) {
         //console.log('OM: price update '+symbol+' = '+newPrice);
 
-        const orders = this.orders.filter( o => 
-            o.active && (o.symbol === symbol) && (o.timeframe === timeframe) );
+        const orders = this.activeOrders.filter( o => 
+            (o.symbol === symbol) && (o.timeframe === timeframe) );
 
         orders.forEach( (o) => {
 
-            this.recalcOrderGain(o, newPrice);
+            let marginCall = this.recalcOrderGain(o, newPrice);
 
-            if (o.type === 'buy') {
+            if (marginCall) {
+                this.closeOrder(o, newPrice, 'lost');
+            } 
+            else if (o.type === 'buy') {
 
                 if (newPrice >= o.takeProfit)
                     { this.closeOrder(o, newPrice, 'won'); }
@@ -164,28 +177,28 @@ class OrdersEmulator {
         
         const priceDiff = order.maxPriceReached - order.entryPrice;
 
-        if ( priceDiff > 0 ) {
-            const target = Math.abs(order.takeProfit - order.entryPrice);
-            const coef = toFixedNumber( (priceDiff / target) * 100, 2);
-            order.reachedPercent = ( coef < 100 ? coef : 100 );
-        }
+        const target = Math.abs(order.takeProfit - order.entryPrice);
+        const coef = toFixedNumber( Math.abs(priceDiff / target) * 100, 2);
+        order.reachedPercent = ( coef < 100 ? coef : 100 );
       
+        if (order.gain <= OrdersEmulator.MARGINCALL_GAIN) {
+            order.gain = OrdersEmulator.MARGINCALL_GAIN;
+            order.tags.MC = { value: 'Y' };
+            return true;
+        }
+
+        return false;
     }
 
     closeOrder(order,price,result) {
- 
-        if (! order) {
-            throw new Error('OM: order not found on close order: '+orderId);
-        }
-        if (! price ) {
-            throw new Error('OM zero price');
-        }
-
-        this.recalcOrderGain(order,price);
 
         order.active = false;                
         order.closePrice = price;
         order.result = result;
+
+        this.activeOrders = this.activeOrders.filter( o => o !== order );
+
+        order.comment += ' MC:'+ ( order.tags.MC ? 'Y' : 'N' ); 
 
     }
 
@@ -223,12 +236,11 @@ class OrdersEmulator {
     {
         if (! this.orders || this.orders.length === 0) { return false; }
 
-        const found = this.orders.find( 
+        const found = this.activeOrders.find( 
             (v) => {
                 return     (v.symbol == symbol)
                         && (v.timeframe == timeframe) 
-                        && (v.strategy == strategy)
-                        && (v.active); 
+                        && (v.strategy == strategy); 
             }
         );
 
@@ -301,8 +313,8 @@ class OrdersEmulator {
                 symbol: u.symbol,
                 strategy: u.strategy,
                 entries: (u.win+u.lost),
-                ratio: calcWinLooseRatio(u.win,u.lost),
-                gain: toFixedNumber(u.gain,2)
+                ratio: winRatio(u.win,u.lost),
+                gain: fnum(u.gain,2)
             };
 
             TF.TFRAMES.forEach( (t) => {
@@ -317,8 +329,8 @@ class OrdersEmulator {
                 else {
                     let a = accSST[ idSST ];
                     reportLine[timeframe+'_entries'] = a.win + a.lost;
-                    reportLine[timeframe+'_ratio'] = calcWinLooseRatio(a.win, a.lost);
-                    reportLine[timeframe+'_gain'] = toFixedNumber(a.gain,2);
+                    reportLine[timeframe+'_ratio'] = winRatio(a.win, a.lost);
+                    reportLine[timeframe+'_gain'] = fnum(a.gain,2);
                 }
 
             });
@@ -330,19 +342,6 @@ class OrdersEmulator {
         return res;
     }
 
-}
-
-
-function calcWinLooseRatio(win, loose)
-{
-    let ratio = 0;
-    if (win > 0) { ratio = (win / (win+loose)) * 100; }
-    return  toFixedNumber(ratio,2);
-}
-
-function toFixedNumber(num, digits){
-    var pow = Math.pow(10, digits);
-    return Math.round(num*pow) / pow;
 }
 
 

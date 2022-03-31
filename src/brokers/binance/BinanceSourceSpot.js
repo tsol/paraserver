@@ -62,7 +62,7 @@ class BinanceSourceSpot {
             +TF.timestampToDate(startTimestamp));
 
        let candles = await this.client.klines(symbol, timeframe, {
-                limit: BinanceSource.MAX_CANDLES_PER_REQUEST,
+                limit: BinanceSourceSpot.MAX_CANDLES_PER_REQUEST,
                 startTime: startTimestamp,
                 endTime: endTimestamp
             })

@@ -23,12 +23,14 @@ class Flags {
         this.tickers = {};
         this.currentSymbol = undefined;
         this.currentTimeframe = undefined;
+        this.currentTicker = undefined;
     }
 
     start(symbol,timeframe) {
         this.currentSymbol = symbol;
         this.currentTimeframe = timeframe;
         this.tickers[ this.currentId() ] = {};
+        this.currentTicker = this.tickers[ this.currentId() ];
     }
 
     currentId() {
@@ -36,11 +38,11 @@ class Flags {
     }
 
     set(field, value) {
-        this.tickers[ this.currentId() ][ field ] = value;
+        this.currentTicker[ field ] = value;
     }
 
     get(field) {
-        return this.tickers[ this.currentId() ][ field ];
+        return this.currentTicker[ field ];
     }
 
     getAll() {

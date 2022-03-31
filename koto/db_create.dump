@@ -1,0 +1,5 @@
+CREATE DATABASE kotocandles;
+CREATE USER 'koto'@localhost IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON kotocandles.* TO 'koto'@localhost;
+FLUSH PRIVILEGES;
+SHOW GRANTS FOR 'koto'@localhost;

@@ -40,6 +40,10 @@ class BrokerOrdersIO {
     async closeOrderIds(symbol, orderIdsArray) {};
     async moveStopLoss(symbol, orderId, newPrice){};
     async moveTakeProfit(symbol, orderId, newPrice){};
+
+
+    addEventProcessor(object) {};
+    getClient() { return null; };
     
 }
 

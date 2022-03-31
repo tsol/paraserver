@@ -8,17 +8,21 @@ const DataProcessor = require('./src/processors/DataProcessor.js');
 const OrdersManager = require('./src/processors/orders/OrdersManager.js');
 
 const Brokers = require('./src/brokers/Brokers.js');
-const BinanceSourceUSDM = require('./src/brokers/binance/BinanceSourceUSDM.js');
-const BinanceClientUSDM = require('./src/brokers/binance/BinanceClientUSDM.js');
+
+const BinanceSourceSpot = require('./src/brokers/binance/BinanceSourceSpot.js');
+const { BrokerOrdersIO } = require('./src/brokers/BrokerIO.js');
+
+const BinanceSpotKoto = require('./src/brokers/binance/BinanceSpotKoto.js');
 
 const MysqlDB = require('./src/db/MysqlDB.js');
 const CandleDB = require('./src/db/CandleDB.js');
 
-const brokerBinanceSrc = new BinanceSourceUSDM(SETTINGS.users.harry.brokers.binance);
-const brokerClientUSDM = new BinanceClientUSDM(SETTINGS.users.utah.brokers.binance);
+const brokerSource = new BinanceSourceSpot(SETTINGS.users.mona.brokers.binance);
+const brokerClient = new BrokerOrdersIO({});
+const brokerKoto = null;
 
 const brokers = new Brokers();
-brokers.addBroker(brokerBinanceSrc);
+brokers.addBroker(brokerSource);
 
 const mysqlHandler = new MysqlDB();
 
@@ -37,42 +41,34 @@ const io = new Server({
     allowEIO3: true
 });
 
-let runLive = true;
+let coins = [ 'BTCUSDT' ];
+const runLive = true;
 
-const coins = [ 'BTCUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT',
-                'ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT',
-                'AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'
-];
+mysqlHandler.connect( SETTINGS.databases.mysqlKoto ).then( () => {
 
-//const coins = [ 'BTCUSDT' ];
+    candleDB = new CandleDB(mysqlHandler, brokers);
+    ordersManager = new OrdersManager(brokerClient, clients);
+    dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB,ordersManager,clients);
+ 
+    //dataProcessor.runSymbols(coins, runLive);
 
-mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
-    brokerClientUSDM.init().then( () => {
+    binanceKoto = new BinanceSpotKoto(SETTINGS.users.mona.brokers.binance, dataProcessor);
+    binanceKoto.updateAccountInfo().then( () => {
+        binanceKoto.updateMyTrades('USDT').then( () => {
+            
+            binanceKoto.getMyTrades().forEach( (trade) => {
+                if (! coins.find(c => c === trade.symbol) )
+                    { coins.push(trade.symbol); }
+            })
 
-        candleDB = new CandleDB(mysqlHandler, brokers);
-        ordersManager = new OrdersManager(brokerClientUSDM, clients);
-        dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB,ordersManager,clients);
-    
-        if (!SETTINGS.dev) {
+            console.log('SYMBOLS: '+JSON.stringify(coins));
+            dataProcessor.runSymbols(coins, runLive);
 
-            brokerBinanceSrc.getTradableSymbols().then( (symbols) => {
-                dataProcessor.runSymbols(symbols, runLive);
-            });
-    
-        }
-        else {
-
-            runLive = false;
-
-            brokerBinanceSrc.getTradableSymbols().then( (symbols) => {
-                dataProcessor.runSymbols(symbols, runLive);
-            });
-
-
-//            dataProcessor.runSymbols(coins, runLive);
-        }
+        })
 
     })
+
+
 });
 
 
@@ -124,11 +120,14 @@ io.on("connection", (socket) => {
         let data = dataProcessor.getOrdersList();
         socket.emit("orders", data);
 
+        //let data = dataProcessor.getTickersState();
+        //socket.emit("tickers", data);
     });
 
     socket.on("list_tickers", (arg) => {
         if (!dataProcessor) return;
         let data = dataProcessor.getTickersState();
+        //console.log('SENDING_TICKERS: '+JSON.stringify(data))
         socket.emit("tickers", data);
     });
 
@@ -160,6 +159,11 @@ io.on("connection", (socket) => {
         socket.emit("orders_stats", { timeframes: timeframes, stats: orderStats });
     });
 
+    socket.on("broker_my_trades", (arg) => {
+        if (!binanceKoto) return;
+        let data = binanceKoto.getMyTradesJSON();
+        socket.emit('broker_my_trades', data);
+    });
 
 });
 
