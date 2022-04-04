@@ -12,7 +12,7 @@ const PRICE_STORE_FORMAT = 'DECIMAL(24,12) NOT NULL';
 const VOLUME_STORE_FORMAT = 'DECIMAL(24,12) NOT NULL';
 const TIMESTAMP_STORE_FORMAT = 'BIGINT NOT NULL';
 
-class MysqlDB {
+class MysqlCandles {
 
     constructor()
     {
@@ -34,7 +34,7 @@ class MysqlDB {
             con.connect(function(err) {
                 if (err) return reject(err);
                 _self.connection = con;
-                console.log('MDB: connected');
+                console.log('MYSQLCANDLES: connected');
                 resolve(true);
             });
 
@@ -47,7 +47,7 @@ class MysqlDB {
 
         this.connection.end(function(err) {
             if (err) throw err;
-            console.log('MDB: disconnected');
+            console.log('MYSQLCANDLES: disconnected');
             this.connection = null;
         });
 
@@ -55,7 +55,7 @@ class MysqlDB {
 
     async loadCandlesPeriod(symbol,timeframe,startTimestamp,endTimestamp) {
 
-        if (! this.connection ) throw new Error('MDB: no connection');
+        if (! this.connection ) throw new Error('MYSQLCANDLES: no connection');
 
         var _self = this;
         const tableName = PIO.getTableName(symbol,timeframe);
@@ -73,7 +73,7 @@ class MysqlDB {
 
         return new Promise(function(resolve, reject) {
       
-            if (! con ) reject(new Error('MDB: lost connection'));
+            if (! con ) reject(new Error('MYSQLCANDLES: lost connection'));
         
             con.query( sqlQuery,
                 function (err, result, fields) {
@@ -124,7 +124,7 @@ class MysqlDB {
               console.log(values);
               throw err;
           }
-          console.log("MDB: number of records inserted: " + result.affectedRows);
+          console.log("MYSQLCANDLES: number of records inserted: " + result.affectedRows);
         });
 
     }
@@ -141,7 +141,7 @@ class PIO { /* private hidden IO */
     static touchTable(con, tableName)
     { 
         return new Promise(function(resolve, reject) {
-            if (! con ) reject('MDB: no connection');
+            if (! con ) reject('MYSQLCANDLES: no connection');
         
             con.query("SHOW TABLES LIKE '"+tableName+"'",
             function (err, result, fields) {
@@ -201,4 +201,4 @@ class PIO { /* private hidden IO */
 }
 
 
-module.exports = MysqlDB;
+module.exports = MysqlCandles;

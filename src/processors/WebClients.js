@@ -1,4 +1,4 @@
-class SocketClients {
+class WebClients {
 
     constructor() {
         this.sockets = [];
@@ -23,4 +23,4 @@ class SocketClients {
 
 }
 
-module.exports = SocketClients;
+module.exports = WebClients;

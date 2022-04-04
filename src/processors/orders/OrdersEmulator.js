@@ -1,17 +1,23 @@
-
 const OrdersStatFilter = require('./OrdersStatFilter.js');
 const { TF } = require('../../types/Timeframes.js');
+const Order = require('../../types/Order.js');
 
 const SETTINGS = require('../../../private/private.js');
-const { winRatio, fnum } = require('./statfilters/helper.hs');
+const { winRatio, fnum } = require('./statfilters/helper.js');
 
 class OrdersEmulator {
 
     static STAKE_USD = 100;
     static LEVERAGE = 20;
     static MARGINCALL_GAIN = -1*(OrdersEmulator.STAKE_USD / OrdersEmulator.LEVERAGE);
-    static COST_BUY_PERCENT = 0.001;
-    static COST_SELL_PERCENT = 0.001;
+    
+    static COST_BUY_PERCENT = 0.0004;  // 4 cents from every 100 dollars
+    static COST_SELL_PERCENT = 0.0004; // 0.04 % taker comission
+
+    static COST_PERCENT = OrdersEmulator.COST_BUY_PERCENT+OrdersEmulator.COST_SELL_PERCENT;
+
+    static TRAILING_STOP_TRIGGER = 50; 
+    static TRAILING_LOSSLESS = OrdersEmulator.COST_PERCENT;
     
     constructor() {
         this.orders = [];
@@ -26,57 +32,38 @@ class OrdersEmulator {
     }
     
     newOrder(
-            type,
-            flags, 
-            strategyObject, 
-            entryPrice, 
-            takeProfit, 
-            stopLoss,
-            symbol,
-            timeframe,
-            time,
-            comment
+        time,
+        strategy,
+        symbol,
+        timeframe,
+        isLong,
+        entryPrice, 
+        takeProfit, 
+        stopLoss,
+        comment,
+        flags 
     ) {
 
-        const tickerId = symbol+'-'+timeframe;
-        const orderId = tickerId+'-'+strategyObject.getId()+'-'+time;
- 
         let flagsSnapshot = null;
-        
+
         if (! SETTINGS.fast) {
             flagsSnapshot = JSON.parse(JSON.stringify(flags.getAll()));
         }
 
-        const order = {
-            id: orderId,
+        const order = new Order({
             time: time,
-            type: type,
+            strategy: strategy,
             symbol: symbol,
             timeframe: timeframe,
-            strategy: strategyObject.getId(),
-            
+            isLong: isLong,
             entryPrice: entryPrice,
-            takeProfit: takeProfit,
+            quantity: this.calcQuantity(entryPrice),
             stopLoss: stopLoss,
-
-            flags: flagsSnapshot,
-
-            active: true,
-            result: 'active',
-            closePrice: 0,
-            gain: 0,
-            maxPriceReached: entryPrice,
-            reachedPercent: 0,
-
-            comment: comment,
-            strategyObject: strategyObject
-        };
-
-        order.qty = this.riskManageGetQty(order);
-    
-        const tags = this.statFilter.getTags(order, flags, this.orders);
-        order.comment += this.statFilter.tagsStringify(tags);
-        order.tags = tags;
+            takeProfit: takeProfit
+        });
+  
+        order.setTags( this.statFilter.getTags(order, flags, this.orders) );
+        order.setComment(comment);
 
         this.orders.push(order);
         this.activeOrders.push(order);
@@ -84,11 +71,13 @@ class OrdersEmulator {
         return order;
     }
 
+    getOrders() {
+        return this.orders;
+    }
 
-
-    riskManageGetQty(order) {
+    calcQuantity(entryPrice) {
         const inUSD = OrdersEmulator.STAKE_USD;
-        const priceInUSD = order.entryPrice;
+        const priceInUSD = entryPrice;
         const qty = inUSD / priceInUSD;
         return qty;
     }
@@ -98,132 +87,179 @@ class OrdersEmulator {
         return this.lastUpdateTime;
     }
 
-    candleClosed(candle,isLive) {
-        
-        if (this.lastUpdateTime < candle.closeTime) {
-            this.lastUpdateTime = candle.closeTime;
+    updateClock(candle,isLive)
+    {
+        if (isLive) {
+            this.lastUpdateTime = TF.currentTimestamp();
+            return;
         }
 
-        this.priceUpdated(candle.symbol, candle.timeframe, candle.high, isLive);
-        this.priceUpdated(candle.symbol, candle.timeframe, candle.low, isLive);
+        this.lastUpdateTime = candle.closeTime;
+    }
+
+    candleClosed(candle,isLive) {
+
+        if ( isLive ) {
+            this.candleUpdated(candle,isLive);
+            return;
+        }
+
+        this.updateClock(candle, isLive);
+        this.priceUpdate(candle.symbol, candle.timeframe, candle.low, candle.high, isLive);
+
     }
 
     candleUpdated(candle,isLive) {
-
-        if (this.lastUpdateTime < candle.openTime) {
-            this.lastUpdateTime = candle.openTime;
-        }
-
-        this.priceUpdated(candle.symbol, candle.timeframe, candle.close, isLive);
+        // it's always only live, why param?
+        this.updateClock(candle, isLive);
+        this.priceUpdate(candle.symbol, candle.timeframe, candle.close, candle.close, isLive);
     }
 
-    priceUpdated(symbol, timeframe, newPrice, isLive) {
-        //console.log('OM: price update '+symbol+' = '+newPrice);
-
+    priceUpdate(symbol, timeframe, lowPrice, highPrice, isLive)
+    {
         const orders = this.activeOrders.filter( o => 
             (o.symbol === symbol) && (o.timeframe === timeframe) );
+        const long  = orders.filter( o => o.isLong() );
+        const short = orders.filter( o => o.isShort() );
+        
+        // 1. MARGIN CALLS + STOP LOSSES first
+
+        let newPrice = null;
+
+        short.forEach( (o) => {
+            newPrice = Math.min(highPrice, o.stopLoss);
+            let marginCall = this.recalcOrderGain(o, newPrice);
+            if (marginCall || (newPrice >= o.stopLoss)) {
+                if (o.getTagValue('tsc')) {
+                    o.setTag('stl',1);
+                }
+                this.closeOrder(o, false);
+            } 
+        });
+
+        long.forEach( (o) => {
+            newPrice = Math.max(lowPrice,o.stopLoss);
+            let marginCall = this.recalcOrderGain(o, newPrice);
+            if (marginCall || (newPrice <= o.stopLoss)) {
+                if (o.getTagValue('tsc')) {
+                    o.setTag('stl',1);
+                }
+                this.closeOrder(o, false);
+            } 
+        });
+
+        // 2. take profits
+
+        newPrice = lowPrice;
+        short.forEach( (o) => {
+            if (o.isActive() && (newPrice <= o.takeProfit)) {
+                this.recalcOrderGain(o, o.takeProfit);
+                this.closeOrder(o, true);
+            } 
+        });
+
+        newPrice = highPrice;
+        long.forEach( (o) => {
+            if (o.isActive() && (newPrice >= o.takeProfit)) {
+                this.recalcOrderGain(o, o.takeProfit);
+                this.closeOrder(o, true);
+            } 
+        });
+/*
+        const res = orders.reduce( (t, order) => { 
+            t.gain += order.gain;
+            if ( order.gain > 0 ) { t.win++ } else { t.lost++ };
+            return t;
+        }, { gain: 0, win: 0, lost: 0 });
+
+        const ratio = winRatio( res.win, res.lost );
+
+        if ( res.gain < 25 ) { return; }
+*/
+
+       return;
+
+        // 3. Trailing stop Move
 
         orders.forEach( (o) => {
-
-            let marginCall = this.recalcOrderGain(o, newPrice);
-
-            if (marginCall) {
-                this.closeOrder(o, newPrice, 'lost');
-            } 
-            else if (o.type === 'buy') {
-
-                if (newPrice >= o.takeProfit)
-                    { this.closeOrder(o, newPrice, 'won'); }
-
-                else if (newPrice <= o.stopLoss)
-                    { this.closeOrder(o, newPrice, 'lost') }
+            if (o.isActive() && (! o.getTagValue('tsc') ) ) {
+                if (o.calcTrailingReachedPercent() > OrdersEmulator.TRAILING_STOP_TRIGGER) {
+                    let newStop = this.calcNewTrailingStopPrice(o);
+                    o.setTag('tsc',o.stopLoss+'=>'+fnum(newStop,2));
+                    o.setStopLoss(newStop);
+                }
             }
-            else { // sell 
-
-                if (newPrice <= o.takeProfit)
-                    { this.closeOrder(o, newPrice, 'won'); }
-                    
-                else if (newPrice >= o.stopLoss)
-                    { this.closeOrder(o, newPrice, 'lost') }
-
-            }
-
         });
+
+
+        // 4. check if new stop losses have been kicked out by other 
+
+        newPrice = highPrice;
+        short.forEach( (o) => {
+            if ( newPrice >= o.stopLoss ) {
+                this.recalcOrderGain(o, o.stopLoss);
+                this.closeOrder(o, false);
+                if (o.getTagValue('tsc')) {
+                    o.setTag('stl',2);
+                }
+            } 
+        });
+
+        newPrice = lowPrice;
+        long.forEach( (o) => {
+            if ( newPrice <= o.stopLoss ) {
+                this.recalcOrderGain(o, o.stopLoss);
+                this.closeOrder(o, false);
+                if (o.getTagValue('tsc')) {
+                    o.setTag('stl',2);
+                }
+            } 
+        });
+
 
     }
 
+
+    calcNewTrailingStopPrice(order) {
+//        return order.entryPrice * 
+//            (1 + (order.isLong() ? 1 : -1) * OrdersEmulator.COST_PERCENT );
+            return order.entryPrice * 
+            (1 + (order.isLong() ? 1 : -1) * OrdersEmulator.TRAILING_LOSSLESS );
+
+    }
 
 
     recalcOrderGain(order,currentPrice)
     {
         
-        const boughtInUSD = order.qty * order.entryPrice;
-        const soldInUSD = order.qty * currentPrice;
-        const commissionInUSD = soldInUSD * OrdersEmulator.COST_SELL_PERCENT -
-                                boughtInUSD * OrdersEmulator.COST_BUY_PERCENT;
-
-        if (order.type === 'buy') {
-            order.gain = soldInUSD - boughtInUSD - commissionInUSD;
-
-            if ( currentPrice > order.maxPriceReached)
-                { order.maxPriceReached = currentPrice; }
+        order.setPrice(currentPrice);
+        order.recalcGain(OrdersEmulator.COST_BUY_PERCENT, OrdersEmulator.COST_SELL_PERCENT);
+/*
+        if (order.getReachedPercent() > 30 ) {
+            const rp = 5 * Math.floor( order.getReachedPercent() / 5 );
+            for (let i = 30; i <= rp; i+=5) {
+                order.setTag('RP'+i,1);
+            }
         }
-        else { // sell
-            order.gain = boughtInUSD - soldInUSD - commissionInUSD;
-
-            if ( currentPrice < order.maxPriceReached)
-                { order.maxPriceReached = currentPrice; }    
-        }
-        
-        const priceDiff = order.maxPriceReached - order.entryPrice;
-
-        const target = Math.abs(order.takeProfit - order.entryPrice);
-        const coef = toFixedNumber( Math.abs(priceDiff / target) * 100, 2);
-        order.reachedPercent = ( coef < 100 ? coef : 100 );
-      
+*/
         if (order.gain <= OrdersEmulator.MARGINCALL_GAIN) {
-            order.gain = OrdersEmulator.MARGINCALL_GAIN;
-            order.tags.MC = { value: 'Y' };
+            order.setGain(OrdersEmulator.MARGINCALL_GAIN);
+            order.setTag('MC','Y');
             return true;
         }
 
         return false;
     }
 
-    closeOrder(order,price,result) {
-
-        order.active = false;                
-        order.closePrice = price;
-        order.result = result;
-
+    closeOrder(order,isWin) {
+        order.doClose(isWin,this.getLastUpdateTime());
         this.activeOrders = this.activeOrders.filter( o => o !== order );
-
         order.comment += ' MC:'+ ( order.tags.MC ? 'Y' : 'N' ); 
-
     }
 
     toJSON() {
         return this.orders.map( (v) => {
-            return {
-                id: v.id,
-                time: v.time,
-                type: v.type,
-                symbol: v.symbol,
-                timeframe: v.timeframe,
-                strategy: v.strategy,
-                entryPrice: v.entryPrice,
-                takeProfit: v.takeProfit,
-                stopLoss: v.stopLoss,
-                active: v.active,
-                result: v.result,
-                closePrice: v.closePrice,
-                gain: toFixedNumber(v.gain, 3),
-                maxPriceReached: v.maxPriceReached,
-                reachedPercent: v.reachedPercent,
-                comment:  v.comment,
-                qty: v.qty ,
-                flags: {}   
-            }
+            return v.toGUI();
         });
     }
 
@@ -234,7 +270,7 @@ class OrdersEmulator {
 
     getOpenOrder(symbol, timeframe, strategy)
     {
-        if (! this.orders || this.orders.length === 0) { return false; }
+        if (! this.activeOrders || this.activeOrders.length === 0) { return false; }
 
         const found = this.activeOrders.find( 
             (v) => {
@@ -344,6 +380,4 @@ class OrdersEmulator {
 
 }
 
-
 module.exports = OrdersEmulator;
-

@@ -2,7 +2,7 @@
 const SETTINGS = require('./private/private.js');
 
 const { Server } = require("socket.io");
-const SocketClients = require("./src/processors/SocketClients.js");
+const WebClients = require("./src/processors/WebClients.js");
 
 const DataProcessor = require('./src/processors/DataProcessor.js');
 const OrdersManager = require('./src/processors/orders/OrdersManager.js');
@@ -11,7 +11,7 @@ const Brokers = require('./src/brokers/Brokers.js');
 const BinanceSourceUSDM = require('./src/brokers/binance/BinanceSourceUSDM.js');
 const BinanceClientUSDM = require('./src/brokers/binance/BinanceClientUSDM.js');
 
-const MysqlDB = require('./src/db/MysqlDB.js');
+const MysqlCandles = require('./src/db/MysqlCandles.js');
 const CandleDB = require('./src/db/CandleDB.js');
 
 const brokerBinanceSrc = new BinanceSourceUSDM(SETTINGS.users.harry.brokers.binance);
@@ -20,17 +20,17 @@ const brokerClientUSDM = new BinanceClientUSDM(SETTINGS.users.utah.brokers.binan
 const brokers = new Brokers();
 brokers.addBroker(brokerBinanceSrc);
 
-const mysqlHandler = new MysqlDB();
+const mysqlCandles = new MysqlCandles();
 
 let dataProcessor = null;
 let ordersManager = null;
 let candleDB = null;
 
-const clients = new SocketClients();
+const webClients = new WebClients();
 
 const io = new Server({
     cors: {
-        origin: [ /localhost/, /192\.168/, /176\.112\.193\.180/ ],
+        origin: SETTINGS.cors_origin,
         methods: ["GET", "POST"],
         credentials: true
       },
@@ -46,12 +46,12 @@ const coins = [ 'BTCUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT',
 
 //const coins = [ 'BTCUSDT' ];
 
-mysqlHandler.connect( SETTINGS.databases.mysql ).then( () => {
+mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
     brokerClientUSDM.init().then( () => {
 
-        candleDB = new CandleDB(mysqlHandler, brokers);
-        ordersManager = new OrdersManager(brokerClientUSDM, clients);
-        dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB,ordersManager,clients);
+        candleDB = new CandleDB(mysqlCandles, brokers);
+        ordersManager = new OrdersManager(brokerClientUSDM, webClients);
+        dataProcessor = new DataProcessor(null,brokers,candleDB,ordersManager,webClients);
     
         if (!SETTINGS.dev) {
 
@@ -80,10 +80,10 @@ console.log('===> READY FOR CONNECTIONS')
 
 io.on("connection", (socket) => {
     
-    clients.connect(socket);
+    webClients.connect(socket);
 
     socket.on('disconnect', (arg) => {
-        clients.disconnect(socket);
+        webClients.disconnect(socket);
     });
 
     socket.on("get_chart", (arg) => {
@@ -160,6 +160,20 @@ io.on("connection", (socket) => {
         socket.emit("orders_stats", { timeframes: timeframes, stats: orderStats });
     });
 
+    socket.on("get_orders_report", (arg) => {
+        if (!dataProcessor) return;
+        try {
+            if (arg.dateFrom) { arg.dateFrom = (new Date(arg.dateFrom)).getTime(); };
+            if (arg.dateTo)   { arg.dateTo = (new Date(arg.dateTo)).getTime(); };
+
+            let ordersReport = dataProcessor.getReport(arg);
+            socket.emit("orders_report", ordersReport );
+        }
+        catch (err) {
+            console.log("REPORT_ERROR: "+err.message);
+            socket.emit("orders_report", [{ periodName: err.message }] )
+        }
+    });   
 
 });
 

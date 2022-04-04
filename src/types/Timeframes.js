@@ -25,9 +25,9 @@ class Timeframes
     ];
 */
     TFRAMES = [
-        { name: '4h',  htf: null,  levelsLimit: 500, days: 30,   trade: false, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
-        { name: '1h',  htf: '4h',  levelsLimit: 500, days: 10,   trade: false, limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
-        { name: '15m', htf: '4h',  levelsLimit: 500, days: 10,   trade: true, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
+        { name: '4h',  htf: null,  levelsLimit: 500, days: 31,   trade: false, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
+        { name: '1h',  htf: '4h',  levelsLimit: 500, days: 14,   trade: false, limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
+        { name: '15m', htf: '4h',  levelsLimit: 500, days: 14,   trade: true, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
     ];
 
     constructor() {

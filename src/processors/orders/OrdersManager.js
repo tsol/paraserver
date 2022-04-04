@@ -1,15 +1,17 @@
 const OrdersEmulator = require('./OrdersEmulator.js');
 const OrdersReal = require('./OrdersReal.js');
+const { TF } = require('../../types/Timeframes.js');
 
 const SETTINGS = require('../../../private/private.js');
-
+const PeriodTagsCompare = require('../../reports/PeriodTagsCompare.js');
 
 class OrdersManager {
     
-    constructor(brokerOrderClient, clients) {
+    constructor(brokerOrderClient, webClients) {
         this.emulator = new OrdersEmulator();
-        this.clients = clients;
-        this.real = new OrdersReal(brokerOrderClient, clients);
+        this.report = new PeriodTagsCompare();
+        this.webClients = webClients;
+        this.real = new OrdersReal(brokerOrderClient, webClients);
     }
 
     reset() {
@@ -19,37 +21,36 @@ class OrdersManager {
     
     /* called by analyzers through helper */
     newOrder(
-            type,
-            flags, 
-            strategyObject, 
-            entryPrice, 
-            takeProfit, 
-            stopLoss,
-            symbol,
-            timeframe,
-            time,
-            comment
+        time,
+        strategy,
+        symbol,
+        timeframe,
+        isLong,
+        entryPrice, 
+        takeProfit, 
+        stopLoss,
+        comment,
+        flags 
     ) {
+        const isLive = flags.get('is_live');
 
         const emulatedOrder = this.emulator.newOrder(
-            type,
-            flags, 
-            strategyObject, 
+            time,
+            strategy,
+            symbol,
+            timeframe,
+            isLong,
             entryPrice, 
             takeProfit, 
             stopLoss,
-            symbol,
-            timeframe,
-            time,
-            comment
+            comment,
+            flags 
         );
 
         if (! SETTINGS.dev) {
-            if (emulatedOrder.tags && flags.get('is_live'))
+            if (isLive && emulatedOrder.tags )
             {
-                if (emulatedOrder.tags && emulatedOrder.tags.CU.value === 'Y') {
-//                if (emulatedOrder.tags.fp && emulatedOrder.tags.fp.value === '_F') {
-//                if (emulatedOrder.tags.fp && emulatedOrder.tags['6H'].value === 'Y') {
+                if (emulatedOrder.tags && emulatedOrder.tags.CU2.value === 'Y') {
                     this.doMakeOrderFromEmulated( emulatedOrder.id );
                 }
             }
@@ -60,7 +61,6 @@ class OrdersManager {
 
     /* ticker io */
     candleClosed(candle,isLive) {
-        
         this.emulator.candleClosed(candle,isLive);
         this.real.candleClosed(candle,isLive);
     }
@@ -81,6 +81,29 @@ class OrdersManager {
         return this.emulator.genStatistics(fromTimestamp, toTimestamp);
     }
 
+    getReport(params)
+    {
+
+        return this.report.getReport(
+                this.emulator.getOrders(),
+                params.dateFrom,
+                params.dateTo,
+                params.interval,
+                params.tag,
+                params.tagValue,
+                params.eval 
+        );
+
+/*
+        return [
+            ... this.report.getReport(this.emulator.getOrders(), 'm', 'CU', 'Y'),
+            ... this.report.getReport(this.emulator.getOrders(), 'm', 'fp', '_F'),
+            ... this.report.getReport(this.emulator.getOrders(), 'm', 'CU2', 'Y'),
+        ]
+*/
+
+    }
+
     getEmulatedOrder(orderId) {
         return this.emulator.getOrderById(orderId);
     }
@@ -89,19 +112,21 @@ class OrdersManager {
         const emulatedOrder = this.emulator.getOrderById(emulatedOrderId);
         if (!emulatedOrder) { return; }
 
-        if (emulatedOrder.real) {
-            console.log('MAKE_EMULATE_ORDER: order already real!');
+        if (emulatedOrder.isBroker()) {
+            console.log('MAKE_EMULATE_ORDER: order already at broker!');
             return;
         }
     
         this.real.newOrderFromEmu(emulatedOrder).then((result) => {
-            emulatedOrder.comment += ' [BROK] '+JSON.stringify(result);
-            this.clientsRefreshOrders();
+            emulatedOrder.setComment(' [BROK] '+JSON.stringify(result));
+            // todo: save to db
+            this.webClientsRefreshOrders();
         }).catch( (err) => {
             console.log('MAKE_EMULATE_ORDER: ERROR');
             console.log(err);
-            emulatedOrder.comment += ' [BRER] '+err.message;
-            this.clientsRefreshOrders();
+            
+            emulatedOrder.setComment(' [BRER] '+err.message);
+            this.webClientsRefreshOrders();
         });
 
     }
@@ -109,9 +134,9 @@ class OrdersManager {
 
     /* helpers */
 
-    clientsRefreshOrders()
+    webClientsRefreshOrders()
     {
-        this.clients.emit('orders',this.getEmulatedOrdersList());
+        this.webClients.emit('orders',this.getEmulatedOrdersList());
     }
 
 

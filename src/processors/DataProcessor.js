@@ -7,13 +7,13 @@ const { TF } = require('../types/Timeframes.js');
 
 class DataProcessor {
 
-    constructor(mysqlHandler, brokers, candleDB, ordersManager, clients) {
+    constructor(dataDB, brokers, candleDB, ordersManager, clients) {
         this.flags = new Flags();
         this.loaders = [];
         this.tickers = {};
         this.ordersManager = ordersManager;
         this.analyzersFactory = new AnalyzersFactory(this.ordersManager);
-        this.mysqlHandler = mysqlHandler;
+        this.dataDB = dataDB;
         this.brokers = brokers;
         this.candleDB = candleDB;
         this.clients = clients;
@@ -107,6 +107,10 @@ class DataProcessor {
 
     getOrder(orderId) {
         return this.ordersManager.getEmulatedOrder(orderId);
+    }
+
+    getReport(params) {
+        return this.ordersManager.getReport(params);
     }
 
     getOrdersStatistics(fromTimestamp, toTimestamp) {

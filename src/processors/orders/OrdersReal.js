@@ -2,9 +2,9 @@ class OrdersReal {
     
     static STAKE_USD = 100;
 
-    constructor(broker, clients) {
+    constructor(broker, webClients) {
         this.broker = broker;
-        this.clients = clients;
+        this.webClients = webClients;
         this.orders = [];
 
         broker.addEventProcessor(this);
@@ -48,16 +48,16 @@ class OrdersReal {
     }
 
     newOrder(
-            type,
-            flags, 
-            strategyObject, 
-            entryPrice, 
-            takeProfit, 
-            stopLoss,
-            symbol,
-            timeframe,
-            time,
-            comment
+        time,
+        strategy,
+        symbol,
+        timeframe,
+        isLong,
+        entryPrice, 
+        takeProfit, 
+        stopLoss,
+        comment,
+        flags 
     ) {
     }
 
@@ -76,7 +76,7 @@ class OrdersReal {
         try {
             const result = await this.broker.makeFullOrder(
                 e.symbol,
-                (e.type == 'buy'),
+                e.isLong(),
                 e.entryPrice,
                 OrdersReal.STAKE_USD,
                 e.stopLoss,
@@ -86,7 +86,11 @@ class OrdersReal {
             console.log('ORDER_REAL: OK');
             console.log(result);
             
-            e.real = result;
+            e.setBroker();
+            e.setQuantity(result.quantity);
+            e.setBrokerORID(result.orders.entry.id);
+            e.setBrokerSLID(result.orders.sl.id);
+            e.setBrokerTPID(result.orders.tp.id);
 
             this.addOrder(e);
 

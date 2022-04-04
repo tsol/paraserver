@@ -123,16 +123,16 @@ class StrategyHelper {
         CDB.entry(this.candle,takeProfit,stopLoss);
 
         return this.ordersManager.newOrder(
-            type,
-            this.flags, 
-            strategyObject, 
+            this.candle.closeTime,
+            strategyObject.getId(),
+            this.candle.symbol,
+            this.candle.timeframe,
+            isBuy,
             entryPrice, 
             takeProfit, 
             stopLoss,
-            this.candle.symbol,
-            this.candle.timeframe,
-            this.candle.closeTime,
-            cmt
+            cmt,
+            this.flags 
         );
 
     }
@@ -140,7 +140,6 @@ class StrategyHelper {
     getOpenOrder(symbol,timeframe,strategy) {
         return this.ordersManager.emulator.getOpenOrder(symbol,timeframe,strategy);
     }
-
 
 }
 

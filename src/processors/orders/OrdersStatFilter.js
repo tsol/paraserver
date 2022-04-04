@@ -5,8 +5,9 @@ const BFP = require('./statfilters/bfp.js');
 const FPG_C2 = require('./statfilters/fpg-c2.js');
 //const FP_SYMBOL = require('./statfilters/fp-symbol.js');
 const CUSTOM = require('./statfilters/custom.js');
+const CUSTOM2 = require('./statfilters/custom2.js');
 
-//const FPG_C = require('./statfilters/fpg-c2.js');
+const FPG_C = require('./statfilters/fpg-c2.js');
 // const HOURLY = require('./statfilters/hourly.js');
 
 class OrdersStatFilter {
@@ -17,9 +18,13 @@ class OrdersStatFilter {
  
         this.filters = [
             new BFP(),
-            new CUSTOM()
+            new CUSTOM(),
+            new CUSTOM2()
+            //new FPG_C(6),
+            //new FPG_C(12),
         ];
-/*
+
+        /*
         const hrs = [2,6,12];
         hrs.forEach( (h) => {
             this.filters.push( new FPG_C2(h) );
@@ -55,20 +60,8 @@ class OrdersStatFilter {
         return tags;
     }
 
-    tagsStringify(tagsObject)
-    {
-        let res = '';
-        for (const tag in tagsObject) {
-            res += ' '+tag+':'+tagsObject[tag].value+
-                ( tagsObject[tag].comment ? ' ['+tagsObject[tag].comment+']' : '');
-        }
-        return res;         
-    }
-
 
 }
-
-
 
 module.exports = OrdersStatFilter;
 
