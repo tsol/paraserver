@@ -100,7 +100,8 @@ class MysqlData {
             tags,
             brokerORID,
             brokerSLID,
-            brokerTPID
+            brokerTPID,
+            closeTime
         VALUES ?`;
 
         let values = [];
@@ -130,7 +131,8 @@ class MysqlData {
                 o.tags,
                 o.brokerORID,
                 o.brokerSLID,
-                o.brokerTPID           
+                o.brokerTPID,
+                o.closeTime           
             ]);
         })
 
@@ -167,7 +169,8 @@ class MysqlData {
             tags = ?,
             brokerORID = ?,
             brokerSLID = ?,
-            brokerTPID = ?
+            brokerTPID = ?,
+            closeTime = ?
         WHERE id = ?`;
 
         const o = order.toSTORE();
@@ -188,7 +191,8 @@ class MysqlData {
                 o.tags,
                 o.brokerORID,
                 o.brokerSLID,
-                o.brokerTPID,           
+                o.brokerTPID,
+                o.closeTime,           
                 o.id
         ];
 

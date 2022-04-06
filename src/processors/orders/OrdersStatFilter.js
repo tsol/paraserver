@@ -1,14 +1,17 @@
 
 const BFP = require('./statfilters/bfp.js');
+const EMATREND = require('./statfilters/ematrend.js');
+
 //const FPG_B = require('./statfilters/fpg-b.js');
 //const FPG_H = require('./statfilters/fpg-h.js');
-const FPG_C2 = require('./statfilters/fpg-c2.js');
+//const FPG_C2 = require('./statfilters/fpg-c2.js');
 //const FP_SYMBOL = require('./statfilters/fp-symbol.js');
-const CUSTOM = require('./statfilters/custom.js');
-const CUSTOM2 = require('./statfilters/custom2.js');
-
-const FPG_C = require('./statfilters/fpg-c2.js');
-// const HOURLY = require('./statfilters/hourly.js');
+//const CUSTOM = require('./statfilters/custom.js');
+//const CUSTOM2 = require('./statfilters/custom2.js');
+//const CUSTOM3 = require('./statfilters/custom3.js');
+//const GD100 = require('./statfilters/gd100.js');
+//const FPG_C = require('./statfilters/fpg-c2.js');
+//const HOURLY = require('./statfilters/hourly.js');
 
 class OrdersStatFilter {
 
@@ -18,10 +21,7 @@ class OrdersStatFilter {
  
         this.filters = [
             new BFP(),
-            new CUSTOM(),
-            new CUSTOM2()
-            //new FPG_C(6),
-            //new FPG_C(12),
+            new EMATREND(20,50,200)
         ];
 
         /*

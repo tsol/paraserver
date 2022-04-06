@@ -46,9 +46,11 @@ class OrdersEmulator {
 
         let flagsSnapshot = null;
 
-        if (! SETTINGS.fast) {
+        if (! SETTINGS.noFlagsSnapshot) {
             flagsSnapshot = JSON.parse(JSON.stringify(flags.getAll()));
         }
+
+        const quantity = this.calcQuantity(entryPrice);
 
         const order = new Order({
             time: time,
@@ -57,18 +59,47 @@ class OrdersEmulator {
             timeframe: timeframe,
             isLong: isLong,
             entryPrice: entryPrice,
-            quantity: this.calcQuantity(entryPrice),
+            quantity: quantity,
             stopLoss: stopLoss,
             takeProfit: takeProfit
         });
-  
+
+
+        order.setFlags(flagsSnapshot);
         order.setTags( this.statFilter.getTags(order, flags, this.orders) );
         order.setComment(comment);
 
         this.orders.push(order);
         this.activeOrders.push(order);
 
+        const profitPreview = this.previewProfit(isLong,quantity,entryPrice,takeProfit);
+        if (  profitPreview < 1 ) {
+            order.setTag('PRF', 'N');
+        }
+        else {
+            order.setTag('PRF','Y');
+        }
+        order.setTag('MAXPRF',profitPreview);
+        order.setTag('rsi',flags.get('rsi14'));
+
         return order;
+    }
+
+
+    previewProfit(isLong, quantity, entryPrice, takeProfit)
+    {
+        const boughtInUSD = quantity * entryPrice;
+        const soldInUSD = quantity * takeProfit;
+        const commissionInUSD = soldInUSD * OrdersEmulator.COST_SELL_PERCENT +
+                                boughtInUSD * OrdersEmulator.COST_BUY_PERCENT;
+        let gain = 0;
+
+        if (isLong ) {
+            gain = soldInUSD - boughtInUSD - commissionInUSD;}
+        else { // sell
+            gain = boughtInUSD - soldInUSD - commissionInUSD;
+        }
+        return gain;
     }
 
     getOrders() {
@@ -221,11 +252,8 @@ class OrdersEmulator {
 
 
     calcNewTrailingStopPrice(order) {
-//        return order.entryPrice * 
-//            (1 + (order.isLong() ? 1 : -1) * OrdersEmulator.COST_PERCENT );
             return order.entryPrice * 
             (1 + (order.isLong() ? 1 : -1) * OrdersEmulator.TRAILING_LOSSLESS );
-
     }
 
 
@@ -253,8 +281,7 @@ class OrdersEmulator {
 
     closeOrder(order,isWin) {
         order.doClose(isWin,this.getLastUpdateTime());
-        this.activeOrders = this.activeOrders.filter( o => o !== order );
-        order.comment += ' MC:'+ ( order.tags.MC ? 'Y' : 'N' ); 
+        this.activeOrders = this.activeOrders.filter( o => o !== order ); 
     }
 
     toJSON() {

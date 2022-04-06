@@ -41,6 +41,7 @@ class BrokerOrdersIO {
     async moveStopLoss(symbol, orderId, newPrice){};
     async moveTakeProfit(symbol, orderId, newPrice){};
 
+    getSymbolInfo(symbol){};  // { qtyPrecision, pricePrecision, minQty, tickSize };
 
     addEventProcessor(object) {};
     getClient() { return null; };

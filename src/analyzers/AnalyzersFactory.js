@@ -13,16 +13,25 @@ class AnalyzersFactory {
             ['atr14',       'atr',          14,     null],
             ['rsi14',       'rsi',          14,     null],
 
-            ['mac9',       'ma',            {source:'c', period: 9}, null],
+            ['mac9',        'ma',            {source:'c', period: 9}, null],
             ['mac20',       'ma',           {source:'c', period: 20}, null],
             ['mac50',       'ma',           {source:'c', period: 50}, null],
             ['mac100',      'ma',           {source:'c', period: 100}, null],
             ['mac200',      'ma',           {source:'c', period: 200}, null],
+
             
+            ['emac9',       'ema',           {source:'c', period: 9}, null],
+            ['emac20',      'ema',           {source:'c', period: 20}, null],
+            ['emac50',      'ema',           {source:'c', period: 50}, null],
+            ['emac100',     'ema',           {source:'c', period: 100}, null],
+            ['emac200',     'ema',           {source:'c', period: 200}, null],
+
             ['rmac9',      'rma',          {source:'c', period:  9}, null],
             ['rmac30',     'rma',          {source:'c', period: 30}, null],
             ['rmac75',     'rma',          {source:'c', period: 75}, null],
  
+            ['rmac21',     'rma',          {source:'c', period: 21}, null],
+                   
             ['btctrend',   'btctrend',    null,   null],
 
             ['wfractals',   'wfractals',    null,   null],
@@ -33,20 +42,17 @@ class AnalyzersFactory {
             ['cdlpatts',    'cdlpatts',     null,   null],
             ['helper',      'helper',       orderManager, null ],
          
-            ['dblbottom',   'st_dblbottom',    true,    null],
-            ['macwfma',     'st_mac_wfma',    null,    null],
-            ['tpcwfma',     'st_tpc_wfma',     null,   null],
-            ['cma3buy',     'st_cma3',         true,   null],
-
-        ];
-/*
-        ['crossma3',    'crossma3',      null,   null],
-        ['crosswma',    'crosswma',      null,   null],
-        ['cross2wma',    'cross2wma',      null,   null],
-        ['touchma',     'touchma',      null,   null],
-        ['dblbottom',   'dblbottom',    null,   null],
+/*          ['dblbottom',   'st_dblbottom',    true,    null],
+            ['macwfma',     'st_mac_wfma',     null,    null],
+            ['tpcwfma',     'st_tpc_wfma',     null,    null],
+            ['cma3buy',     'st_cma3',         true,    null],
+            ['cma3sell',    'st_cma3',         false,   null],
+            ['dbltop',      'st_dblbottom',    false,   null],
 
 */
+            ['ttcwoff',     'st_ttc_woff',     null,    null],
+
+        ];
 
         this.reloadAll();
 

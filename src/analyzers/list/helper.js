@@ -31,6 +31,10 @@ class StrategyHelper {
 
     toJSON() { return null; }
 
+    getSymbolInfo(symbol) {
+        return this.ordersManager.getSymbolInfo(symbol);
+    }
+
     // enters at current candles close
     makeEntry(strategyObject, type, {
             entryPrice, stopLoss, takeProfit,
@@ -54,38 +58,6 @@ class StrategyHelper {
         if (! atr14 ) { return console.log('HELPER: atr14 not ready.'); }
 
         let cmt = '';
-
-        /*
-        const rsi = this.flags.get('rsi14');
-        
-        if (rsi) {
-            if (rsi < 50)
-                { cmt += ( rsi < 30 ? ' RSI<30' : ' RSI<50'); }
-            else
-                { cmt += ( rsi > 70 ? ' RSI>70' : ' RSI>50'); }
-            cmt += ' ('+rsi.toFixed(2)+')';
-        }
-
-        const higherTrend = this.flags.getHTF('hl_trend');
-        if ( higherTrend ) {
-            if (higherTrend.direction < 0)
-                { cmt += ' TH_DN'; }
-            else if (higherTrend.direction > 0)
-                { cmt += ' TH_UP'; }
-            else  { cmt += ' TH_NO'; }
-            cmt += ' TH['+higherTrend.direction+'/'+higherTrend.swings+']';
-        }
-
-        const trend = this.flags.get('hl_trend');
-        if ( trend ) {
-            if ( trend.direction < 0 )
-            { cmt += ' T_DN'; }
-            else if ( trend.direction > 0 )
-            { cmt += ' T_UP'; }
-            else { cmt += ' T_NO'; }
-            cmt += ' T['+trend.direction+'/'+trend.swings+']';
-        }
-        */
 
         if (! rrRatio) { rrRatio = StrategyHelper.DEF_RR_RATIO; }
         if (! stopATRRatio) { stopATRRatio = StrategyHelper.STOP_ATR_RATIO; }

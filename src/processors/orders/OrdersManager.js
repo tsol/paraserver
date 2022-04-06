@@ -11,6 +11,7 @@ class OrdersManager {
         this.emulator = new OrdersEmulator();
         this.report = new PeriodTagsCompare();
         this.webClients = webClients;
+        this.brokerOrderClient = brokerOrderClient;
         this.real = new OrdersReal(brokerOrderClient, webClients);
     }
 
@@ -19,7 +20,12 @@ class OrdersManager {
         this.real.reset();
     }
     
-    /* called by analyzers through helper */
+    /* analyzers IO */
+
+    getSymbolInfo(symbol) {
+        return this.brokerOrderClient.getSymbolInfo(symbol);
+    }
+
     newOrder(
         time,
         strategy,
@@ -47,12 +53,9 @@ class OrdersManager {
             flags 
         );
 
-        if (! SETTINGS.dev) {
-            if (isLive && emulatedOrder.tags )
-            {
-                if (emulatedOrder.tags && emulatedOrder.tags.CU2.value === 'Y') {
-                    this.doMakeOrderFromEmulated( emulatedOrder.id );
-                }
+        if (! SETTINGS.dev && isLive) {
+            if (emulatedOrder.tags && emulatedOrder.tags.CU2.value === 'Y') {
+                this.doMakeOrderFromEmulated( emulatedOrder.id );
             }
         }
 
@@ -60,6 +63,7 @@ class OrdersManager {
     }
 
     /* ticker io */
+
     candleClosed(candle,isLive) {
         this.emulator.candleClosed(candle,isLive);
         this.real.candleClosed(candle,isLive);
@@ -93,15 +97,6 @@ class OrdersManager {
                 params.tagValue,
                 params.eval 
         );
-
-/*
-        return [
-            ... this.report.getReport(this.emulator.getOrders(), 'm', 'CU', 'Y'),
-            ... this.report.getReport(this.emulator.getOrders(), 'm', 'fp', '_F'),
-            ... this.report.getReport(this.emulator.getOrders(), 'm', 'CU2', 'Y'),
-        ]
-*/
-
     }
 
     getEmulatedOrder(orderId) {

@@ -2,8 +2,8 @@
 ** Sets the flag which magic flag is better for a symbol (_F or _P)
 ** 
 */
-const { TF } = require('../../../types/Timeframes.js');
-const { winRatio } = require('./helper.js');
+const { TF } = require('../../../../types/Timeframes.js');
+const { winRatio } = require('../helper.js');
 
 class FP_SYMBOL {
 

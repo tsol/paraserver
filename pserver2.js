@@ -39,12 +39,11 @@ const io = new Server({
 
 let runLive = true;
 
-const coins = [ 'BTCUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT',
+let coins = [ 'BTCUSDT','ETHUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT',
                 'ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT',
                 'AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'
 ];
 
-//const coins = [ 'BTCUSDT' ];
 
 mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
     brokerClientUSDM.init().then( () => {
@@ -65,7 +64,7 @@ mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
             runLive = false;
 
             brokerBinanceSrc.getTradableSymbols().then( (symbols) => {
-                dataProcessor.runSymbols(symbols, runLive);
+                dataProcessor.runSymbols(coins, runLive);
             });
 
 
@@ -163,10 +162,12 @@ io.on("connection", (socket) => {
     socket.on("get_orders_report", (arg) => {
         if (!dataProcessor) return;
         try {
+            console.log('generating report...');
             if (arg.dateFrom) { arg.dateFrom = (new Date(arg.dateFrom)).getTime(); };
             if (arg.dateTo)   { arg.dateTo = (new Date(arg.dateTo)).getTime(); };
 
             let ordersReport = dataProcessor.getReport(arg);
+            console.log('sending report...');
             socket.emit("orders_report", ordersReport );
         }
         catch (err) {

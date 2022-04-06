@@ -86,7 +86,7 @@ class OrdersReal {
             console.log('ORDER_REAL: OK');
             console.log(result);
             
-            e.setBroker();
+            e.setBrokerTrue();
             e.setQuantity(result.quantity);
             e.setBrokerORID(result.orders.entry.id);
             e.setBrokerSLID(result.orders.sl.id);

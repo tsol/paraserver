@@ -16,6 +16,7 @@ CREATE TABLE `orders` (
   `timeframe`	char(3) NOT NULL DEFAULT '1m',
   `strategy`	varchar(32) NOT NULL DEFAULT '',
   `entryPrice`	DECIMAL(24,12) NOT NULL DEFAULT 0,
+  `closeTime`	BIGINT NOT NULL,
   `takeProfit`	DECIMAL(24,12) NOT NULL DEFAULT 0,
   `stopLoss`	DECIMAL(24,12) NOT NULL DEFAULT 0,
   `quantity`	DECIMAL(24,12) NOT NULL DEFAULT 0,

@@ -1,7 +1,7 @@
 class Timeframes
 {
 
-    DAY_LENGTH = 6 * 8 * 30 * 60000;
+    DAY_LENGTH = 24 * 60 * 60000;
     MIN_LENGTH = 60000;
     HOUR_LENGTH = this.MIN_LENGTH * 60;
 /*
@@ -25,15 +25,15 @@ class Timeframes
     ];
 */
     TFRAMES = [
-        { name: '4h',  htf: null,  levelsLimit: 500, days: 31,   trade: false, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
-        { name: '1h',  htf: '4h',  levelsLimit: 500, days: 14,   trade: false, limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
-        { name: '15m', htf: '4h',  levelsLimit: 500, days: 14,   trade: true, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
+        { name: '4h',  htf: null,  levelDays: 30, days: 397,   trade: false, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
+        { name: '1h',  htf: '4h',  levelDays: 7,  days: 397,   trade: false, limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
+        { name: '15m', htf: '4h',  levelDays: 4,  days: 397,   trade: true, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
     ];
 
     constructor() {
         this.TFRAMES.forEach( (tf) => {
             tf.limit = Math.floor( (tf.days * this.DAY_LENGTH) / tf.length );
-            tf.levelsLimitTime = tf.levelsLimit * tf.length;
+            tf.levelsLimitTime = tf.levelDays * this.DAY_LENGTH;
             console.log('TF: tf limit set '+tf.name+' = '+tf.limit+' candles');
         });
     }

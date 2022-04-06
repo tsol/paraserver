@@ -10,7 +10,7 @@ class CandleDebug {
     }
 
     static onChart(candle, name, value, param = {}) {
-        if (SETTINGS.fast) { return; }
+        if (SETTINGS.noCandleDebug) { return; }
         const def = {
             type: 'onchart',
             name: name,
@@ -21,7 +21,7 @@ class CandleDebug {
     }
 
     static offChart(candle, name, value, param = {}) {
-        if (SETTINGS.fast) { return; }
+        if (SETTINGS.noCandleDebug) { return; }
         const def = {
             type: 'offchart',
             name: name,
@@ -32,7 +32,7 @@ class CandleDebug {
     }
 
     static circleHigh(candle, param = {}) {
-        if (SETTINGS.fast) { return; }
+        if (SETTINGS.noCandleDebug) { return; }
         const def = {
             type: 'circle',
             color: 'white',
@@ -45,13 +45,13 @@ class CandleDebug {
     }
 
     static circleLow(candle, param = {}) {
-        if (SETTINGS.fast) { return; }
+        if (SETTINGS.noCandleDebug) { return; }
         let result = { ...param, ...{from: [ candle.openTime, candle.low ]} };
         this.circleHigh(candle, result);
     }
 
     static circleMiddle(candle, param = {}) {
-        if (SETTINGS.fast) { return; }
+        if (SETTINGS.noCandleDebug) { return; }
         let result = { ...param, ...{from: [ 
             candle.openTime,
             candle.low + (candle.high - candle.low) / 2 ]}
@@ -61,7 +61,7 @@ class CandleDebug {
 
 
     static horizontalBar(candle, fromY, toY, param = {} ) {
-        if (SETTINGS.fast) { return; }
+        if (SETTINGS.noCandleDebug) { return; }
         const def = {
             type: 'hbar',
             color: 'grey',
@@ -75,7 +75,7 @@ class CandleDebug {
     }
 
     static labelTop(candle, label) {
-        if (SETTINGS.fast) { return; }
+        if (SETTINGS.noCandleDebug) { return; }
         candle.visualDebug.push({
             type: 'label',
             position: 'top',
@@ -86,7 +86,7 @@ class CandleDebug {
 
     static labelBottom(candle, label)
     {
-        if (SETTINGS.fast) { return; }
+        if (SETTINGS.noCandleDebug) { return; }
         candle.visualDebug.push({
             type: 'label',
             position: 'bottom',
@@ -96,7 +96,7 @@ class CandleDebug {
     }
 
     static entry(candle, takeProfit, stopLoss) {
-        if (SETTINGS.fast) { return; }
+        if (SETTINGS.noCandleDebug) { return; }
         candle.visualDebug.push({
             type: 'entry',
             src: 'entries',

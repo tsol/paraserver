@@ -88,7 +88,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
     }
 
  
-    getSymbolInfo(symbol)
+    getRAWSymbolInfo(symbol)
     {
         if (! this.exchangeInfo || ! this.exchangeInfo.symbols )
             { return null; }
@@ -96,10 +96,34 @@ class BinanceClientUSDM extends BrokerOrdersIO {
         return info;
     }
 
-    getSymbolFilter(symbolInfo,filterType,param) {
+    getRAWSymbolFilter(symbolInfo,filterType,param) {
         let filter = symbolInfo.filters.find( (v) => v.filterType == filterType );
         if (! filter ) { return null; }
         return filter[param];
+    }
+
+    
+    getSymbolInfo(symbol)
+    {
+        const info = this.getRAWSymbolInfo(symbol);
+        if (! info) { throw new Error('BC-USDM: no exchangeInfo on '+symbol); }
+
+        const qtyPrecision = info.quantityPrecision;
+        const minQty = this.getRAWSymbolFilter(info,'MARKET_LOT_SIZE','minQty');
+        const pricePrecision = info.pricePrecision;  
+        const tickSize = this.getRAWSymbolFilter(info,'PRICE_FILTER','tickSize');
+
+        if ( isNaN(qtyPrecision) || isNaN(pricePrecision) || ! minQty || ! tickSize) {
+            throw new Error('BC-USDM: could not get symbol info');
+        }
+
+        return {
+            qtyPrecision,
+            pricePrecision,
+            minQty,
+            tickSize
+        };
+
     }
 
     async makeFullOrder(symbol,isLong,entryPrice,usdAmount,stopLoss,takeProfit)
@@ -124,15 +148,10 @@ class BinanceClientUSDM extends BrokerOrdersIO {
         }
 
         const info = this.getSymbolInfo(symbol);
-        if (! info) { throw new Error('BC-USDM: no exchangeInfo on '+symbol); }
-
-        const qPrecision = info.quantityPrecision;
-        const quantity = (usdAmount / entryPrice).toFixed(qPrecision);
-        const minQty = this.getSymbolFilter(info,'MARKET_LOT_SIZE','minQty');
-        const pricePrecision = info.pricePrecision;  
-
-        if (quantity < minQty ) {
-            throw Error('quantity problem: '+symbol+' q='+quantity+' < minq='+minQty);
+        const quantity = (usdAmount / entryPrice).toFixed(info.qtyPrecision);
+ 
+        if (quantity < info.minQty ) {
+            throw Error('quantity problem: '+symbol+' q='+quantity+' < minq='+info.minQty);
         }
 
         result.quantity = quantity;
@@ -151,7 +170,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                 type: 'STOP_MARKET',
                 positionSide: positionSide,
                 closePosition: 'false',
-                stopPrice: stopLoss.toFixed(pricePrecision),                
+                stopPrice: stopLoss.toFixed(info.pricePrecision),                
                 quantity: quantity        
         };
 
@@ -161,7 +180,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                 type: 'TAKE_PROFIT_MARKET',
                 positionSide: positionSide,
                 closePosition: 'false',
-                stopPrice: takeProfit.toFixed(pricePrecision),     
+                stopPrice: takeProfit.toFixed(info.pricePrecision),     
                 quantity: quantity
         };
                 

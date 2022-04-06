@@ -96,7 +96,7 @@ class PeriodTagsCompare {
     {
     }
 
-    getReport(fromOrders, dateFrom, dateTo, interval, tag, tagValue)
+    getReport(fromOrders, dateFrom, dateTo, interval, tag, tagValue, doEval)
     {
         const i = PeriodTagsCompare.INTERVALS[interval];
         if (! i) { throw new Error('unknown interval'); };
@@ -105,11 +105,18 @@ class PeriodTagsCompare {
 
         let startTime = i.toStart( dateFrom || orders[0].time );
         const endTime = i.toEnd( dateTo || (orders[ orders.length-1 ].time + 1) );
+        
+        orders = orders.filter( o => (o.time >= startTime) && (o.time <= endTime) );
 
-        orders = orders.filter( o => (o.time >= startTime) && (o.time <= endTime) )
-            .filter( o => o.tags[tag] && (o.tags[tag].value == tagValue) );
- 
-        if (orders.length <= 0) { return []; }            
+        if (tag && tagValue) {
+                orders = orders.filter( o => o.tags[tag] && (o.tags[tag].value == tagValue) );
+        }
+        else if  ( doEval ) {
+            let func = new Function('o', 'return '+doEval+';');
+            orders = orders.filter( o => func(o) );
+        }
+
+        if (orders.length <= 0) { return [ { periodName: 'No data' } ]; }            
 
         const rows = [];
 

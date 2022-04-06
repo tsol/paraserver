@@ -81,7 +81,7 @@ class Order {
     setStopLoss(newStopLoss) { this.stopLoss = newStopLoss; }
 
     setDb() { this.db = true; }
-    setBroker() { this.broker = true; }
+    setBrokerTrue() { this.broker = true; }
 
     setFlags(flagsSnapshot) { this.flags = flagsSnapshot; };
     setTag(tagName,tagValue) { this.tags[tagName] = { value: tagValue } };
@@ -157,7 +157,7 @@ class Order {
             entryPrice: this.entryPrice,
             takeProfit: this.takeProfit,
             stopLoss: this.stopLoss,
-            quantity: this.quantity ,
+            quantity: this.quantity,
             active: ( this.active ? 'Y' : 'N'),
             broker: ( this.broker ? 'Y' : 'N'),
             result: this.result,
