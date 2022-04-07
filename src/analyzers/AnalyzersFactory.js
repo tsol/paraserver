@@ -31,7 +31,10 @@ class AnalyzersFactory {
             ['rmac75',     'rma',          {source:'c', period: 75}, null],
  
             ['rmac21',     'rma',          {source:'c', period: 21}, null],
-                   
+
+            ['mat1',       'matrend',      {ma1:'emac20',ma2:'emac50',ma3:'emac200',name:'1'}, null],
+            ['macd',        'macd',         {}, null],
+            
             ['btctrend',   'btctrend',    null,   null],
 
             ['wfractals',   'wfractals',    null,   null],

@@ -22,10 +22,6 @@ class EMATREND {
  
     getTags(order, flags, orders, tags) // return if order should pass
     {
-
-        const btcTrend = flags.getTickerFlag('BTCUSDT-1h','btctrend');
-        const curBFP = this.getBFP(order.type,btcTrend);
-
         let trend = 'NO';
 
         const e1 = flags.get('emac'+this.ema1);
@@ -46,18 +42,6 @@ class EMATREND {
 
         return newTags;
 
-    }
-
-
-    getBFP(orderType, btcTrend)
-    {
-        if (!btcTrend) { return 'N'; }
-
-        const doFilter = (
-             ( (btcTrend > 0) && (orderType == 'sell') ) ||
-             ( (btcTrend < 0) && (orderType == 'buy' ) )
-        );
-        return ( doFilter ? 'F' : 'P');
     }
     
 }

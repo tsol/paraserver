@@ -81,6 +81,9 @@ class OrdersEmulator {
         }
         order.setTag('MAXPRF',profitPreview);
         order.setTag('rsi',flags.get('rsi14'));
+        order.setTag('MD',flags.get('macd').d);
+        order.setTag('MH',flags.get('macd').h);
+        
 
         return order;
     }
