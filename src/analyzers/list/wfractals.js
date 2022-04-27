@@ -16,10 +16,10 @@ Bullish Fractal=
 ​
 */
 
-const AnalyzerIO = require("../AnalyzerIO");
+const Analyzer = require("../types/Analyzer");
 const CDB = require('../../types/CandleDebug');
 
-class AnWFractals extends AnalyzerIO {
+class AnWFractals extends Analyzer {
 
         constructor(period) {
             super();

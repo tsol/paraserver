@@ -5,7 +5,7 @@
 */
 
 
-class AnalyzerIO {
+class Analyzer {
 
     constructor() {
     }
@@ -28,4 +28,4 @@ class AnalyzerIO {
   
 }
 
-module.exports = AnalyzerIO;
+module.exports = Analyzer;

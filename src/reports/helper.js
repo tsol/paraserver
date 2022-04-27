@@ -24,4 +24,15 @@ function fnum(num, digits){
     return Math.round(num*pow) / pow;
 }
 
-module.exports = { winRatio, orderStats, fnum };
+function weekNum(dateObject) {
+    
+    startDate = new Date(dateObject.getFullYear(), 0, 1);
+    var days = Math.floor((dateObject - startDate) /
+        (24 * 60 * 60 * 1000));
+          
+    var weekNumber = Math.ceil(days / 7 + 1);
+    
+    return weekNumber;
+}
+
+module.exports = { winRatio, orderStats, fnum, weekNum };

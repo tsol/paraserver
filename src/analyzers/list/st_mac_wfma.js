@@ -15,10 +15,10 @@
 ** Guy on the channel used in on Pound/Yen pair, not crypto
 */
 
-const StrategyIO = require("../StrategyIO");
+const Strategy = require("../types/Strategy");
 const CDB = require('../../types/CandleDebug');
 
-class StrategyCrossWMA2 extends StrategyIO {
+class StrategyCrossWMA2 extends Strategy {
   
         constructor() {
             super();

@@ -2,22 +2,18 @@
 ** TREND
 */
 
-const { TF } = require('../../../types/Timeframes.js');
+const { TF } = require('../../../../types/Timeframes.js');
+const Tagger = require('../types/Tagger'); 
 
-class EMATREND {
+class EMATREND extends Tagger {
 
     constructor(ema1,ema2,ema3) {
+        super();
         this.reset();
         this.ema1 = ema1;
         this.ema2 = ema2;
         this.ema3 = ema3;
         this.name = 'ET'+(ema1+ema2+ema3);
-    }
-
-    reset() {
-    }
- 
-    hourlyTick(order,flags,orders,hour) {
     }
  
     getTags(order, flags, orders, tags) // return if order should pass

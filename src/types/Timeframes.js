@@ -25,10 +25,13 @@ class Timeframes
     ];
 */
     TFRAMES = [
-        { name: '4h',  htf: null,  levelDays: 30, days: 397,   trade: false, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
-        { name: '1h',  htf: '4h',  levelDays: 7,  days: 397,   trade: false, limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
-        { name: '15m', htf: '4h',  levelDays: 4,  days: 397,   trade: true, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
+        { name: '1d',  htf: null,  levelDays: 224, days: 400,   trade: false, limit: 0, levelsLimitTime: 0, length: this.DAY_LENGTH },
+        //{ name: '4h',  htf: '1d',  levelDays: 56, days: 392,   trade: true, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },     
+        { name: '1h',  htf: '1d',  levelDays: 14,  days: 400,   trade: true, limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
     ];
+
+ //   { name: '4h',  htf: '1d',  levelDays: 14, days: 392,   trade: false, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH }, 
+//    { name: '15m', htf: '4h',  levelDays: 4,  days: 392,   trade: true, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
 
     constructor() {
         this.TFRAMES.forEach( (tf) => {

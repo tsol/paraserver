@@ -4,11 +4,11 @@
 **
 */
 
-const AnalyzerIO = require("../AnalyzerIO");
+const Analyzer = require("../types/Analyzer");
 const CDB = require('../../types/CandleDebug');
 const { TF } = require('../../types/Timeframes.js');
 
-class AnVLevels extends AnalyzerIO {
+class AnVLevels extends Analyzer {
 
         constructor() {
             super();
@@ -157,6 +157,47 @@ class AnVLevels extends AnalyzerIO {
         }
 
 
+        getTopTouchWeights(candle)
+        {
+            let resistWeight = 0;
+            let supportWeight = 0;
+
+            this.levels.forEach( (l) => {
+
+                if (    l.inLevelExact(candle.bodyHigh()) 
+                    ||  l.inLevelExact(candle.high)
+                ) {
+                    resistWeight += l.resistWeight;
+                    supportWeight += l.supportWeight;
+                }
+            })
+
+            return {
+                rw: resistWeight,
+                sw: supportWeight
+            };
+        }
+
+        exactPriceMatch(arrayOfPrices)
+        {
+            //console.log('VL: searching '+JSON.stringify(arrayOfPrices)+' in ');
+            
+
+            this.levels.forEach( (lvl) => {
+                
+                //console.log(lvl.getPrices());
+
+                arrayOfPrices.forEach( (p) => {
+                    if ( lvl.getPrices().includes(p) ) {
+                        return p;
+                    }
+                });
+            })
+
+            return null;
+        }
+
+
 
 }
 
@@ -175,6 +216,7 @@ class Level {
         this.totalWeight = 0;
         this.supportWeight = 0;
         this.resistWeight = 0;
+        this.prices = []; // all prices forming level cached here
     }
 
     addPoint(time,level,bounceUp,height,weight,candle) {
@@ -243,6 +285,10 @@ class Level {
         return this.resY0;
     }
 
+    getPrices() {
+        return this.prices;
+    }
+
     recalcLevel() {
         const count = this.points.length;
         let height = 0;
@@ -253,11 +299,13 @@ class Level {
         this.totalWeight = 0;
         this.supportWeight = 0;
         this.resistWeight = 0;
+        this.prices = [];
 
         this.points.forEach( (p) => {
             height += p.height;
             level += p.level;
             this.totalWeight += p.weight;
+            this.prices.push(p.level);
             if (p.bounceUp) {
                 this.countSupport++;
                 this.supportWeight+=p.weight;

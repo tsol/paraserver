@@ -1,9 +1,9 @@
-const OrdersStatFilter = require('./OrdersStatFilter.js');
+const OrderTaggers = require('./taggers/OrderTaggers.js');
 const { TF } = require('../../types/Timeframes.js');
 const Order = require('../../types/Order.js');
 
 const SETTINGS = require('../../../private/private.js');
-const { winRatio, fnum } = require('./statfilters/helper.js');
+const { winRatio, fnum } = require('../../reports/helper.js');
 
 class OrdersEmulator {
 
@@ -16,19 +16,19 @@ class OrdersEmulator {
 
     static COST_PERCENT = OrdersEmulator.COST_BUY_PERCENT+OrdersEmulator.COST_SELL_PERCENT;
 
-    static TRAILING_STOP_TRIGGER = 50; 
-    static TRAILING_LOSSLESS = OrdersEmulator.COST_PERCENT;
+    static TRAILING_STOP_TRIGGER = 80; 
+    static TRAILING_LOSSLESS = OrdersEmulator.COST_PERCENT * 2;
     
     constructor() {
         this.orders = [];
         this.activeOrders = [];
-        this.statFilter = new OrdersStatFilter();
+        this.taggers = new OrderTaggers();
     }
 
     reset() {
         this.lastUpdateTime = null;
         this.orders = [];
-        this.statFilter.reset();
+        this.taggers.reset();
     }
     
     newOrder(
@@ -66,7 +66,7 @@ class OrdersEmulator {
 
 
         order.setFlags(flagsSnapshot);
-        order.setTags( this.statFilter.getTags(order, flags, this.orders) );
+        order.setTags( this.taggers.getTags(order, flags, this.orders) );
         order.setComment(comment);
 
         this.orders.push(order);
@@ -80,7 +80,7 @@ class OrdersEmulator {
             order.setTag('PRF','Y');
         }
         order.setTag('MAXPRF',profitPreview);
-        order.setTag('rsi',flags.get('rsi14'));
+        order.setTag('RSI',flags.get('rsi14'));
         order.setTag('MD',flags.get('macd').d);
         order.setTag('MH',flags.get('macd').h);
         
@@ -199,17 +199,6 @@ class OrdersEmulator {
                 this.closeOrder(o, true);
             } 
         });
-/*
-        const res = orders.reduce( (t, order) => { 
-            t.gain += order.gain;
-            if ( order.gain > 0 ) { t.win++ } else { t.lost++ };
-            return t;
-        }, { gain: 0, win: 0, lost: 0 });
-
-        const ratio = winRatio( res.win, res.lost );
-
-        if ( res.gain < 25 ) { return; }
-*/
 
        return;
 

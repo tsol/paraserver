@@ -13,6 +13,7 @@ const BinanceClientUSDM = require('./src/brokers/binance/BinanceClientUSDM.js');
 
 const MysqlCandles = require('./src/db/MysqlCandles.js');
 const CandleDB = require('./src/db/CandleDB.js');
+const { SET } = require('mysql/lib/protocol/constants/types');
 
 const brokerBinanceSrc = new BinanceSourceUSDM(SETTINGS.users.harry.brokers.binance);
 const brokerClientUSDM = new BinanceClientUSDM(SETTINGS.users.utah.brokers.binance);
@@ -37,12 +38,7 @@ const io = new Server({
     allowEIO3: true
 });
 
-let runLive = true;
-
-let coins = [ 'BTCUSDT','ETHUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT',
-                'ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT',
-                'AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'
-];
+const runLive = ( typeof(SETTINGS.runLive) != "undefined" ? SETTINGS.runLive : true );
 
 
 mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
@@ -61,14 +57,11 @@ mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
         }
         else {
 
-            runLive = false;
-
-            brokerBinanceSrc.getTradableSymbols().then( (symbols) => {
-                dataProcessor.runSymbols(coins, runLive);
+            brokerBinanceSrc.getTradableSymbols().then( (symbols) => { 
+                dataProcessor.runSymbols(
+                    ( typeof(SETTINGS.debugSymbols) != "undefined" ? SETTINGS.debugSymbols : symbols )
+                , runLive);
             });
-
-
-//            dataProcessor.runSymbols(coins, runLive);
         }
 
     })

@@ -19,10 +19,10 @@
 ** 
 */
 
-const AnalyzerIO = require("../AnalyzerIO");
+const Analyzer = require("../types/Analyzer");
 const CDB = require('../../types/CandleDebug');
 
-class AnCandlePatterns extends AnalyzerIO {
+class AnCandlePatterns extends Analyzer {
 
         constructor() {
             super();

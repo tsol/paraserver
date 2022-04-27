@@ -15,10 +15,10 @@ DO not trade candles > 300 pips
 
 */
 
-const StrategyIO = require("../StrategyIO");
+const Strategy = require("../types/Strategy");
 const CDB = require('../../types/CandleDebug');
 
-class TTCWOFF extends StrategyIO {
+class TTCWOFF extends Strategy {
 
         static MIN_LENGTH = 2; /* minumum candles to close above ma20 */
 

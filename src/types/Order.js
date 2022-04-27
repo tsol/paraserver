@@ -1,5 +1,5 @@
 const { TF } = require('./Timeframes');
-const { fnum } = require('../processors/orders/statfilters/helper.js');
+const { fnum } = require('../reports/helper.js');
 
 class Order {
 
@@ -128,8 +128,8 @@ class Order {
 
 
     calcTrailingReachedPercent() {
-        const priceDiff = this.maxPriceReached - this.trailingEntryPrice;
-        const target = Math.abs(this.takeProfit - this.trailingEntryPrice);
+        const priceDiff = this.maxPriceReached - this.entryPrice;
+        const target = Math.abs(this.takeProfit - this.entryPrice);
         const coef = fnum( Math.abs(priceDiff / target) * 100, 2);
         return ( coef < 100 ? coef : 100 );     
     }

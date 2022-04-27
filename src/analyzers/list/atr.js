@@ -4,10 +4,10 @@
 **
 */
 
-const AnalyzerIO = require("../AnalyzerIO");
+const Analyzer = require("../types/Analyzer");
 const CDB = require('../../types/CandleDebug');
 
-class AnATR extends AnalyzerIO {
+class AnATR extends Analyzer {
 
         constructor(period) {
             super();

@@ -1,18 +1,20 @@
 /*
-**  Strategy Moving Avarage cross 200 & 50
+**  Trade Pro Channel - Strategy Moving Avarage cross 200 & 50
+**  (https://www.youtube.com/watch?v=ohtnf4H_HMA)
+**  
 **
-**  1. Look for MA50 cross up MA200
-**  2. If 3 or more candles close below MA200 - skip
-**  3. Wait for price to touch MA50
-**  4. Wait for first green candle close above MA50
+**  1. Look for EMA 50 cross up EMA 200
+**  2. If 3 or more candles close below EMA 200 - skip
+**  3. Wait for price to touch EMA 50
+**  4. Wait for first green candle close above EMA 50
 **  5. Enter with 2*ATR14 down and 1.5 ratio
 **
 */
 
-const StrategyIO = require("../StrategyIO");
+const Strategy = require("../types/Strategy");
 const CDB = require('../../types/CandleDebug');
 
-class StrategyCrossMA3 extends StrategyIO {
+class StrategyCrossMA3 extends Strategy {
   
         constructor(isLong) {
             super();
@@ -42,8 +44,8 @@ class StrategyCrossMA3 extends StrategyIO {
             super.addCandle(candle,flags);
             CDB.setSource(this.getId());
 
-            const mac50 = flags.get('mac50');
-            const mac200 = flags.get('mac200');
+            const mac50 = flags.get('emac50');
+            const mac200 = flags.get('emac200');
 
             if (! mac50 || ! mac200 ) { return; }
 

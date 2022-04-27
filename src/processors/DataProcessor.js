@@ -36,9 +36,8 @@ class DataProcessor {
         this.ordersManager.reset();
         this.analyzersFactory.reloadAll();
         
-        symbolsList.forEach( s => this.runSymbols([s],runLive) );
+        this.runSymbols(symbolsList,runLive);
         
-
     }
 
     getAllSymbols() {

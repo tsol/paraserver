@@ -4,10 +4,10 @@
 **
 */
 
-const StrategyIO = require("../StrategyIO");
+const Strategy = require("../types/Strategy");
 const CDB = require('../../types/CandleDebug');
 
-class StrategyDoubleBottom extends StrategyIO {
+class StrategyDoubleBottom extends Strategy {
 
     static MAX_BOTTOMS_LENGTH   = 25;
     static MAX_ENTRY_LENGTH     = 40;

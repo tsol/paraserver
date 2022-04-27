@@ -1,7 +1,7 @@
-const AnalyzerIO = require("../AnalyzerIO.js");
+const Analyzer = require("../types/Analyzer.js");
 const CDB = require('../../types/CandleDebug.js');
 
-class AnExtremum extends AnalyzerIO {
+class AnExtremum extends Analyzer {
 
     constructor() {
         super();

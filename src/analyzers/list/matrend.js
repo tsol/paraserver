@@ -1,10 +1,10 @@
 /*
 ** Moving Avarage Trend
 */
-const AnalyzerIO = require("../AnalyzerIO");
+const Analyzer = require("../types/Analyzer");
 const CDB = require('../../types/CandleDebug');
 
-class MATREND extends AnalyzerIO {
+class MATREND extends Analyzer {
 
     static MAX_DIV_NEG = 1;
 

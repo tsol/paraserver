@@ -9,10 +9,10 @@
 **
 */
 
-const AnalyzerIO = require("../AnalyzerIO");
+const Analyzer = require("../types/Analyzer");
 const CDB = require('../../types/CandleDebug');
 
-class AnMA extends AnalyzerIO {
+class AnMA extends Analyzer {
 
         constructor({ source, period }) {
             super();

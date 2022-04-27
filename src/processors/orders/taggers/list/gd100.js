@@ -1,22 +1,23 @@
 const { TF } = require('../../../types/Timeframes.js');
 const { winRatio } = require('./helper');
+const Tagger = require('./types/Tagger');
 
-class GD100 {
+class GD100 extends Tagger {
 
-    static NUM_ORDERS       = 100;
+    static NUM_ORDERS       = 150;
     static GAIN_PER_ORDER   = 0.1;
-    static MIN_RATIO        = 43;
+    static MIN_RATIO        = 44;
 
-    constructor(hours) {
+    constructor() {
         this.reset();
         this.allow = [];
     }
 
     reset() {
     }
-
-    hourlyTick(order,flags,orders,hour)
-    {
+    
+    monthlyTick(order,flags,orders,month) {
+ 
         const spl = {};
         const bo = orders.sort( (a,b) => b.time > a.time );
    
@@ -37,21 +38,18 @@ class GD100 {
             if (spl[k].length >= GD100.NUM_ORDERS) {
                 let res = this.calc(spl[k]);
 
-                //if ( res.gain / res.num >= GD100.GAIN_PER_ORDER ) {
-                //    this.allow.push(k);
-                //}
-
-                if ( res.ratio >= GD100.MIN_RATIO ) {
-                    this.allow.push(k);
+                if ( res.gain / res.num >= GD100.GAIN_PER_ORDER ) {
+                    if ( res.ratio >= GD100.MIN_RATIO ) {
+                        this.allow.push(k);
+                    }
                 }
 
             }
         });
 
 
-    }    
 
-
+    }
 
     calc( orders ) {
 

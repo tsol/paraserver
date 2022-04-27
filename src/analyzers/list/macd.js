@@ -5,11 +5,11 @@
 **  m - macd value, s - signal value, h - histogram value
 **
 */
-const AnalyzerIO = require("../AnalyzerIO");
+const Analyzer = require("../types/Analyzer");
 const CDB = require('../../types/CandleDebug');
 const EMA = require('../helpers/EMA.js');
 
-class MACD extends AnalyzerIO {
+class MACD extends Analyzer {
 
     static SLOW_LEN = 26;
     static FAST_LEN = 12;

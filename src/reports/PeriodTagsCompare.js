@@ -1,6 +1,6 @@
 
 const { TF } = require('../types/Timeframes.js');
-const { winRatio, fnum } = require('../processors/orders/statfilters/helper.js');
+const { winRatio, fnum } = require('../reports/helper.js');
 //const Order = require('../types/Order.js');
 
 class IntervalHour {
@@ -14,7 +14,8 @@ class IntervalHour {
         { return this.toStart(timestamp) + this.size() - 1; }
 
     display(timestamp) {
-        return TF.timestampToDate( this.toStart(timestamp) );
+        return TF.timestampToDate( this.toStart(timestamp) ) +'-'+
+        TF.timestampToDate( this.toEnd(timestamp) );
     }
 
     next( timestamp ) {
@@ -121,10 +122,9 @@ class PeriodTagsCompare {
         const rows = [];
 
         while (startTime < endTime) {
-            let intervalEnd = i.toEnd(startTime);
-            let res = this.calc ( 
-                orders.filter( o => (o.time >= startTime) && (o.time < intervalEnd ) ) 
-            );
+            let intervalEnd = i.toEnd(startTime);          
+            let periodOrders = orders.filter( o => (o.time >= startTime) && (o.time <= intervalEnd ) );
+            let res = this.calc ( periodOrders );
             res.periodName = i.display( startTime );
             res.src = tag+'='+tagValue+', '+interval;
             rows.push(res);
@@ -158,6 +158,7 @@ class PeriodTagsCompare {
             let currentTime = o.time;
 
             openOrders = openOrders.filter( o => o.closeTime > currentTime );
+
             openOrders.push(o);
             if (openOrders.length > maxOpenOrders)
                 { maxOpenOrders = openOrders.length; }

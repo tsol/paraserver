@@ -1,12 +1,12 @@
 /*
-**  Strategy Moving Avarage 50/100 + Williams Fractals Entry
-**  Trading Pro Channel (https://www.youtube.com/watch?v=0Q6iENmeUys)
+**  Trade Pro Channel - Strategy Moving Avarage 50/100 + Williams Fractals Entry
+**  (https://www.youtube.com/watch?v=0Q6iENmeUys)
 */
 
-const StrategyIO = require("../StrategyIO");
+const Strategy = require("../types/Strategy");
 const CDB = require('../../types/CandleDebug');
 
-class StrategyCrossWMA extends StrategyIO {
+class StrategyCrossWMA extends Strategy {
   
         constructor() {
             super();

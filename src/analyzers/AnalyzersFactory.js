@@ -13,7 +13,7 @@ class AnalyzersFactory {
             ['atr14',       'atr',          14,     null],
             ['rsi14',       'rsi',          14,     null],
 
-            ['mac9',        'ma',            {source:'c', period: 9}, null],
+            ['mac9',        'ma',           {source:'c', period: 9}, null],
             ['mac20',       'ma',           {source:'c', period: 20}, null],
             ['mac50',       'ma',           {source:'c', period: 50}, null],
             ['mac100',      'ma',           {source:'c', period: 100}, null],
@@ -43,17 +43,21 @@ class AnalyzersFactory {
             ['hills',       'hills',        null,   null],
             ['vlevels',     'vlevels',      null,   null],
             ['cdlpatts',    'cdlpatts',     null,   null],
+
+            ['prices',      'prices',     { maxCandles: 100 },   null],
+
             ['helper',      'helper',       orderManager, null ],
          
-/*          ['dblbottom',   'st_dblbottom',    true,    null],
-            ['macwfma',     'st_mac_wfma',     null,    null],
-            ['tpcwfma',     'st_tpc_wfma',     null,    null],
-            ['cma3buy',     'st_cma3',         true,    null],
-            ['cma3sell',    'st_cma3',         false,   null],
-            ['dbltop',      'st_dblbottom',    false,   null],
+            //['dblbottom',   'st_dblbottom',    true,    null],
+            //['macwfma',     'st_mac_wfma',     null,    null],
+            //['tpcwfma',     'st_tpc_wfma',     null,    null],
 
-*/
-            ['ttcwoff',     'st_ttc_woff',     null,    null],
+            ['cma3buy',     'st_tpc_cma3',         true,    null],
+            ['cma3sell',    'st_tpc_cma3',         false,   null],
+            
+            //['dbltop',      'st_dblbottom',    false,   null],
+            //['ttcwoff',     'st_ttc_woff',     null,    null],
+            //['geroflvl',    'st_ger_oflvl',    null,    null],
 
         ];
 

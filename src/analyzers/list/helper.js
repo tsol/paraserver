@@ -6,7 +6,7 @@
 **
 */
 
-const AnalyzerIO = require("../AnalyzerIO");
+const Analyzer = require("../types/Analyzer");
 const CDB = require('../../types/CandleDebug');
 const { TF } = require('../../types/Timeframes.js');
 
@@ -115,7 +115,7 @@ class StrategyHelper {
 
 }
 
-class AnStrategyHelper extends AnalyzerIO {
+class AnStrategyHelper extends Analyzer {
         constructor(ordersManager) {
             super();
             this.helper = new StrategyHelper(ordersManager);

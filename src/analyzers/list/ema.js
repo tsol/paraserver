@@ -5,11 +5,11 @@
 *
 */
 
-const AnalyzerIO = require("../AnalyzerIO");
+const Analyzer = require("../types/Analyzer");
 const CDB = require('../../types/CandleDebug');
 const EMA = require('../helpers/EMA.js');
 
-class AnEMA extends AnalyzerIO {
+class AnEMA extends Analyzer {
 
         constructor({ source, period }) {
             super();

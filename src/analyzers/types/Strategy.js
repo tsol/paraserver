@@ -4,9 +4,9 @@
 ** implement all functions.
 */
 
-const AnalyzerIO = require("./AnalyzerIO");
+const Analyzer = require("./Analyzer");
 
-class StrategyIO extends AnalyzerIO {
+class Strategy extends Analyzer {
 
     getParams(timeframe) {
         return {
@@ -16,4 +16,4 @@ class StrategyIO extends AnalyzerIO {
     }
 }
 
-module.exports = StrategyIO;
+module.exports = Strategy;

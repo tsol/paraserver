@@ -2,20 +2,12 @@
 ** MAGIC F/P FLAG
 */
 
-const { TF } = require('../../../types/Timeframes.js');
+const { TF } = require('../../../../types/Timeframes.js');
 
-class BFP {
+const Tagger = require('../types/Tagger'); 
 
-    constructor() {
-        this.reset();
-    }
-
-    reset() {
-    }
- 
-    hourlyTick(order,flags,orders,hour) {
-    }
- 
+class BFP extends Tagger {
+    
     getTags(order, flags, orders, tags) // return if order should pass
     {
         const btcTrend = flags.getTickerFlag('BTCUSDT-1h','btctrend');
