@@ -38,7 +38,16 @@ class BinanceSourceUSDM extends CandleSourceIO {
             api_key: apiKey,
             api_secret: secretKey,
             beautify: true,
+
+            pongTimeout: 15000,
+            pingInterval: 60000,
+            reconnectTimeout: 1500,
         });
+/*
+        pongTimeout: 7500,
+        pingInterval: 10000,
+        reconnectTimeout: 500,
+*/
 
         this.wsClient.on('message', (data) => {
             this.dispatchWSData(data);
@@ -83,10 +92,18 @@ class BinanceSourceUSDM extends CandleSourceIO {
         const result = await this.client.get24hrChangeStatististics();
         let cnt = 1;
         return result.filter( s => {
-            if ( ( s.count > 10 ) && (s.symbol.endsWith('USDT')) ) {
-                console.log('BC-USDM: SYMBOL: '+cnt+': '+s.symbol+' price='+s.weightedAvgPrice+' vol='+s.volume);
-                cnt++;
-                return true;
+            if (s.symbol.endsWith('USDT')) {
+                
+                if (s.quoteVolume >= 10000000)
+                {
+                    console.log('BC-USDM: SYMBOL: '+cnt+': '+s.symbol+' price='+s.weightedAvgPrice+' vol='+s.volume);
+                    cnt++;
+                    return true;
+                }
+                else {
+                    console.log('BC-USDM: SKIP SYMBOL: '+cnt+': '+s.symbol+' price='+s.weightedAvgPrice+' vol='+s.volume);
+                    return false;
+                }
             }
             return false;
         }).map( s => s.symbol );

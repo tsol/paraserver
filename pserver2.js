@@ -51,16 +51,16 @@ mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
         if (!SETTINGS.dev) {
 
             brokerBinanceSrc.getTradableSymbols().then( (symbols) => {
-                dataProcessor.runSymbols(symbols, runLive);
+                symbols.forEach( s => dataProcessor.runSymbols([s], runLive) );
+                //dataProcessor.runSymbols(symbols, runLive);
             });
     
         }
         else {
 
             brokerBinanceSrc.getTradableSymbols().then( (symbols) => { 
-                dataProcessor.runSymbols(
-                    ( typeof(SETTINGS.debugSymbols) != "undefined" ? SETTINGS.debugSymbols : symbols )
-                , runLive);
+                let coins = ( typeof(SETTINGS.debugSymbols) != "undefined" ? SETTINGS.debugSymbols : symbols );                
+                coins.forEach( s => dataProcessor.runSymbols([s], runLive) );
             });
         }
 

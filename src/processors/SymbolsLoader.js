@@ -46,8 +46,13 @@ class SymbolsLoader {
     }
 
     async load(symbols) {
-        symbols.forEach( (s) => {
-            TF.TFRAMES.forEach( (tf) => {                
+
+        var count = 0;
+        
+        for (var s of symbols)
+        {
+            for (var tf of TF.TFRAMES)
+            {                
                 const ls = {
                     symbol: s,
                     broker: this.brokers.getFor(s),
@@ -62,15 +67,27 @@ class SymbolsLoader {
 
                 if (this.runLive) {
                     ls.broker.subscribe(ls.symbol, ls.timeframe, this.id, this );
+
+                    if (++count > 4) {
+                        console.log("SLEEPING for websock init");
+                        await this.sleep(1100);
+                        count = 0;
+                    }
+
                 }
                 else {
                     this.loadHistoryCandles(ls);
                 }
 
-            });
-        });
+            };
+        }
 
     }
+
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
 
     abort() {
         this.unsubscribeAndFlushBuffers();
@@ -151,11 +168,16 @@ class SymbolsLoader {
     }
 
     isAllLoaded() {
+        var res = true;
+
         for( var ls of this.loadState ) {
-            if (! ls.bulkLoaded )
-                { return false; }
+            if (! ls.bulkLoaded ) {
+                ///console.log('SL: NOT YET LOADED: '+ls.symbol+' - '+ls.timeframe);
+                res = false;
+                return res;
+            }
         };
-        return true;
+        return res;
     }
 
     processCandlesBuffer() {
