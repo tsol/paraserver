@@ -94,7 +94,8 @@ class BinanceSourceUSDM extends CandleSourceIO {
         return result.filter( s => {
             if (s.symbol.endsWith('USDT')) {
                 
-                if ( (s.count > 100) && (s.quoteVolume >= 10000000) )
+                //if ( (s.count > 100) && (s.quoteVolume >= 10000000) )
+                if ( s.count > 10 )
                 {
                     console.log('BC-USDM: SYMBOL: '+cnt+': '+s.symbol+' price='+s.weightedAvgPrice+' vol='+s.volume);
                     cnt++;
