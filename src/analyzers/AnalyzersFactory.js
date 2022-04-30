@@ -31,11 +31,15 @@ class AnalyzersFactory {
             ['rmac75',     'rma',          {source:'c', period: 75}, null],
  
             ['rmac21',     'rma',          {source:'c', period: 21}, null],
+            ['rmac50',     'rma',          {source:'c', period: 50}, null],
+            ['rmac200',    'rma',          {source:'c', period: 200}, null],
 
             ['mat1',       'matrend',      {ma1:'emac20',ma2:'emac50',ma3:'emac200',name:'1'}, null],
-            ['macd',        'macd',         {}, null],
+            ['macd',       'macd',         {}, null],
+            ['bbands',     'bbands',       {}, null],
             
             ['btctrend',   'btctrend',    null,   null],
+            ['macdf',      'macdf',        {},   null],
 
             ['wfractals',   'wfractals',    null,   null],
             ['extremum',    'extremum',     null,   null],
@@ -44,13 +48,15 @@ class AnalyzersFactory {
             ['vlevels',     'vlevels',      null,   null],
             ['cdlpatts',    'cdlpatts',     null,   null],
 
-            ['prices',      'prices',     { maxCandles: 100 },   null],
+            ['prices',      'prices',        { maxCandles: 100 },   null],
+            ['prev_swing',  'prev_swing',     null,   null],
 
             ['helper',      'helper',       orderManager, null ],
          
             //['dblbottom',   'st_dblbottom',    true,    null],
             //['macwfma',     'st_mac_wfma',     null,    null],
-            //['tpcwfma',     'st_tpc_wfma',     null,    null],
+
+            ['tpcwfma',     'st_tpc_wfma',     null,    null],
 
             ['cma3buy',     'st_tpc_cma3',         true,    null],
             ['cma3sell',    'st_tpc_cma3',         false,   null],

@@ -54,7 +54,7 @@ class OrdersManager {
         );
 
         if (! SETTINGS.dev && isLive) {
-            if (emulatedOrder.tags && emulatedOrder.tags.CU4.value === 'Y') {
+            if (emulatedOrder.tags && emulatedOrder.tags.CU5.value === 'Y') {
                 this.doMakeOrderFromEmulated( emulatedOrder.id );
             }
         }

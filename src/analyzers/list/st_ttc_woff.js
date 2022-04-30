@@ -35,7 +35,7 @@ class TTCWOFF extends Strategy {
             CDB.setSource(this.getId());
 
             const atr = flags.get('atr14');
-            const ma = flags.get('rmac21');
+            const ma = flags.get('emac20');
 
             if (! ma || ! atr ) { return false; }
 

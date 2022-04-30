@@ -22,6 +22,7 @@ class StrategyCrossWMA2 extends Strategy {
   
         constructor() {
             super();
+            this.prevCandle = null;
         }
 
         getId() { return 'macwfma'; }
@@ -38,6 +39,13 @@ class StrategyCrossWMA2 extends Strategy {
         addCandle(candle,flags) {
             super.addCandle(candle,flags);
             CDB.setSource(this.getId());
+            this.run(candle,flags);
+            this.prevCandle = candle;
+        }
+
+        run(candle,flags) {
+            super.addCandle(candle,flags);
+            CDB.setSource(this.getId());
 
             const wf = flags.get('wfractals');
             if (! wf ) { return; }
@@ -49,9 +57,17 @@ class StrategyCrossWMA2 extends Strategy {
             const rmac21 = flags.get('rmac9');
             const rmac50 = flags.get('rmac30');
             const rmac200 = flags.get('rmac75');
-            
+
             const isLong = ( wf.type === 'low' );
             let swingSize = 0;
+
+            // filter out by harry if the entry fractal candle
+            // shows pressue from unwanted direction
+            //let cnt=0;
+            //if (this.negativePressue(wfCandle, isLong)) { cnt++; }
+            //if (this.negativePressue(this.prevCandle, isLong)) { cnt++; }
+            //if (this.negativePressue(candle, isLong)) { cnt++; }
+            //if (cnt >= 3) { return; }
 
             if (isLong) {
                 if (! ((rmac21 > rmac50) && (rmac50 > rmac200)) ) { return; } // check trend
@@ -65,16 +81,33 @@ class StrategyCrossWMA2 extends Strategy {
                 if ( rsi14 > 50 ) { return; } // rsi condition is not met
                 swingSize = Math.abs(candle.close - wfCandle.high);
             }
-
-            //if ( wfCandle.low <= mac21 ) { return; } // fractal candle not hovering over mac21   
             
-            if (swingSize < atr14*0.7) { return; }
-            
+           // if (swingSize < atr14*0.7) { return; }
+ 
             flags.get('helper').makeEntry(this, (isLong ? 'buy' : 'sell'), {
                 rrRatio: this.getParams(candle.timeframe).rrRatio,
                 stopLoss: ( isLong ? wfCandle.low : wfCandle.high )
+                //usePrevSwing:true
              });
     
+        }
+
+        negativePressue(candle, isLong)
+        {
+            if (! candle ) { return false; }
+            if (isLong) {
+                if (candle.bodySize() < candle.upperTailSize()) {
+                    CDB.labelTop(candle,'Xt');
+                    return true;
+                }
+            }
+            else {
+                if (candle.bodySize() < candle.lowerTailSize()) {
+                    CDB.labelBottom(candle,'Xt');
+                    return true;
+                }
+            }
+            return false;
         }
 
     

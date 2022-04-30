@@ -1,8 +1,10 @@
 const { weekNum } = require('../../../reports/helper.js');
 
 const BFP = require('./list/bfp.js');
-const EMATREND = require('./list/ematrend.js');
+//const EMATREND = require('./list/ematrend.js');
 const CU4 = require('./list/custom4.js');
+const CU5 = require('./list/custom5.js');
+const MACDF = require('./list/macdf.js');
 
 class OrderTaggers {
 
@@ -12,11 +14,12 @@ class OrderTaggers {
         this.previousMonth = null;
         this.previousWeek = null;
 
- 
         this.filters = [
             new BFP(),
-            new EMATREND(20,50,200),
-            new CU4()
+//            new EMATREND(20,50,200),
+            new CU4(),
+            new MACDF(),
+            new CU5()
             //new GD100()
         ];
 
@@ -26,9 +29,8 @@ class OrderTaggers {
         this.filters.forEach( f => f.reset() );
     }
  
-    getTags(order, flags, orders)
+    getTags(order, flags, orders, tags)
     {
-        let tags = {};
 
         const now = new Date(order.time);
         const hour = now.getHours();
@@ -52,7 +54,7 @@ class OrderTaggers {
 
         if (this.previousMonth !== month) {
             this.previousMonth = month;
-            console.log('OSF: new month '+month+' at '+now.toLocaleDateString('ru-RU'));
+            //console.log('OSF: new month '+month+' at '+now.toLocaleDateString('ru-RU'));
 
             this.filters.forEach( f => {
                 f.monthlyTick(order,flags,orders,month);
@@ -62,7 +64,7 @@ class OrderTaggers {
         if (this.previousWeek !== week) {
             this.previousWeek = week;
             
-            console.log('OSF: new week '+week+' at '+now.toLocaleDateString('ru-RU'));
+            //console.log('OSF: new week '+week+' at '+now.toLocaleDateString('ru-RU'));
 
             this.filters.forEach( f => {
                 f.weeklyTick(order,flags,orders,week);

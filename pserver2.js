@@ -61,6 +61,9 @@ mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
             brokerBinanceSrc.getTradableSymbols().then( (symbols) => { 
                 let coins = ( typeof(SETTINGS.debugSymbols) != "undefined" ? SETTINGS.debugSymbols : symbols );                
                 coins.forEach( s => dataProcessor.runSymbols([s], runLive) );
+                
+                //coins = coins.filter( c => c !== 'BTCUSDT' ); coins.unshift('BTCUSDT');
+                //dataProcessor.runSymbols(coins, runLive);
             });
         }
 

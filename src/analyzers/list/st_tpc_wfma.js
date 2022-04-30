@@ -55,6 +55,7 @@ class StrategyCrossWMA extends Strategy {
             flags.get('helper').makeEntry(this, ( isLong ? 'buy' : 'sell'), {
                 rrRatio: 1.5,
                 stopLoss: stopLoss,
+                //usePrevSwing:true
              });
     
 

@@ -102,7 +102,7 @@ class PeriodTagsCompare {
         const i = PeriodTagsCompare.INTERVALS[interval];
         if (! i) { throw new Error('unknown interval'); };
 
-        let orders = fromOrders.sort( (a, b) => a.time > b.time );
+        let orders = fromOrders.sort( (a, b) => a.time - b.time );
 
         let startTime = i.toStart( dateFrom || orders[0].time );
         const endTime = i.toEnd( dateTo || (orders[ orders.length-1 ].time + 1) );

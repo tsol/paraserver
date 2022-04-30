@@ -16,7 +16,7 @@ class OrdersEmulator {
 
     static COST_PERCENT = OrdersEmulator.COST_BUY_PERCENT+OrdersEmulator.COST_SELL_PERCENT;
 
-    static TRAILING_STOP_TRIGGER = 80; 
+    static TRAILING_STOP_TRIGGER = 50; 
     static TRAILING_LOSSLESS = OrdersEmulator.COST_PERCENT * 2;
     
     constructor() {
@@ -66,24 +66,21 @@ class OrdersEmulator {
 
 
         order.setFlags(flagsSnapshot);
-        order.setTags( this.taggers.getTags(order, flags, this.orders) );
-        order.setComment(comment);
 
         this.orders.push(order);
         this.activeOrders.push(order);
 
-        const profitPreview = this.previewProfit(isLong,quantity,entryPrice,takeProfit);
-        if (  profitPreview < 1 ) {
-            order.setTag('PRF', 'N');
-        }
-        else {
-            order.setTag('PRF','Y');
-        }
+        const profitPreview = this.previewProfit(isLong,quantity,entryPrice,takeProfit); 
         order.setTag('MAXPRF',profitPreview);
+
+        order.setTags( this.taggers.getTags(order, flags, this.orders, order.tags) );
+        order.setComment(comment);
+
+        /*
         order.setTag('RSI',flags.get('rsi14'));
-        order.setTag('MD',flags.get('macd').d);
-        order.setTag('MH',flags.get('macd').h);
-        
+        order.setTag('MACD_D',flags.get('macd').d);
+        order.setTag('MACD_H',flags.get('macd').h);
+        */
 
         return order;
     }
@@ -98,8 +95,8 @@ class OrdersEmulator {
         let gain = 0;
 
         if (isLong ) {
-            gain = soldInUSD - boughtInUSD - commissionInUSD;}
-        else { // sell
+            gain = soldInUSD - boughtInUSD - commissionInUSD;
+        } else { // sell
             gain = boughtInUSD - soldInUSD - commissionInUSD;
         }
         return gain;

@@ -1,13 +1,22 @@
+const STDDEV = require('./src/analyzers/helpers/STDDEV.js');
+
+const d = new STDDEV(4);
+
+for (var i of [10,20,30,40]) {
+  console.log(d.getSTDDEV(i));
+}
+
+
+
+/*
+
 const SETTINGS = require('./private/private.js');
-//const { USDMClient } = require('binance');
 
 const BrokerOrder = require('./src/types/BrokerOrder.js');
 const Broker = require('./src/brokers/binance/BinanceClientUSDM.js');
+const { appendEventIfMissing } = require('binance');
 
 const broker = new Broker(SETTINGS.users.utah.brokers.binance);
-
-//const client = broker.getClient();
-//setAllIsolated(broker);
 
 broker.periodicCleanup().then( () => {
   console.log('CLEANUP FINISHED OK');
@@ -35,3 +44,4 @@ broker.makeFullOrder(symbol,isLong,entryPrice,usdAmount,stopLoss,takeProfit)
   });
 }
 
+*/

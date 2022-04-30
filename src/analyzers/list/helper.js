@@ -18,6 +18,8 @@ class StrategyHelper {
     static TARGET_LEVEL_REQ_WEIGHT      = 40;
     static TARGET_LEVEL_SEARCH_RATIO    = 1.8;
 
+    static SWSL_FIND_MAX_CANDLES = 25;
+
     constructor(ordersManager) {
         this.ordersManager = ordersManager;
         this.candle = null;
@@ -35,11 +37,43 @@ class StrategyHelper {
         return this.ordersManager.getSymbolInfo(symbol);
     }
 
+    // returns { stopLoss, takeProfit }
+    calcPrevSwingSL(orderType,entryPrice,ratio)
+    {
+        const isLong = (orderType == 'buy');
+        const sw = this.flags.get('prev_swing');
+        if (! sw) { return null; }
+  
+        const swCandleHigh = sw.findHigh(StrategyHelper.SWSL_FIND_MAX_CANDLES,entryPrice);
+        const swCandleLow = sw.findLow(StrategyHelper.SWSL_FIND_MAX_CANDLES,entryPrice);
+
+
+
+        if (isLong) { 
+            if (! sw.getHigh()) { return null; } 
+            takeProfit = sw.getHigh().high;
+            if (takeProfit <= entryPrice) { return null; }
+        }
+        else {
+            if (! sw.getLow()) { return null; } 
+            takeProfit = sw.getLow().low;
+            if (takeProfit >= entryPrice) { return null; }
+        }
+
+        const stopDir = ( isLong ? -1 : 1 );
+        const takeHeight = Math.abs(takeProfit - entryPrice);
+        const stopLoss = entryPrice + stopDir * takeHeight / ratio;
+
+        return { takeProfit, stopLoss };
+
+    }
+
+
     // enters at current candles close
     makeEntry(strategyObject, type, {
             entryPrice, stopLoss, takeProfit,
             stopFrom, rrRatio, stopATRRatio,
-            useTargetLevel
+            useTargetLevel, usePrevSwing
         } ) 
     {
         if (!TF.get(this.candle.timeframe).trade) { return; }
@@ -61,13 +95,23 @@ class StrategyHelper {
 
         if (! rrRatio) { rrRatio = StrategyHelper.DEF_RR_RATIO; }
         if (! stopATRRatio) { stopATRRatio = StrategyHelper.STOP_ATR_RATIO; }
-        if (! stopFrom ) { stopFrom = (isBuy ? this.candle.low : this.candle.high ); };
+        
         if (! entryPrice) { entryPrice = this.candle.close; }
-
+        
+        //if (! stopFrom ) { stopFrom = (isBuy ? this.candle.low : this.candle.high ); };
+        if (! stopFrom ) { stopFrom = entryPrice };
+    
         if (! stopLoss ) { stopLoss = stopFrom - direction * atr14 * stopATRRatio; } 
         const stopHeight = Math.abs(entryPrice - stopLoss);
 
         if (! takeProfit) { takeProfit = entryPrice + direction * stopHeight * rrRatio; }
+
+        if (usePrevSwing) {
+            const psw = this.calcPrevSwingSL(type,stopFrom,rrRatio);
+            if (! psw) { return false; }
+            takeProfit = psw.takeProfit;
+            stopLoss = psw.stopLoss;
+        }
 
         /*
         if ( useTargetLevel ) {

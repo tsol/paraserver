@@ -96,11 +96,14 @@ class StrategyCrossMA3 extends Strategy {
             else {
                 if (! ( candle.isRed() && (candle.close < mac50) ) ) { return; }
             }
+
+            const stopFrom = (this.isLong ? candle.low : candle.high );
               
             flags.get('helper').makeEntry(this, (this.isLong ? 'buy' : 'sell'), {
                 rrRatio: 1.5,
+                stopFrom,
                 stopATRRatio: 2,
-                //stopFrom: candle.close
+                //usePrevSwing:true
              });
 
             this.resetFinder();

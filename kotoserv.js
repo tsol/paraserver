@@ -2,7 +2,7 @@
 const SETTINGS = require('./private/private.js');
 
 const { Server } = require("socket.io");
-const SocketClients = require("./src/processors/SocketClients.js");
+const WebClients = require("./src/processors/WebClients.js");
 
 const DataProcessor = require('./src/processors/DataProcessor.js');
 const OrdersManager = require('./src/processors/orders/OrdersManager.js');
@@ -14,7 +14,7 @@ const { BrokerOrdersIO } = require('./src/brokers/BrokerIO.js');
 
 const BinanceSpotKoto = require('./src/brokers/binance/BinanceSpotKoto.js');
 
-const MysqlDB = require('./src/db/MysqlDB.js');
+const MysqlDB = require('./src/db/MysqlCandles.js');
 const CandleDB = require('./src/db/CandleDB.js');
 
 const brokerSource = new BinanceSourceSpot(SETTINGS.users.mona.brokers.binance);
@@ -30,7 +30,7 @@ let dataProcessor = null;
 let ordersManager = null;
 let candleDB = null;
 
-const clients = new SocketClients();
+const clients = new WebClients();
 
 const io = new Server({
     cors: {
