@@ -12,7 +12,7 @@ class GEROFLVL extends Strategy {
 
         static STOP_SIZE_ATR    = 0.125;  // stopSize = 10-15% of ATR 
         static LUFT             = 0.2;  // LUFT is 20% of stopSize
-        static RR_RATIO         = 7;    // takeProfit = 3 * stopSize
+        static RR_RATIO         = 3;    // takeProfit = 3 * stopSize
         static MATCH_CANDLES    = 1;
 
         constructor() {

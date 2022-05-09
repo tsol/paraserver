@@ -4,6 +4,8 @@ const BFP = require('./list/bfp.js');
 //const EMATREND = require('./list/ematrend.js');
 const CU4 = require('./list/custom4.js');
 const CU5 = require('./list/custom5.js');
+const CU6 = require('./list/custom6.js');
+
 const MACDF = require('./list/macdf.js');
 
 class OrderTaggers {
@@ -19,7 +21,8 @@ class OrderTaggers {
 //            new EMATREND(20,50,200),
             new CU4(),
             new MACDF(),
-            new CU5()
+            new CU5(),
+            new CU6()
             //new GD100()
         ];
 

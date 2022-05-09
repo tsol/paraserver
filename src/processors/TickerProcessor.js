@@ -1,4 +1,5 @@
 
+const SETTINGS = require('../../private/private.js');
 const { TF } = require('../types/Timeframes.js');
 
 
@@ -70,6 +71,15 @@ class TickerProcessor {
 
     addCandle(candle)
     {
+        
+        //console.log('CANDLE: '+candle.symbol+'-'+candle.timeframe+' : '
+        //+TF.timestampToDate(candle.openTime) + ' -> ' +TF.timestampToDate(candle.closeTime)
+        //+ ' ['+(candle.closed ? 'CLOSED' : 'OPEN')+'] close='+candle.close );
+
+        if (candle.timeframe == SETTINGS.pulseTimeframe) { 
+            this.ordersManager.pulseCandle(candle, this.isLive);                
+            return;
+        }
 
         if (!candle.closed) {
             this.ordersManager.candleUpdated(candle, this.isLive);

@@ -1,11 +1,14 @@
-class OrdersReal {
+const ClientEventsInterface = require('../../brokers/ClientEventInterface.js');
+
+class OrdersReal extends ClientEventsInterface {
     
     static STAKE_USD = 100;
 
-    constructor(broker, webClients) {
+    constructor(broker, clients) {
+        super();
         this.broker = broker;
-        this.webClients = webClients;
         this.orders = [];
+        this.clients = clients;
 
         broker.addEventProcessor(this);
     }
@@ -23,6 +26,14 @@ class OrdersReal {
         this.cleanSLTPOrders(id);
     }
     
+    onAccountUpdate(balance,pnl,positions) {
+        
+        console.log('ON_ACCOUNT_UPDATE balance='+balance+' pnl='+pnl+' positions: ');
+        console.log(positions);
+
+        this.clients.onAccountUpdate(balance,pnl,positions);
+    }
+
     cleanSLTPOrders( broker_SL_or_TP_OrderId ) {
         const id = broker_SL_or_TP_OrderId;
 

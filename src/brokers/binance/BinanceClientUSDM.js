@@ -10,6 +10,7 @@ const { USDMClient } = require('binance');
 const { WebsocketClient } = require('binance');
 
 const SETTINGS = require('../../../private/private.js');
+const { RESULT } = require('../../types/Order.js');
 
 class BinanceClientUSDM extends BrokerOrdersIO {
 
@@ -84,7 +85,29 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                 } 
             }
         }
-       
+
+        
+        if ( data.e && data.e == "ACCOUNT_UPDATE") {
+
+            const positions = [];
+
+            for (var p of data.a.P) {
+                positions.push({
+                    symbol: p.s,
+                    amount: p.pa,
+                    pnl: p.up,
+                    isLong: ( p.ps == 'LONG' ),
+                    entryPrice: p.ep
+                });
+            }
+
+            const pnl = positions.reduce( (sum, position) => sum + position.pnl, 0);
+            const balance = data.a.B.find( wallet => wallet.a == 'USDT' ).wb;
+            
+            this.eventProcessors.forEach( (ep) => ep.onAccountUpdate(balance, pnl, positions) );
+        }
+
+
     }
 
  
@@ -125,6 +148,31 @@ class BinanceClientUSDM extends BrokerOrdersIO {
         };
 
     }
+
+   
+    getAlignedOrderDetails(symbol,entryPrice,usdAmount,stopLoss,takeProfit)
+    {
+        const result = {
+            quantity: 0,
+            stopLoss: 0,
+            takeProfit: 0
+        };
+
+        const info = this.getSymbolInfo(symbol);
+        const quantity = (usdAmount / entryPrice).toFixed(info.qtyPrecision);
+ 
+        if (quantity < info.minQty ) {
+            throw Error('quantity problem: '+symbol+' q='+quantity+' < minq='+info.minQty);
+        }
+
+        result.quantity = quantity;
+
+        result.stopLoss = stopLoss.toFixed(info.pricePrecision);
+        result.takeProfit = takeProfit.toFixed(info.pricePrecision);
+
+        return result;
+    } 
+
 
     async makeFullOrder(symbol,isLong,entryPrice,usdAmount,stopLoss,takeProfit)
     {
@@ -338,7 +386,35 @@ class BinanceClientUSDM extends BrokerOrdersIO {
     async moveStopLoss(symbol, orderId, newPrice){};
     async moveTakeProfit(symbol, orderId, newPrice){};
 
-    async getBalance() {};
+    async getAccountInformation() {
+
+        const res = await this.client.getAccountInformation()
+        .catch(err => {
+          console.error("getAccountInfo error: ", err);
+        });
+
+        const balance = res.totalWalletBalance;
+        const pnl = res.totalUnrealizedProfit;
+        const positions = [];
+
+        for (var p of res.positions) {
+
+            if (Math.abs(Number(p.unrealizedProfit)) > 0) {
+                positions.push({
+                symbol: p.symbol,
+                amount: p.positionAmt,
+                pnl: p.unrealizedProfit,
+                isLong: ( p.positionSide == 'LONG' ),
+                entryPrice: p.entryPrice
+                });
+            }
+        }
+
+        return { balance, pnl, positions };
+
+    };
+
+
     /*
 
     client.getBalance()

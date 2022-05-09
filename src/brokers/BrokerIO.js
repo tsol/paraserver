@@ -34,8 +34,20 @@ class BrokerOrdersIO {
     */
     async makeFullOrder(symbol,isLong,entryPrice,usdAmount,stopLoss,takeProfit){};
     
-    /* must return: { balance: '23', pnl: '0.01' } */
-    async getBalance(){};
+    /*
+        return correct prescision prices and quantity
+
+    return {
+        quantity: 0,
+        stopLoss: 0,
+        takeProfit: 0
+    };
+    */
+    getAlignedOrderDetails(symbol,entryPrice,usdAmount,stopLoss,takeProfit){};
+
+
+    /* must return: { balance: '23', pnl: '0.01', positions: } */
+    async getAccountInformation(){};
 
     async closeOrderIds(symbol, orderIdsArray) {};
     async moveStopLoss(symbol, orderId, newPrice){};

@@ -7,12 +7,12 @@ const PeriodTagsCompare = require('../../reports/PeriodTagsCompare.js');
 
 class OrdersManager {
     
-    constructor(brokerOrderClient, webClients) {
+    constructor(brokerOrderClient, clients) {
         this.emulator = new OrdersEmulator();
         this.report = new PeriodTagsCompare();
-        this.webClients = webClients;
+        this.clients = clients;
         this.brokerOrderClient = brokerOrderClient;
-        this.real = new OrdersReal(brokerOrderClient, webClients);
+        this.real = new OrdersReal(brokerOrderClient, clients);
     }
 
     reset() {
@@ -50,19 +50,25 @@ class OrdersManager {
             takeProfit, 
             stopLoss,
             comment,
-            flags 
+            flags,
+            this.brokerOrderClient 
         );
 
-        if (! SETTINGS.dev && isLive) {
+        if ( isLive ) {
             if (emulatedOrder.tags && emulatedOrder.tags.CU5.value === 'Y') {
                 this.doMakeOrderFromEmulated( emulatedOrder.id );
             }
         }
 
+
         return emulatedOrder;
     }
 
     /* ticker io */
+
+    pulseCandle(candle,isLive) {
+        this.emulator.pulseCandle(candle,isLive);
+    }
 
     candleClosed(candle,isLive) {
         this.emulator.candleClosed(candle,isLive);
@@ -112,26 +118,21 @@ class OrdersManager {
             return;
         }
     
+        this.clients.onNewRealOrder(emulatedOrder);
+
+        if ( SETTINGS.dev ) {
+            return;
+        }
+
         this.real.newOrderFromEmu(emulatedOrder).then((result) => {
             emulatedOrder.setComment(' [BROK] '+JSON.stringify(result));
             // todo: save to db
-            this.webClientsRefreshOrders();
         }).catch( (err) => {
             console.log('MAKE_EMULATE_ORDER: ERROR');
             console.log(err);
-            
             emulatedOrder.setComment(' [BRER] '+err.message);
-            this.webClientsRefreshOrders();
         });
 
-    }
-
-
-    /* helpers */
-
-    webClientsRefreshOrders()
-    {
-        this.webClients.emit('orders',this.getEmulatedOrdersList());
     }
 
 

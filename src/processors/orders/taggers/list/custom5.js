@@ -4,7 +4,6 @@
 
 const Tagger = require('../types/Tagger'); 
 
-
 class CUSTOM5 extends Tagger {
 
     getTags(o, flags, orders, tags) 

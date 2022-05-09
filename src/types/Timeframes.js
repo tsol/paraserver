@@ -4,31 +4,12 @@ class Timeframes
     DAY_LENGTH = 24 * 60 * 60000;
     MIN_LENGTH = 60000;
     HOUR_LENGTH = this.MIN_LENGTH * 60;
-/*
+
     TFRAMES = [
-        { name: '1d',  htf: null,  levelsLimit: 300, days: 300,  trade: false, limit: 0, levelsLimitTime: 0, length: this.DAY_LENGTH },
-        { name: '4h',  htf: '1d',  levelsLimit: 500, days: 10,   trade: true, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
-        { name: '1h',  htf: '4h',  levelsLimit: 500, days: 10,   trade: true, limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
-        { name: '30m', htf: '1h',  levelsLimit: 500, days: 10,   trade: true, limit: 0, levelsLimitTime: 0, length: 30 * this.MIN_LENGTH },
-        { name: '15m', htf: '30m', levelsLimit: 500, days: 10,   trade: true, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
-        { name: '5m',  htf: '15m', levelsLimit: 500, days: 10,   trade: true, limit: 0, levelsLimitTime: 0, length: 5 * this.MIN_LENGTH },
-        { name: '3m',  htf: '5m',  levelsLimit: 500, days: 10,   trade: true, limit: 0, levelsLimitTime: 0, length: 3 * this.MIN_LENGTH },
-        { name: '1m',  htf: '15m', levelsLimit: 500, days: 10,   trade: true, limit: 0, levelsLimitTime: 0, length: this.MIN_LENGTH }
-    ];
-*/
-/*
-   TFRAMES = [
-        { name: '4h',  htf: null,  levelsLimit: 500, days: 120,   trade: true, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
-        { name: '15m', htf: '4h',  levelsLimit: 500, days: 120,   trade: true, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
-        { name: '5m',  htf: '4h',  levelsLimit: 500, days: 120,   trade: true, limit: 0, levelsLimitTime: 0, length: 5 * this.MIN_LENGTH },
-        { name: '3m',  htf: '4h', levelsLimit: 500, days: 120,   trade: true, limit: 0, levelsLimitTime: 0, length: 3 * this.MIN_LENGTH },
-    ];
-*/
-    TFRAMES = [
-        { name: '1d',  htf: null,  levelDays: 62, days: 92,  trade: false, limit: 0, levelsLimitTime: 0, length: this.DAY_LENGTH },
+        { name: '1d', htf: null,  levelDays: 62, days: 400,  trade: false, limit: 0, levelsLimitTime: 0, length: this.DAY_LENGTH },
         //{ name: '4h',  htf: null,  levelDays: 31, days: 400,  trade: false, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
-        { name: '1h',  htf: '1d',  levelDays: 14, days: 92,  trade: true,  limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
-        //{ name: '15m', htf: '1d',  levelDays: 14, days: 400,  trade: true, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
+        { name: '1h', htf: '1d',  levelDays: 14, days: 92,  trade: true,  limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
+        //{ name: '1m', htf: '1h',  levelDays: 1, days: 1,  trade: true, limit: 0, levelsLimitTime: 0, length: 1 * this.MIN_LENGTH },
 
     ];
 

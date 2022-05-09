@@ -16,10 +16,10 @@ const { TF } = require('../types/Timeframes.js');
 
 class CandleDB {
 
-    constructor (dbHandler, brokers)
+    constructor (dbHandler, broker)
     {
         this.db = dbHandler;
-        this.brokers = brokers;
+        this.broker = broker;
     }
   
 
@@ -44,7 +44,7 @@ class CandleDB {
             return dbCandles;
         }
 
-        const broker = this.brokers.getFor(symbol);
+        const broker = this.broker;
 
         let needBrokerSince = sinceTimestamp;
         let needBrokerTo = toTimestamp;

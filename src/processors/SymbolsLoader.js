@@ -17,7 +17,7 @@ const { TF } = require('../types/Timeframes.js');
 
 class SymbolsLoader {
 
-    constructor(symbols, runLive, dataProcessor, ordersManager, candleDB, analyzersFactory, brokers) {
+    constructor(symbols, runLive, dataProcessor, ordersManager, candleDB, analyzersFactory, broker) {
         this.id = 'loader'+Math.random();
 
         this.runLive = runLive;
@@ -26,7 +26,7 @@ class SymbolsLoader {
         this.dataProcessor = dataProcessor;
         this.ordersManager = ordersManager;
         this.analyzersFactory = analyzersFactory;
-        this.brokers = brokers;
+        this.broker = broker;
 
         this.flags = new Flags();
         
@@ -55,7 +55,7 @@ class SymbolsLoader {
             {                
                 const ls = {
                     symbol: s,
-                    broker: this.brokers.getFor(s),
+                    broker: this.broker,
                     timeframe: tf.name,
                     limit: tf.limit,
                     days: tf.days,
@@ -222,7 +222,7 @@ class SymbolsLoader {
             this.processByTicker(candle);
             countAll++;
 
-            if (++countBreak > 1000) {
+            if (++countBreak > 100000) {
                 countBreak = 0;
                 console.log("SL: processed "+countAll+" of "+candles.length+" candles, date: "+
                     TF.timestampToDate(candle.openTime) );
@@ -244,7 +244,8 @@ class SymbolsLoader {
 
     processByTicker(candle)
     {
-        const ticker = this.tickers[ candle.symbol+'-'+candle.timeframe ];
+        const key = candle.symbol+'-'+candle.timeframe;
+        const ticker = this.tickers[ key ];
         if (! ticker )
             { throw new Error('no ticker object!'); }
         ticker.addCandle(candle);

@@ -44,8 +44,13 @@ class Order {
         this.closeTime = null;
         this.closePrice = null;
         this.gain = 0;
-        this.maxPriceReached = entryPrice;
-        this.reachedPercent = 0;
+        
+        this.takePriceReached = entryPrice;
+        this.takePercentReached = 0;
+
+        this.lossPriceReached = entryPrice;
+        this.lossPercentReached = 0;
+
         this.comment = ''; 
      
         this.brokerORID = null;
@@ -69,7 +74,7 @@ class Order {
         return null;
     }
 
-    getReachedPercent() { return this.reachedPercent; }
+    gettakePercentReached() { return this.takePercentReached; }
 
     doClose(isWin, time) {
         this.active = false;                
@@ -109,26 +114,40 @@ class Order {
         if (this.isLong()) {
             this.gain = soldInUSD - boughtInUSD - commissionInUSD;
 
-            if ( this.currentPrice > this.maxPriceReached)
-                { this.maxPriceReached = this.currentPrice; }
+            if ( this.currentPrice > this.takePriceReached)
+                { this.takePriceReached = this.currentPrice; }
+
+            if ( this.currentPrice < this.lossPriceReached)
+                { this.lossPriceReached = this.currentPrice; }
+
         }
         else { // sell
             this.gain = boughtInUSD - soldInUSD - commissionInUSD;
 
-            if ( this.currentPrice < this.maxPriceReached)
-                { this.maxPriceReached = this.currentPrice; }    
+            if ( this.currentPrice < this.takePriceReached)
+                { this.takePriceReached = this.currentPrice; }    
+
+            if ( this.currentPrice > this.lossPriceReached)
+                { this.lossPriceReached = this.currentPrice; }
+
+
         }
         
-        const priceDiff = this.maxPriceReached - this.entryPrice;
-        const target = Math.abs(this.takeProfit - this.entryPrice);
-        const coef = fnum( Math.abs(priceDiff / target) * 100, 2);
-        this.reachedPercent = ( coef < 100 ? coef : 100 );
+        this.takePercentReached = this.calcTakePercentReached();
+        this.lossPercentReached = this.calcLossPercentReached();
 
     }
 
+    calcLossPercentReached() {
+        const priceDiff = this.entryPrice - this.lossPriceReached;
+        const target = Math.abs(this.stopLoss - this.entryPrice);
+        const coef = fnum( Math.abs(priceDiff / target) * 100, 2);
+        return ( coef < 100 ? coef : 100 );     
+    }
 
-    calcTrailingReachedPercent() {
-        const priceDiff = this.maxPriceReached - this.entryPrice;
+
+    calcTakePercentReached() {
+        const priceDiff = this.takePriceReached - this.entryPrice;
         const target = Math.abs(this.takeProfit - this.entryPrice);
         const coef = fnum( Math.abs(priceDiff / target) * 100, 2);
         return ( coef < 100 ? coef : 100 );     
@@ -164,8 +183,10 @@ class Order {
             closeTime: this.closeTime,
             closePrice: this.closePrice,
             gain: this.gain,
-            maxPriceReached: this.maxPriceReached,
-            reachedPercent: this.reachedPercent,
+            takePriceReached: this.takePriceReached,
+            takePercentReached: this.takePercentReached,
+            lossPriceReached: this.lossPriceReached,
+            lossPercentReached: this.lossPercentReached,
             comment:  this.comment + this.tagsStringify(),
             flags: {},
             tags: {},
@@ -195,8 +216,10 @@ class Order {
             closeTime: this.closeTime,
             closePrice: this.closePrice,
             gain: this.gain,
-            maxPriceReached: this.maxPriceReached,
-            reachedPercent: this.reachedPercent,
+            takePriceReached: this.takePriceReached,
+            takePercentReached: this.takePercentReached,
+            lossPriceReached: this.lossPriceReached,
+            lossPercentReached: this.lossPercentReached,
             comment:  this.comment,
             flags: JSON.stringify(this.flags),
             tags: JSON.stringify(this.tags),
@@ -225,8 +248,11 @@ class Order {
         order.result = data.result;
         order.closePrice = data.closePrice;
         order.gain = data.gain;
-        order.maxPriceReached = data.maxPriceReached;
-        order.reachedPercent = data.reachedPercent;
+        order.takePriceReached = data.takePriceReached;
+        order.takePercentReached = data.takePercentReached;
+        order.lossPriceReached = data.lossPriceReached;
+        order.lossPercentReached = data.lossPercentReached;
+
         order.comment =  data.comment;
         order.flags = JSON.parse(data.flags);
         order.tags = JSON.parse(data.tags);
