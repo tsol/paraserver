@@ -92,13 +92,15 @@ class BinanceClientUSDM extends BrokerOrdersIO {
             const positions = [];
 
             for (var p of data.a.P) {
-                positions.push({
-                    symbol: p.s,
-                    amount: p.pa,
-                    pnl: p.up,
-                    isLong: ( p.ps == 'LONG' ),
-                    entryPrice: p.ep
-                });
+                if (Math.abs(Number(p.up)) > 0) {
+                    positions.push({
+                        symbol: p.s,
+                        amount: p.pa,
+                        pnl: p.up,
+                        isLong: ( p.ps == 'LONG' ),
+                        entryPrice: p.ep
+                    });
+                }
             }
 
             const pnl = positions.reduce( (sum, position) => sum + position.pnl, 0);
@@ -166,7 +168,6 @@ class BinanceClientUSDM extends BrokerOrdersIO {
         }
 
         result.quantity = Number(quantity);
-
         result.stopLoss = Number(stopLoss.toFixed(info.pricePrecision));
         result.takeProfit = Number(takeProfit.toFixed(info.pricePrecision));
 
