@@ -165,10 +165,10 @@ class BinanceClientUSDM extends BrokerOrdersIO {
             throw Error('quantity problem: '+symbol+' q='+quantity+' < minq='+info.minQty);
         }
 
-        result.quantity = quantity;
+        result.quantity = Number(quantity);
 
-        result.stopLoss = stopLoss.toFixed(info.pricePrecision);
-        result.takeProfit = takeProfit.toFixed(info.pricePrecision);
+        result.stopLoss = Number(stopLoss.toFixed(info.pricePrecision));
+        result.takeProfit = Number(takeProfit.toFixed(info.pricePrecision));
 
         return result;
     } 
@@ -196,7 +196,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
         }
 
         const info = this.getSymbolInfo(symbol);
-        const quantity = (usdAmount / entryPrice).toFixed(info.qtyPrecision);
+        const quantity = Number((usdAmount / entryPrice).toFixed(info.qtyPrecision));
  
         if (quantity < info.minQty ) {
             throw Error('quantity problem: '+symbol+' q='+quantity+' < minq='+info.minQty);
@@ -218,7 +218,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                 type: 'STOP_MARKET',
                 positionSide: positionSide,
                 closePosition: 'false',
-                stopPrice: stopLoss.toFixed(info.pricePrecision),                
+                stopPrice: Number(stopLoss).toFixed(info.pricePrecision),                
                 quantity: quantity        
         };
 
@@ -228,7 +228,7 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                 type: 'TAKE_PROFIT_MARKET',
                 positionSide: positionSide,
                 closePosition: 'false',
-                stopPrice: takeProfit.toFixed(info.pricePrecision),     
+                stopPrice: Number(takeProfit).toFixed(info.pricePrecision),     
                 quantity: quantity
         };
                 
