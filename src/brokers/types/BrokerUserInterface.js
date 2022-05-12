@@ -1,23 +1,13 @@
-/* Interfaces for implementing broker */
+/*
+** User related broker functions (make order, wallet balance, set take profit etc.)
+** Use this interface to implement connections to any broker. Make sure to
+** implement candle source connection as well.
+**
+** Each client must use instance of such object to manage his account.
+**
+*/
 
-class CandleSourceIO {
-
-    hasSymbol(symbol) {}
-
-    /* theese must return array of Candle objects (types/Candle.js) */
-    async loadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp) {}
-  
-    async getTradableSymbols() {}
-
-    /* after subscription 
-    ** subscriberObject.newCandleFromBroker(candleObject)
-    ** is called upon every new candle */
-    subscribe(symbol, timeframe, subscriberId, subscriberObject) {}
-    unsubscribe(symbol, timeframe, subscriberId) {}
-}
-
-
-class BrokerOrdersIO {
+class BrokerUserInterface {
 
     async init() {};
 
@@ -36,7 +26,6 @@ class BrokerOrdersIO {
     
     /*
         return correct prescision prices and quantity
-
     return {
         quantity: 0,
         stopLoss: 0,
@@ -60,5 +49,4 @@ class BrokerOrdersIO {
     
 }
 
-
-module.exports = { CandleSourceIO, BrokerOrdersIO }
+module.exports = BrokerUserInterface;

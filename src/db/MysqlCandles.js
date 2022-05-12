@@ -1,5 +1,5 @@
 /*
-** This is mysql backend for CandleDB candle proxy class.
+** This is mysql backend for CandleProxy candle proxy class.
 **
 **
 */

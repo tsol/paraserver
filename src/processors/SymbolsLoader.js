@@ -17,12 +17,12 @@ const { TF } = require('../types/Timeframes.js');
 
 class SymbolsLoader {
 
-    constructor(symbols, runLive, dataProcessor, ordersManager, candleDB, analyzersFactory, broker) {
+    constructor(symbols, runLive, dataProcessor, ordersManager, candleProxy, analyzersFactory, broker) {
         this.id = 'loader'+Math.random();
 
         this.runLive = runLive;
 
-        this.candleDB = candleDB;
+        this.candleProxy = candleProxy;
         this.dataProcessor = dataProcessor;
         this.ordersManager = ordersManager;
         this.analyzersFactory = analyzersFactory;
@@ -66,7 +66,7 @@ class SymbolsLoader {
                 this.loadState.push(ls);
 
                 if (this.runLive) {
-                    ls.broker.subscribe(ls.symbol, ls.timeframe, this.id, this );
+                    ls.broker.subscribe(ls.symbol, ls.timeframe, this );
 
                     if (++count > 4) {
                         console.log("SLEEPING for websock init");
@@ -122,7 +122,7 @@ class SymbolsLoader {
 
     loadHistoryCandles(state) {
 
-        this.candleDB.getClosedCandlesSince(
+        this.candleProxy.getClosedCandlesSince(
             state.symbol,
             state.timeframe,
             TF.timestampDaysBack( state.days ),
@@ -158,7 +158,7 @@ class SymbolsLoader {
         if (this.runLive) {
             for (var ls of this.loadState) {
                 console.log('SL: unsubscribing loader '+this.getId()+' from '+ls.symbol+'-'+ls.timeframe);
-                ls.broker.unsubscribe(ls.symbol,ls.timeframe,this.getId());
+                ls.broker.unsubscribe(ls.symbol,ls.timeframe,this);
             }
         }
 

@@ -7,7 +7,7 @@ const { TF } = require('../types/Timeframes.js');
 
 class DataProcessor {
 
-    constructor(dataDB, brokerSrc, brokerClient, candleDB, ordersManager) {
+    constructor(dataDB, brokerSrc, brokerClient, candleProxy, ordersManager) {
         this.flags = new Flags();
         this.loaders = [];
         this.tickers = {};
@@ -16,7 +16,7 @@ class DataProcessor {
         this.dataDB = dataDB;
         this.brokerSrc = brokerSrc;
         this.brokerClient = brokerClient;
-        this.candleDB = candleDB;
+        this.candleProxy = candleProxy;
     }
  
     restartAll(runLive) {
@@ -52,7 +52,7 @@ class DataProcessor {
     runSymbols(symbolsArray, runLive)
     {
         const loader = new SymbolsLoader(symbolsArray, runLive, 
-            this, this.ordersManager, this.candleDB, this.analyzersFactory, this.brokerSrc);   
+            this, this.ordersManager, this.candleProxy, this.analyzersFactory, this.brokerSrc);   
         this.loaders.push(loader);
     }
 

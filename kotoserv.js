@@ -15,7 +15,7 @@ const { BrokerOrdersIO } = require('./src/brokers/BrokerIO.js');
 const BinanceSpotKoto = require('./src/brokers/binance/BinanceSpotKoto.js');
 
 const MysqlDB = require('./src/db/MysqlCandles.js');
-const CandleDB = require('./src/db/CandleDB.js');
+const CandleProxy = require('./src/db/CandleProxy.js');
 
 const brokerSource = new BinanceSourceSpot(SETTINGS.users.mona.brokers.binance);
 const brokerClient = new BrokerOrdersIO({});
@@ -28,7 +28,7 @@ const mysqlHandler = new MysqlDB();
 
 let dataProcessor = null;
 let ordersManager = null;
-let candleDB = null;
+let candleProxy = null;
 
 const clients = new WebClients();
 
@@ -46,9 +46,9 @@ const runLive = true;
 
 mysqlHandler.connect( SETTINGS.databases.mysqlKoto ).then( () => {
 
-    candleDB = new CandleDB(mysqlHandler, brokers);
+    candleProxy = new CandleProxy(mysqlHandler, brokers);
     ordersManager = new OrdersManager(brokerClient, clients);
-    dataProcessor = new DataProcessor(mysqlHandler,brokers,candleDB,ordersManager,clients);
+    dataProcessor = new DataProcessor(mysqlHandler,brokers,candleProxy,ordersManager,clients);
  
     //dataProcessor.runSymbols(coins, runLive);
 

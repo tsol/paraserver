@@ -1,6 +1,6 @@
-const ClientEventsInterface = require('../../brokers/ClientEventInterface.js');
+const UserEventsInterface = require('../../brokers/types/BrokerEventsUserInterface.js');
 
-class OrdersReal extends ClientEventsInterface {
+class OrdersReal extends UserEventsInterface {
     
     static STAKE_USD = 100;
 

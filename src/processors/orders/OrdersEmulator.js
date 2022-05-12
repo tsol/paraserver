@@ -94,8 +94,8 @@ class OrdersEmulator {
             }
         }
 
-        //stopLoss = newStopLoss;
-        //takeProfit = newTakeProfit;
+        // stopLoss = newStopLoss;
+        // takeProfit = newTakeProfit;
 
 /* / margin call */
 
@@ -111,11 +111,7 @@ class OrdersEmulator {
             takeProfit: takeProfit
         });
 
-
         order.setFlags(flagsSnapshot);
-
-        this.orders.push(order);
-        this.activeOrders.push(order);
 
         const profitPreview = this.previewProfit(isLong,
             order.quantity,order.entryPrice,order.takeProfit); 
@@ -136,13 +132,13 @@ class OrdersEmulator {
         order.setTags( this.taggers.getTags(order, flags, this.orders, order.tags) );
         order.setComment(comment);
 
-        /*
-        order.setTag('RSI',flags.get('rsi14'));
-        order.setTag('MACD_D',flags.get('macd').d);
-        order.setTag('MACD_H',flags.get('macd').h);
-        */
+        /* filter */
+        //if (order.tags.CU5.value !== 'Y') { return null; }
 
+        this.orders.push(order);
+        this.activeOrders.push(order);
         return order;
+
     }
 
 

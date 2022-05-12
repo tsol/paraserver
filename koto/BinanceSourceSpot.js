@@ -1,6 +1,6 @@
 const { Spot } = require('@binance/connector')
-const Candle = require('../../types/Candle.js');
-const { TF } = require('../../types/Timeframes.js');
+const Candle = require('../src/types/Candle.js');
+const { TF } = require('../src/types/Timeframes.js');
 
 class BinanceSourceSpot {
 

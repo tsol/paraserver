@@ -54,12 +54,13 @@ class OrdersManager {
             this.brokerOrderClient 
         );
 
+        if (! emulatedOrder ) { return null; }
+
         if ( isLive ) {
             if (emulatedOrder.tags && emulatedOrder.tags.CU5.value === 'Y') {
                 this.doMakeOrderFromEmulated( emulatedOrder.id );
             }
         }
-
 
         return emulatedOrder;
     }

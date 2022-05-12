@@ -13,7 +13,7 @@ for (var i of [10,20,30,40]) {
 const SETTINGS = require('./private/private.js');
 
 const BrokerOrder = require('./src/types/BrokerOrder.js');
-const Broker = require('./src/brokers/binance/BinanceClientUSDM.js');
+const Broker = require('./src/brokers/binance/BinanceUSDMUser.js');
 const { appendEventIfMissing } = require('binance');
 
 const broker = new Broker(SETTINGS.users.utah.brokers.binance);

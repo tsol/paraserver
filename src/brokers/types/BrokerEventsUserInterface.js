@@ -2,7 +2,7 @@
 ** This is what BrokerClient (BrokerOrdersIO) event processor must do
 */
 
-class ClientEventsInterface
+class BrokerEventsUserInterface
 {
 
     onBrokerOrderCanceled(id) {
@@ -19,4 +19,4 @@ class ClientEventsInterface
 
 }
 
-module.exports = ClientEventsInterface;
+module.exports = BrokerEventsUserInterface;

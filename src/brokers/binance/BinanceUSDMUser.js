@@ -4,7 +4,7 @@
 **
 */
 
-const { BrokerOrdersIO } = require('../BrokerIO.js');
+const BrokerUserInterface= require('../types/BrokerUserInterface.js');
 
 const { USDMClient } = require('binance');
 const { WebsocketClient } = require('binance');
@@ -12,7 +12,7 @@ const { WebsocketClient } = require('binance');
 const SETTINGS = require('../../../private/private.js');
 const { RESULT } = require('../../types/Order.js');
 
-class BinanceClientUSDM extends BrokerOrdersIO {
+class BinanceUSDMUser extends BrokerUserInterface {
 
     constructor ({ apiKey, secretKey })
     {
@@ -286,27 +286,21 @@ class BinanceClientUSDM extends BrokerOrdersIO {
         let mainSide = 'SELL';
         let stopSide = 'BUY';
         let positionSide = 'SHORT';
-
         if (isLong) {
             mainSide = 'BUY';
             stopSide = 'SELL';
             positionSide = 'LONG';
         }
-
         const info = this.getSymbolInfo(symbol);
         if (! info) { throw new Error('BC-USDM: no exchangeInfo on '+symbol); }
-
         const qPrecision = info.quantityPrecision;
         const quantity = (usdAmount / entryPrice).toFixed(qPrecision);
         const minQty = this.getSymbolFilter(info,'MARKET_LOT_SIZE','minQty');
         const pricePrecision = info.pricePrecision;  
-
         if (quantity < minQty ) {
             throw Error('quantity problem: '+symbol+' q='+quantity+' < minq='+minQty);
         }
-
         result.quantity = quantity;
-
         let orders =
         [
             {
@@ -335,32 +329,25 @@ class BinanceClientUSDM extends BrokerOrdersIO {
                 quantity: quantity
             }
         ];
-
         
         let o = await this.client.submitMultipleOrders(orders);
         let error = null;
-
         if ( o[0] && o[0].orderId )
                 { result.orders.entry.id = o[0].orderId }
         else    { error = 'entry: '+ ( o[0].msg ? o[0].msg : '' ); }
-
         if ( o[1] && o[1].orderId )
                 { result.orders.sl.id = o[1].orderId; }
         else    { error = 'stop-loss: '+( o[1].msg ? o[1].msg : '' ); }
-
         if ( o[2] && o[2].orderId )
                 { result.orders.tp.id = o[2].orderId; }
         else    { error = 'take-profit: '+( o[2].msg ? o[2].msg : '' ); }
-
         //console.log('RAW_REPLY submitMultiplyOrders:');
         //console.log(o);
-
         if (error) {
             const ids = getCreatedOrdersIds(result);
             if (ids.length > 0) { await this.closeOrderIds(symbol,ids); }
             throw new Error(error);
         }
-
         return result;
     }
     */
@@ -417,7 +404,6 @@ class BinanceClientUSDM extends BrokerOrdersIO {
 
 
     /*
-
     client.getBalance()
   .then(result => {
     console.log("getBalance result: ", result);
@@ -521,4 +507,4 @@ function getCreatedOrdersIds(submitMultiplyOrdersResult) {
     return a;
 }
 
-module.exports = BinanceClientUSDM;
+module.exports = BinanceUSDMUser;

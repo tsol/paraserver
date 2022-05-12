@@ -1,17 +1,16 @@
 /*
-** Binance Futures USD-M 'CandleSourceIO' client
-**
-**
+** Binance Futures USD-M Candles Source
 */
 
-const { CandleSourceIO } = require('../BrokerIO.js');
+const BrokerCandlesInterface = require('../types/BrokerCandlesInterface.js');
+
 const Candle = require('../../types/Candle.js');
 const { TF } = require('../../types/Timeframes.js');
 
 const { USDMClient } = require('binance');
 const { WebsocketClient } = require('binance');
 
-class BinanceSourceUSDM extends CandleSourceIO {
+class BinanceUSDMCandles extends BrokerCandlesInterface {
 
     static MAX_CANDLES_PER_REQUEST = 499;
     static CANDLES_REQUEST_WEIGHT = 2;
@@ -26,9 +25,9 @@ class BinanceSourceUSDM extends CandleSourceIO {
         this.streams = {};
 
         // todo: update from exchangeInfo
-        this.WEIGHT_LIMIT = BinanceSourceUSDM.DEFAULT_1M_WEIGHT_LIMIT;
-        this.WEIGHT_KEEP = Math.floor( (this.WEIGHT_LIMIT / 100) * BinanceSourceUSDM.KEEP_PERCENT );
-        this.WEIGHT_KAPUT = Math.floor( (this.WEIGHT_LIMIT / 100) * BinanceSourceUSDM.KAPUT_PERCENT );
+        this.WEIGHT_LIMIT = BinanceUSDMCandles.DEFAULT_1M_WEIGHT_LIMIT;
+        this.WEIGHT_KEEP = Math.floor( (this.WEIGHT_LIMIT / 100) * BinanceUSDMCandles.KEEP_PERCENT );
+        this.WEIGHT_KAPUT = Math.floor( (this.WEIGHT_LIMIT / 100) * BinanceUSDMCandles.KAPUT_PERCENT );
 
         this.weightQueue = [];
 
@@ -43,11 +42,6 @@ class BinanceSourceUSDM extends CandleSourceIO {
             pingInterval: 60000,
             reconnectTimeout: 1500,
         });
-/*
-        pongTimeout: 7500,
-        pingInterval: 10000,
-        reconnectTimeout: 500,
-*/
 
         this.wsClient.on('message', (data) => {
             this.dispatchWSData(data);
@@ -58,7 +52,6 @@ class BinanceSourceUSDM extends CandleSourceIO {
 
     }
 
-    hasSymbol(symbol) { return true; }
 
     async updateServerTime()
     {
@@ -211,7 +204,7 @@ class BinanceSourceUSDM extends CandleSourceIO {
         const params = {
             symbol: symbol,
             interval: timeframe,
-            limit: BinanceSourceUSDM.MAX_CANDLES_PER_REQUEST,
+            limit: BinanceUSDMCandles.MAX_CANDLES_PER_REQUEST,
             startTime: startTimestamp,
             endTime: endTimestamp
         };
@@ -224,7 +217,7 @@ class BinanceSourceUSDM extends CandleSourceIO {
             try {
                 
                 console.log('BS-USDM: ('+sId+') prepare to wait! '+TF.currentDatetime());
-                await this.waitQueue(sId, BinanceSourceUSDM.CANDLES_REQUEST_WEIGHT);
+                await this.waitQueue(sId, BinanceUSDMCandles.CANDLES_REQUEST_WEIGHT);
                 console.log('BS-USDM: ('+sId+') SAFE_SLEEP is done! '+TF.currentDatetime());
                 data = await this.client.getKlines(params);
             }
@@ -254,29 +247,29 @@ class BinanceSourceUSDM extends CandleSourceIO {
 
     
   
-    subscribe(symbol, timeframe, subscriberId, subscriberObject)
+    subscribe(symbol, timeframe, subscriberObject)
     {
         const sid = symbol+'-'+timeframe;
         const foundStream = this.streams[sid];
 
         if (foundStream) {
-            foundStream.subscribe(subscriberId,subscriberObject);
+            foundStream.subscribe(subscriberObject);
             return true;
         }
 
         const stream = new Stream(this.wsClient, symbol, timeframe);
         console.log('BS-USDM: added new stream: '+sid);
         this.streams[sid] = stream;
-        stream.subscribe(subscriberId,subscriberObject);
+        stream.subscribe(subscriberObject);
         return true;
     }
 
-    unsubscribe(symbol,timeframe,subscriberId)
+    unsubscribe(symbol,timeframe,subscriberObject)
     {
         const sid = symbol+'-'+timeframe;
         const foundStream = this.streams[sid];
         if (foundStream) {
-            return foundStream.unsubscribe(subscriberId);
+            return foundStream.unsubscribe(subscriberObject);
         }
         return false;
     }
@@ -394,24 +387,14 @@ class PIO // private IO
 
 class Stream {
 
-
-/*
-    public subscribeContinuousContractKlines(symbol: string, contractType: 'perpetual' | 'current_quarter' | 'next_quarter', interval: KlineInterval, market: 'usdm' | 'coinm', forceNewConnection?: boolean): WebSocket {
-        const lowerCaseSymbol = symbol.toLowerCase();
-        const streamName = 'continuousKline';
-        const wsKey = getWsKeyWithContext(market, streamName, lowerCaseSymbol, interval);
-        return this.connectToWsUrl(this.getWsBaseUrl(market, wsKey) + `/ws/${lowerCaseSymbol}_${contractType}@${streamName}_${interval}`, wsKey, forceNewConnection);
-      }
-*/
-
     constructor(wsClient, symbol, timeframe) {
 
-        this.wsClient = wsClient;
+//        this.wsClient = wsClient;
         this.symbol = symbol;
         this.timeframe = timeframe;
      
         this.subscribers = [];
-        this.wsClient.subscribeContinuousContractKlines(
+        wsClient.subscribeContinuousContractKlines(
                 symbol, 'perpetual', timeframe, 'usdm', false);
         
     }
@@ -419,31 +402,28 @@ class Stream {
     handleData(data) {
         let objectCandle = PIO.parseCandleFromWSS(this.symbol,this.timeframe,data);
         if (objectCandle) {
-            this.subscribers.forEach( s => s.obj.newCandleFromBroker(objectCandle) );
+            this.subscribers.forEach( s => s.newCandleFromBroker(objectCandle) );
         }
     }
 
-    subscribe(subscriberId, subscriberObject)
+    subscribe(subscriberObject)
     {
-        const found = this.subscribers.find( s => s.id === subscriberId );
-        if (found) { found.obj = subscriberObject; return true; }
-        this.subscribers.push({ id: subscriberId, obj: subscriberObject });
+        const found = this.subscribers.find( s => s === subscriberObject );
+        if (found) { return true; }
+        this.subscribers.push( subscriberObject );
         return true;
     }
 
-    unsubscribe(id)
+    unsubscribe(subscriberObject)
     {
-        this.subscribers = this.subscribers.filter( s => s.id !== id );
+        this.subscribers = this.subscribers.filter( s => s !== subscriberObject );
     }
-
+/*
     getId() {
         return this.symbol+'-'+this.timeframe;
     }
-
-
-
+*/
 }
 
 
-
-module.exports = BinanceSourceUSDM;
+module.exports = BinanceUSDMCandles;

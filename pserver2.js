@@ -3,21 +3,21 @@ const SETTINGS = require('./private/private.js');
 const DataProcessor = require('./src/processors/DataProcessor.js');
 const OrdersManager = require('./src/processors/orders/OrdersManager.js');
 
-const BinanceSourceUSDM = require('./src/brokers/binance/BinanceSourceUSDM.js');
-const BinanceClientUSDM = require('./src/brokers/binance/BinanceClientUSDM.js');
+const BinanceUSDMCandles = require('./src/brokers/binance/BinanceUSDMCandles.js');
+const BinanceUSDMUser = require('./src/brokers/binance/BinanceUSDMUser.js');
 
 const MysqlCandles = require('./src/db/MysqlCandles.js');
-const CandleDB = require('./src/db/CandleDB.js');
+const CandleProxy = require('./src/db/CandleProxy.js');
 const Clients = require('./src/clients/Clients.js');
 
-const brokerSrc = new BinanceSourceUSDM(SETTINGS.users.harry.brokers.binance);
-const brokerClientUSDM = new BinanceClientUSDM(SETTINGS.users.utah.brokers.binance);
+const brokerSrc = new BinanceUSDMCandles(SETTINGS.users.harry.brokers.binance);
+const brokerClientUSDM = new BinanceUSDMUser(SETTINGS.users.utah.brokers.binance);
 
 const mysqlCandles = new MysqlCandles();
 
 let dataProcessor = null;
 let ordersManager = null;
-let candleDB = null;
+let candleProxy = null;
 let clients = null;
 
 
@@ -27,17 +27,17 @@ mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
     brokerClientUSDM.init().then( () => {
 
         clients = new Clients();
-        candleDB = new CandleDB(mysqlCandles, brokerSrc);
+        candleProxy = new CandleProxy(mysqlCandles, brokerSrc);
         ordersManager = new OrdersManager(brokerClientUSDM, clients);
-        dataProcessor = new DataProcessor(null,brokerSrc,brokerClientUSDM,candleDB,ordersManager);
+        dataProcessor = new DataProcessor(null,brokerSrc,brokerClientUSDM,candleProxy,ordersManager);
         
         clients.start(dataProcessor);
 
         if (!SETTINGS.dev) {
 
             brokerSrc.getTradableSymbols().then( (symbols) => {
-                symbols.forEach( s => dataProcessor.runSymbols([s], runLive) );
-                //dataProcessor.runSymbols(symbols, runLive);
+                //symbols.forEach( s => dataProcessor.runSymbols([s], runLive) );
+                dataProcessor.runSymbols(symbols, runLive);
             });
     
         }

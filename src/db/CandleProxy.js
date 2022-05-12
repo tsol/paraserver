@@ -1,6 +1,6 @@
 
 /*
-** CandleDB - is a caching proxy for loading candles.
+** CandleProxy - is a caching proxy for loading candles.
 **
 ** It stores retreived candles in database, and the ones missing -
 ** requests from one of brokers, who can provide those symbols.
@@ -14,14 +14,17 @@
 
 const { TF } = require('../types/Timeframes.js');
 
-class CandleDB {
+class CandleProxy {
 
-    constructor (dbHandler, broker)
+    constructor (candleDb, broker)
     {
-        this.db = dbHandler;
+        this.db = candleDb;
         this.broker = broker;
     }
   
+    getBroker() {
+        return this.broker;
+    }
 
     async getClosedCandlesSince(symbol, timeframe, sinceTimestamp, useBroker)
     {
@@ -172,4 +175,4 @@ class PIO { /* private static */
 }
 
 
-module.exports = CandleDB;
+module.exports = CandleProxy;

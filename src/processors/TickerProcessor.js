@@ -23,13 +23,13 @@ class TickerProcessor {
     subscribeToBroker()
     {   
         if (! this.srcBroker ) { return false; }
-        this.srcBroker.subscribe(this.symbol,this.timeframe,'ticker-'+this.getId(),this);
+        this.srcBroker.subscribe(this.symbol,this.timeframe,this);
         this.isLive = true;
     }
 
     unsubscribeFromBroker() {
         if (! this.srcBroker) { return false; }
-        this.srcBroker.unsubscribe(this.symbol, this.timeframe,'ticker-'+this.getId());
+        this.srcBroker.unsubscribe(this.symbol, this.timeframe, this);
         this.isLive = false;
     }
 
