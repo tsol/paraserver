@@ -4,7 +4,6 @@ const Order = require('../../types/Order.js');
 
 const SETTINGS = require('../../../private/private.js');
 const { winRatio, fnum } = require('../../reports/helper.js');
-const { entry } = require('../../types/CandleDebug.js');
 
 class OrdersEmulator {
 
@@ -20,10 +19,11 @@ class OrdersEmulator {
     static TRAILING_STOP_TRIGGER = 50; 
     static TRAILING_LOSSLESS = OrdersEmulator.COST_PERCENT * 2;
     
-    constructor() {
+    constructor(brokerCandles) {
         this.orders = [];
         this.activeOrders = [];
         this.taggers = new OrderTaggers();
+        this.brokerCandles = brokerCandles;
 
         this.previousHour = null;
         this.previousMinute = null;
@@ -45,8 +45,7 @@ class OrdersEmulator {
         takeProfit, 
         stopLoss,
         comment,
-        flags,
-        brokerClient 
+        flags
     ) {
 
         let flagsSnapshot = null;
@@ -58,7 +57,7 @@ class OrdersEmulator {
         let quantity = 0;
         let aligned = null;
         try {        
-            aligned = brokerClient.getAlignedOrderDetails(symbol,entryPrice,
+            aligned = this.brokerCandles.getAlignedOrderDetails(symbol,entryPrice,
                 OrdersEmulator.STAKE_USD,stopLoss,takeProfit);
             stopLoss = aligned.stopLoss;
             takeProfit = aligned.takeProfit;
@@ -84,7 +83,7 @@ class OrdersEmulator {
         
         if (newStopLoss !== stopLoss) {
             try {        
-                aligned = brokerClient.getAlignedOrderDetails(symbol,entryPrice,
+                aligned = this.brokerCandles.getAlignedOrderDetails(symbol,entryPrice,
                 OrdersEmulator.STAKE_USD,newStopLoss,newTakeProfit);
                 newStopLoss = aligned.stopLoss;
                 newTakeProfit = aligned.takeProfit;

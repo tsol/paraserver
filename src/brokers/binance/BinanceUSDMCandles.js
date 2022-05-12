@@ -24,6 +24,8 @@ class BinanceUSDMCandles extends BrokerCandlesInterface {
         this.client = new USDMClient({ api_key: apiKey, api_secret: secretKey });
         this.streams = {};
 
+        this.exchangeInfo = null;
+
         // todo: update from exchangeInfo
         this.WEIGHT_LIMIT = BinanceUSDMCandles.DEFAULT_1M_WEIGHT_LIMIT;
         this.WEIGHT_KEEP = Math.floor( (this.WEIGHT_LIMIT / 100) * BinanceUSDMCandles.KEEP_PERCENT );
@@ -51,6 +53,17 @@ class BinanceUSDMCandles extends BrokerCandlesInterface {
         setInterval(function () { _self.updateServerTime() }, 30000);
 
     }
+
+
+    async init()
+    {
+        await this.client.getExchangeInfo().then(result => {
+            this.exchangeInfo = result;
+        });
+
+        return true;
+    }
+
 
 
     async updateServerTime()
@@ -321,6 +334,68 @@ class BinanceUSDMCandles extends BrokerCandlesInterface {
   }
 }
 */
+
+    getRAWSymbolInfo(symbol)
+    {
+        if (! this.exchangeInfo || ! this.exchangeInfo.symbols )
+            { return null; }
+        const info = this.exchangeInfo.symbols.find( (v) => v.symbol == symbol );
+        return info;
+    }
+
+    getRAWSymbolFilter(symbolInfo,filterType,param) {
+        let filter = symbolInfo.filters.find( (v) => v.filterType == filterType );
+        if (! filter ) { return null; }
+        return filter[param];
+    }
+
+    getSymbolInfo(symbol)
+    {
+        const info = this.getRAWSymbolInfo(symbol);
+        if (! info) { throw new Error('BC-USDM: no exchangeInfo on '+symbol); }
+
+        const qtyPrecision = info.quantityPrecision;
+        const minQty = this.getRAWSymbolFilter(info,'MARKET_LOT_SIZE','minQty');
+        const pricePrecision = info.pricePrecision;  
+        const tickSize = this.getRAWSymbolFilter(info,'PRICE_FILTER','tickSize');
+
+        if ( isNaN(qtyPrecision) || isNaN(pricePrecision) || ! minQty || ! tickSize) {
+            throw new Error('BC-USDM: could not get symbol info');
+        }
+
+        return {
+            qtyPrecision,
+            pricePrecision,
+            minQty,
+            tickSize
+        };
+
+    }
+
+
+    getAlignedOrderDetails(symbol,entryPrice,usdAmount,stopLoss,takeProfit)
+    {
+        const result = {
+            quantity: 0,
+            stopLoss: 0,
+            takeProfit: 0
+        };
+
+        const info = this.getSymbolInfo(symbol);
+        const quantity = (usdAmount / entryPrice).toFixed(info.qtyPrecision);
+
+        if (quantity < info.minQty ) {
+            throw Error('quantity problem: '+symbol+' q='+quantity+' < minq='+info.minQty);
+        }
+
+        result.quantity = Number(quantity);
+        result.stopLoss = Number(stopLoss.toFixed(info.pricePrecision));
+        result.takeProfit = Number(takeProfit.toFixed(info.pricePrecision));
+
+        return result;
+    } 
+
+
 
 }
 

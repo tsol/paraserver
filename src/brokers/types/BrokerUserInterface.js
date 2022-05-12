@@ -12,29 +12,17 @@ class BrokerUserInterface {
     async init() {};
 
     /* make entry on current market price with take profit and stop loss set
-    ** must return structure:
-        {
-            quantity: 0,
-            orders: {
-                entry: { id: null },
-                sl:    { id: null },
-                tp:    { id: null }
-            }
-        }
+    ** quantity, stopLoss and takeProfit must be in correct prescision
+    ** user must use align functions in candleSource
+    **
+    ** function must return structure:
+    **  {   entry: { id: 10001 },
+    **      sl:    { id: 10002 },
+    **      tp:    { id: 10003 }  }
     */
-    async makeFullOrder(symbol,isLong,entryPrice,usdAmount,stopLoss,takeProfit){};
+
+    async makeMarketOrder(symbol,isLong,quantity,stopLoss,takeProfit){};
     
-    /*
-        return correct prescision prices and quantity
-    return {
-        quantity: 0,
-        stopLoss: 0,
-        takeProfit: 0
-    };
-    */
-    getAlignedOrderDetails(symbol,entryPrice,usdAmount,stopLoss,takeProfit){};
-
-
     /* must return: { balance: '23', pnl: '0.01', positions: } */
     async getAccountInformation(){};
 
@@ -42,10 +30,7 @@ class BrokerUserInterface {
     async moveStopLoss(symbol, orderId, newPrice){};
     async moveTakeProfit(symbol, orderId, newPrice){};
 
-    getSymbolInfo(symbol){};  // { qtyPrecision, pricePrecision, minQty, tickSize };
-
-    addEventProcessor(object) {};
-    getClient() { return null; };
+    subscribe(subscriberObject) {}; /* must implement BrokerEventsUserInterface */
     
 }
 

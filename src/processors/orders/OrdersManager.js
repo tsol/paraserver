@@ -7,12 +7,13 @@ const PeriodTagsCompare = require('../../reports/PeriodTagsCompare.js');
 
 class OrdersManager {
     
-    constructor(brokerOrderClient, clients) {
-        this.emulator = new OrdersEmulator();
+    constructor(brokerUser, brokerCandles, clients) {
+        this.emulator = new OrdersEmulator(brokerCandles);
         this.report = new PeriodTagsCompare();
         this.clients = clients;
-        this.brokerOrderClient = brokerOrderClient;
-        this.real = new OrdersReal(brokerOrderClient, clients);
+        this.brokerUser = brokerUser;
+        this.brokerCandles = brokerCandles;
+        this.real = new OrdersReal(brokerUser, clients);
     }
 
     reset() {
@@ -23,7 +24,7 @@ class OrdersManager {
     /* analyzers IO */
 
     getSymbolInfo(symbol) {
-        return this.brokerOrderClient.getSymbolInfo(symbol);
+        return this.brokerCandles.getSymbolInfo(symbol);
     }
 
     newOrder(
@@ -51,7 +52,7 @@ class OrdersManager {
             stopLoss,
             comment,
             flags,
-            this.brokerOrderClient 
+            this.brokerUser 
         );
 
         if (! emulatedOrder ) { return null; }

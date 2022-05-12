@@ -28,15 +28,11 @@ class BinanceUSDMUser extends BrokerUserInterface {
         });
 
         this.eventProcessors = [];
-        this.exchangeInfo = null;
-
+     
     }
 
     async init()
     {
-        await this.client.getExchangeInfo().then(result => {
-            this.exchangeInfo = result;
-        });
 
         this.wsClient = new WebsocketClient({
             ... this.credentials, 
@@ -61,14 +57,9 @@ class BinanceUSDMUser extends BrokerUserInterface {
         return true;
     }
 
-
-    getClient() {
-        return this.client;
-    }
-
-    addEventProcessor(object)
+    subscribe(subscriberObject)
     {
-        this.eventProcessors.push(object);
+        this.eventProcessors.push(subscriberObject);
     }
 
     dispatchEvent(data)
@@ -112,78 +103,12 @@ class BinanceUSDMUser extends BrokerUserInterface {
 
     }
 
- 
-    getRAWSymbolInfo(symbol)
-    {
-        if (! this.exchangeInfo || ! this.exchangeInfo.symbols )
-            { return null; }
-        const info = this.exchangeInfo.symbols.find( (v) => v.symbol == symbol );
-        return info;
-    }
-
-    getRAWSymbolFilter(symbolInfo,filterType,param) {
-        let filter = symbolInfo.filters.find( (v) => v.filterType == filterType );
-        if (! filter ) { return null; }
-        return filter[param];
-    }
-
-    
-    getSymbolInfo(symbol)
-    {
-        const info = this.getRAWSymbolInfo(symbol);
-        if (! info) { throw new Error('BC-USDM: no exchangeInfo on '+symbol); }
-
-        const qtyPrecision = info.quantityPrecision;
-        const minQty = this.getRAWSymbolFilter(info,'MARKET_LOT_SIZE','minQty');
-        const pricePrecision = info.pricePrecision;  
-        const tickSize = this.getRAWSymbolFilter(info,'PRICE_FILTER','tickSize');
-
-        if ( isNaN(qtyPrecision) || isNaN(pricePrecision) || ! minQty || ! tickSize) {
-            throw new Error('BC-USDM: could not get symbol info');
-        }
-
-        return {
-            qtyPrecision,
-            pricePrecision,
-            minQty,
-            tickSize
-        };
-
-    }
-
-   
-    getAlignedOrderDetails(symbol,entryPrice,usdAmount,stopLoss,takeProfit)
+    async makeMarketOrder(symbol,isLong,quantity,stopLoss,takeProfit)
     {
         const result = {
-            quantity: 0,
-            stopLoss: 0,
-            takeProfit: 0
-        };
-
-        const info = this.getSymbolInfo(symbol);
-        const quantity = (usdAmount / entryPrice).toFixed(info.qtyPrecision);
- 
-        if (quantity < info.minQty ) {
-            throw Error('quantity problem: '+symbol+' q='+quantity+' < minq='+info.minQty);
-        }
-
-        result.quantity = Number(quantity);
-        result.stopLoss = Number(stopLoss.toFixed(info.pricePrecision));
-        result.takeProfit = Number(takeProfit.toFixed(info.pricePrecision));
-
-        return result;
-    } 
-
-
-    async makeFullOrder(symbol,isLong,entryPrice,usdAmount,stopLoss,takeProfit)
-    {
-        const result = {
-            quantity: 0,
-            orders: {
                 entry: { id: null },
                 sl: { id: null },
                 tp: { id: null}
-            }
         };
         
         let mainSide = 'SELL';
@@ -195,15 +120,6 @@ class BinanceUSDMUser extends BrokerUserInterface {
             stopSide = 'SELL';
             positionSide = 'LONG';
         }
-
-        const info = this.getSymbolInfo(symbol);
-        const quantity = Number((usdAmount / entryPrice).toFixed(info.qtyPrecision));
- 
-        if (quantity < info.minQty ) {
-            throw Error('quantity problem: '+symbol+' q='+quantity+' < minq='+info.minQty);
-        }
-
-        result.quantity = quantity;
 
         const entryOrder = {
                 symbol: symbol,
@@ -219,7 +135,7 @@ class BinanceUSDMUser extends BrokerUserInterface {
                 type: 'STOP_MARKET',
                 positionSide: positionSide,
                 closePosition: 'false',
-                stopPrice: Number(stopLoss).toFixed(info.pricePrecision),                
+                stopPrice: stopLoss,                
                 quantity: quantity        
         };
 
@@ -229,7 +145,7 @@ class BinanceUSDMUser extends BrokerUserInterface {
                 type: 'TAKE_PROFIT_MARKET',
                 positionSide: positionSide,
                 closePosition: 'false',
-                stopPrice: Number(takeProfit).toFixed(info.pricePrecision),     
+                stopPrice: takeProfit,    
                 quantity: quantity
         };
                 
@@ -271,7 +187,135 @@ class BinanceUSDMUser extends BrokerUserInterface {
 
     }
 
-    /*
+
+
+  
+    async closeOrderIds(symbol, orderIdsArray) {
+        
+        //console.log('closeOrderIds '+symbol+':');
+        //console.log(orderIdsArray);
+
+        return this.client.cancelMultipleOrders({
+            symbol: symbol,
+            orderIdList: JSON.stringify(orderIdsArray)
+        });
+    };
+
+    async closeOrderCLID(symbol, clientOrderId) {
+        return this.client.cancelOrder({
+            symbol: symbol,
+            origClientOrderId: clientOrderId
+        });
+    };
+
+    async moveStopLoss(symbol, orderId, newPrice){};
+    async moveTakeProfit(symbol, orderId, newPrice){};
+
+    async getAccountInformation() {
+
+        const res = await this.client.getAccountInformation()
+        .catch(err => {
+          console.error("getAccountInfo error: ", err);
+        });
+
+        const balance = res.totalWalletBalance;
+        const pnl = res.totalUnrealizedProfit;
+        const positions = [];
+
+        for (var p of res.positions) {
+
+            if (Math.abs(Number(p.unrealizedProfit)) > 0) {
+                positions.push({
+                symbol: p.symbol,
+                amount: p.positionAmt,
+                pnl: p.unrealizedProfit,
+                isLong: ( p.positionSide == 'LONG' ),
+                entryPrice: p.entryPrice
+                });
+            }
+        }
+
+        return { balance, pnl, positions };
+
+    };
+
+
+    async periodicCleanup()
+    {
+        try {
+
+            const positions = await this.client.getPositions({});
+            
+            await this.killAstrayOrders(positions);
+            await this.setAllIsolated(positions);
+            
+        }
+        catch(err) {
+            console.log('PERIODIC_CLEANUP: ERROR: '+err.message);
+        }
+    }
+
+    async killAstrayOrders(positions)
+    {
+        let uniq = {};
+
+        positions.forEach( (s) => {
+            let amt = Number(s.positionAmt);
+            if ( amt !== 0) { uniq[ s.symbol ] = 1; }
+        });
+
+        // let cnt = 1; for (var s in uniq) { console.log(cnt +': '+s); cnt++; }
+
+        const orders = await this.client.getAllOpenOrders({});
+                
+        orders.forEach( (order) => {
+            if (! uniq[ order.symbol ]) {
+                let txtInfo = order.symbol+' id='+order.clientOrderId;
+                console.log('KILL_ASTRAY_ORDER: [TRY] '+txtInfo);
+                console.log(order);
+                this.closeOrderCLID( order.symbol, order.clientOrderId ).then((res) => {
+                    console.log('KILL_ASTRAY_ORDER: [DONE] '+txtInfo);
+                    //console.log(res);
+                })
+                .catch( (err) => {
+                    console.log('KILL_ASTRAY_ORDER: [ERROR] '+txtInfo+' '+err.message);
+                })
+            }
+        })
+            
+            
+    }
+
+
+    async setAllIsolated(positions) {
+    
+        //console.log(res);
+        let uniq = {};
+
+        positions.forEach( (p) => {
+            if (p.symbol.endsWith('USDT') && (p.marginType !== 'isolated'))
+                { uniq[ p.symbol ] = 1; }
+        })
+  
+        for (var s in uniq) {
+          
+            try {
+                await this.client.setMarginType({ symbol: s, marginType: 'ISOLATED' });
+                console.log ('SET_ISOLATED OK: '+s);
+            }
+            catch(err) {
+                console.log ('SET_ISOLATED FAIL: '+s+' ('+err.message+')');
+            }
+
+        }
+    
+    }
+
+
+}
+
+/*
+
     async makeFullOrder(symbol,isLong,entryPrice,usdAmount,stopLoss,takeProfit)
     {
         const result = {
@@ -350,153 +394,7 @@ class BinanceUSDMUser extends BrokerUserInterface {
         }
         return result;
     }
-    */
 
-  
-    async closeOrderIds(symbol, orderIdsArray) {
-        
-        //console.log('closeOrderIds '+symbol+':');
-        //console.log(orderIdsArray);
-
-        return this.client.cancelMultipleOrders({
-            symbol: symbol,
-            orderIdList: JSON.stringify(orderIdsArray)
-        });
-    };
-
-    async closeOrderCLID(symbol, clientOrderId) {
-        return this.client.cancelOrder({
-            symbol: symbol,
-            origClientOrderId: clientOrderId
-        });
-    };
-
-    async moveStopLoss(symbol, orderId, newPrice){};
-    async moveTakeProfit(symbol, orderId, newPrice){};
-
-    async getAccountInformation() {
-
-        const res = await this.client.getAccountInformation()
-        .catch(err => {
-          console.error("getAccountInfo error: ", err);
-        });
-
-        const balance = res.totalWalletBalance;
-        const pnl = res.totalUnrealizedProfit;
-        const positions = [];
-
-        for (var p of res.positions) {
-
-            if (Math.abs(Number(p.unrealizedProfit)) > 0) {
-                positions.push({
-                symbol: p.symbol,
-                amount: p.positionAmt,
-                pnl: p.unrealizedProfit,
-                isLong: ( p.positionSide == 'LONG' ),
-                entryPrice: p.entryPrice
-                });
-            }
-        }
-
-        return { balance, pnl, positions };
-
-    };
-
-
-    /*
-    client.getBalance()
-  .then(result => {
-    console.log("getBalance result: ", result);
-  })
-  .catch(err => {
-    console.error("getBalance error: ", err);
-  });
-  
-6:{accountAlias: 'FzXqAusRfWFzTiXq', asset: 'USDT', balance: '23.29707870', crossWalletBalance: '23.29707870', crossUnPnl: '0.09475115', …}
-accountAlias:'FzXqAusRfWFzTiXq'
-asset:'USDT'
-availableBalance:'21.99286741'
-balance:'23.29707870'
-crossUnPnl:'0.09475115'
-crossWalletBalance:'23.29707870'
-marginAvailable:true
-maxWithdrawAmount:'21.99286741'
-updateTime:1647991575371
-    */
-
-    async periodicCleanup()
-    {
-        try {
-
-            const positions = await this.client.getPositions({});
-            
-            await this.killAstrayOrders(positions);
-            await this.setAllIsolated(positions);
-            
-        }
-        catch(err) {
-            console.log('PERIODIC_CLEANUP: ERROR: '+err.message);
-        }
-    }
-
-    async killAstrayOrders(positions)
-    {
-        let uniq = {};
-
-        positions.forEach( (s) => {
-            let amt = Number(s.positionAmt);
-            if ( amt !== 0) { uniq[ s.symbol ] = 1; }
-        });
-
-        // let cnt = 1; for (var s in uniq) { console.log(cnt +': '+s); cnt++; }
-
-        const orders = await this.client.getAllOpenOrders({});
-                
-        orders.forEach( (order) => {
-            if (! uniq[ order.symbol ]) {
-                let txtInfo = order.symbol+' id='+order.clientOrderId;
-                console.log('KILL_ASTRAY_ORDER: [TRY] '+txtInfo);
-                console.log(order);
-                this.closeOrderCLID( order.symbol, order.clientOrderId ).then((res) => {
-                    console.log('KILL_ASTRAY_ORDER: [DONE] '+txtInfo);
-                    //console.log(res);
-                })
-                .catch( (err) => {
-                    console.log('KILL_ASTRAY_ORDER: [ERROR] '+txtInfo+' '+err.message);
-                })
-            }
-        })
-            
-            
-    }
-
-
-    async setAllIsolated(positions) {
-    
-        //console.log(res);
-        let uniq = {};
-
-        positions.forEach( (p) => {
-            if (p.symbol.endsWith('USDT') && (p.marginType !== 'isolated'))
-                { uniq[ p.symbol ] = 1; }
-        })
-  
-        for (var s in uniq) {
-          
-            try {
-                await this.client.setMarginType({ symbol: s, marginType: 'ISOLATED' });
-                console.log ('SET_ISOLATED OK: '+s);
-            }
-            catch(err) {
-                console.log ('SET_ISOLATED FAIL: '+s+' ('+err.message+')');
-            }
-
-        }
-    
-    }
-
-
-}
 
 function getCreatedOrdersIds(submitMultiplyOrdersResult) {
     const r = submitMultiplyOrdersResult.orders;
@@ -506,5 +404,6 @@ function getCreatedOrdersIds(submitMultiplyOrdersResult) {
     if (r.tp.id) { a.push(r.tp.id); }
     return a;
 }
+*/
 
 module.exports = BinanceUSDMUser;

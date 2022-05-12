@@ -2,20 +2,21 @@
 const SymbolsLoader = require('./SymbolsLoader.js');
 const Flags = require('./Flags.js');
 const AnalyzersFactory = require('../analyzers/AnalyzersFactory.js');
+const OrdersManager = require('./orders/OrdersManager.js');
 
 const { TF } = require('../types/Timeframes.js');
 
 class DataProcessor {
 
-    constructor(dataDB, brokerSrc, brokerClient, candleProxy, ordersManager) {
+    constructor(dataDB, brokerCandles, brokerUser, candleProxy, clients) {
         this.flags = new Flags();
         this.loaders = [];
         this.tickers = {};
-        this.ordersManager = ordersManager;
+        this.ordersManager = new OrdersManager(brokerUser, brokerCandles, clients);
         this.analyzersFactory = new AnalyzersFactory(this.ordersManager);
         this.dataDB = dataDB;
-        this.brokerSrc = brokerSrc;
-        this.brokerClient = brokerClient;
+        this.brokerCandles = brokerCandles;
+        this.brokerUser = brokerUser;
         this.candleProxy = candleProxy;
     }
  
@@ -52,7 +53,7 @@ class DataProcessor {
     runSymbols(symbolsArray, runLive)
     {
         const loader = new SymbolsLoader(symbolsArray, runLive, 
-            this, this.ordersManager, this.candleProxy, this.analyzersFactory, this.brokerSrc);   
+            this, this.ordersManager, this.candleProxy, this.analyzersFactory, this.brokerCandles);   
         this.loaders.push(loader);
     }
 
@@ -76,7 +77,7 @@ class DataProcessor {
     /* user io */
 
     async getAccountInformation() {
-        return this.brokerClient.getAccountInformation();
+        return this.brokerUser.getAccountInformation();
     }
 
     getTickerFlags(tickerId) {

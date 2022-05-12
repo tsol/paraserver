@@ -2,15 +2,13 @@ const UserEventsInterface = require('../../brokers/types/BrokerEventsUserInterfa
 
 class OrdersReal extends UserEventsInterface {
     
-    static STAKE_USD = 100;
-
     constructor(broker, clients) {
         super();
         this.broker = broker;
         this.orders = [];
         this.clients = clients;
 
-        broker.addEventProcessor(this);
+        broker.subscribe(this);
     }
 
     reset() {
@@ -85,11 +83,10 @@ class OrdersReal extends UserEventsInterface {
     async newOrderFromEmu(emulatedOrder) {
         const e = emulatedOrder;
         try {
-            const result = await this.broker.makeFullOrder(
+            const result = await this.broker.makeMarketOrder(
                 e.symbol,
                 e.isLong(),
-                e.entryPrice,
-                OrdersReal.STAKE_USD,
+                e.quantity,
                 e.stopLoss,
                 e.takeProfit
             );
@@ -98,7 +95,6 @@ class OrdersReal extends UserEventsInterface {
             console.log(result);
             
             e.setBrokerTrue();
-            e.setQuantity(result.quantity);
             e.setBrokerORID(result.orders.entry.id);
             e.setBrokerSLID(result.orders.sl.id);
             e.setBrokerTPID(result.orders.tp.id);
