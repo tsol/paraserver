@@ -25,8 +25,8 @@ mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
             if (!SETTINGS.dev) {
 
                 brokerCandles.getTradableSymbols().then( (symbols) => {
-                //symbols.forEach( s => dataProcessor.runSymbols([s], runLive) );
-                    dataProcessor.runSymbols(symbols, runLive);
+                    symbols.forEach( s => dataProcessor.runSymbols([s], runLive) );
+                    //dataProcessor.runSymbols(symbols, runLive);
                 });
     
             }

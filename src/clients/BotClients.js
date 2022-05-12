@@ -110,11 +110,11 @@ class BotClients {
     }
 
     onAccountUpdate(balance,pnl,positions) {
-        if (Math.abs(balance-this.lastBalance) > 1) {
+        if (Math.abs(balance-this.lastBalance) > 4.99) {
             let msg = this.renderAccountInfo(balance,pnl,positions); 
             this.broadcast(msg);
+            this.lastBalance = balance;
         }
-        this.lastBalance = balance;
     }
 
 
