@@ -5,6 +5,7 @@ class BotClients {
 
     constructor() {
         this.chatIds = [];
+        this.lastBalance = 0;
     }
 
     start(dataProcessor)
@@ -103,14 +104,17 @@ class BotClients {
         this.broadcast(
             (order.type == 'buy' ? '🍏 Long' : '🍎 Short')+
             ' <b>'+order.symbol+'</b> '+order.entryPrice+
-            '\n[💰 '+order.stopLoss+' ⛔ '+order.takeProfit+']'+
+            '\n[💰 '+order.takeProfit+' ⛔ '+order.stopLoss+']'+
             '\n('+order.timeframe+', '+order.strategy+')'
         );
     }
 
     onAccountUpdate(balance,pnl,positions) {
-        let msg = this.renderAccountInfo(balance,pnl,positions); 
-        this.broadcast(msg);
+        if (Math.abs(balance-this.lastBalance) > 1) {
+            let msg = this.renderAccountInfo(balance,pnl,positions); 
+            this.broadcast(msg);
+        }
+        this.lastBalance = balance;
     }
 
 

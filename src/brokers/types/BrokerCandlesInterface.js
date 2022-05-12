@@ -9,10 +9,12 @@
 
 class BrokerCandlesInterface {
 
-    /* theese must return array of Candle objects (types/Candle.js) */
-    async loadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp) {}
+    /* array of symbols on this broker */
     async getTradableSymbols() {}
 
+    /* must return array of Candle objects (types/Candle.js) */
+    async loadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp) {}
+ 
     /*
     ** return correct prescision prices and quantity:
     **    { quantity: 2.0, stopLoss: 1.254, takeProfit: 1.384 }

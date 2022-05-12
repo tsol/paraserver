@@ -78,7 +78,7 @@ class BinanceUSDMUser extends BrokerUserInterface {
         }
 
         
-        if ( data.e && data.e == "ACCOUNT_UPDATE") {
+        if ( data.e && (data.e == "ACCOUNT_UPDATE") && (data.a.m == 'ORDER')) {
 
             const positions = [];
 
@@ -86,10 +86,10 @@ class BinanceUSDMUser extends BrokerUserInterface {
                 if (Math.abs(Number(p.up)) > 0) {
                     positions.push({
                         symbol: p.s,
-                        amount: p.pa,
-                        pnl: p.up,
+                        amount: Number(p.pa),
+                        pnl: Number(p.up),
                         isLong: ( p.ps == 'LONG' ),
-                        entryPrice: p.ep
+                        entryPrice: Number(p.ep)
                     });
                 }
             }

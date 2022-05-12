@@ -3,7 +3,7 @@
 ** CandleProxy - is a caching proxy for loading candles.
 **
 ** It stores retreived candles in database, and the ones missing -
-** requests from one of brokers, who can provide those symbols.
+** requests from broker
 **
 ** Once retreived from broker those candles a stored in database
 ** for future cached access.
@@ -16,10 +16,10 @@ const { TF } = require('../types/Timeframes.js');
 
 class CandleProxy {
 
-    constructor (candleDb, broker)
+    constructor (candleDb, brokerCandles)
     {
         this.db = candleDb;
-        this.broker = broker;
+        this.broker = brokerCandles;
     }
   
     getBroker() {
