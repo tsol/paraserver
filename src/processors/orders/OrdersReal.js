@@ -95,9 +95,9 @@ class OrdersReal extends UserEventsInterface {
             console.log(result);
             
             e.setBrokerTrue();
-            e.setBrokerORID(result.orders.entry.id);
-            e.setBrokerSLID(result.orders.sl.id);
-            e.setBrokerTPID(result.orders.tp.id);
+            e.setBrokerORID(result.entry.id);
+            e.setBrokerSLID(result.sl.id);
+            e.setBrokerTPID(result.tp.id);
 
             this.addOrder(e);
 
