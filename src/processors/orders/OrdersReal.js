@@ -38,13 +38,13 @@ class OrdersReal extends UserEventsInterface {
         console.log('OM: searching for rouge SL/TP leftover orders...');
 
         let order = this.orders.find( o =>
-             o.real && ( o.real.orders.sl.id == id || o.real.orders.tp.id == id  )
+             o.isBroker() && ( o.brokerSLID == id || o.brokerTPID == id  )
         );
         if (!order) { return; }
 
         console.log('OM: found SL/TP orders to clean up: '+JSON.stringify(order.id));
-        const bo = order.real.orders;
-        let removeId = ( bo.sl.id == id ? bo.tp.id : bo.sl.id );
+        
+        let removeId = ( order.brokerSLID == id ? order.brokerTPID : order.brokerSLID );
 
         this.broker.closeOrderIds( order.symbol, [ removeId ])
             .then((r) => {
@@ -95,6 +95,7 @@ class OrdersReal extends UserEventsInterface {
             console.log(result);
             
             e.setBrokerTrue();
+
             e.setBrokerORID(result.entry.id);
             e.setBrokerSLID(result.sl.id);
             e.setBrokerTPID(result.tp.id);
