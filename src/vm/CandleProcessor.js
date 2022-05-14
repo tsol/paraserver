@@ -1,20 +1,23 @@
 
 class CandleProcessor {
 
-    static FETCH_TIMEOUT = 10000;
+    constructor() {}
 
-    constructor(candleProxy, symbols, timeframes, timeStart, timeEnd) {
-        this.candleProxy = candleProxy;
-        this.symbols = symbols;
-        this.timeframes = timeframes;
-        this.timeStart = timeStart;
-        this.timeEnd = timeEnd;
-    
-        this.tickerBuffers = [];
+    processUpdate(unclosedCandle) {
+        // in-between phases live price update candles, stopLoss/takeProfit processing
     }
 
+    processPhaseStart(timestamp) {
+        // prepare for candleProcess (empty orders queue?)
+    }
 
+    processCandle(closedCandle, isLive) {
+        // process closed candles
+    }
 
+    processPhaseEnd() {
+        // process orders queue, arbitration
+    }
 
 }
 

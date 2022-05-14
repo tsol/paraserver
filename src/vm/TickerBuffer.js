@@ -20,10 +20,6 @@ class TickerBuffer {
     }
 
 
-
-
-
-
     subscribeToBroker(srcBroker)
     {   
         this.srcBroker = srcBroker;

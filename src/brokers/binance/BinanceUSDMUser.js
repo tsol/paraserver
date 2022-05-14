@@ -153,7 +153,7 @@ class BinanceUSDMUser extends BrokerUserInterface {
 
         return this.client.submitNewOrder(entryOrder).then( (o) => {
             if ( o && o.orderId ) {
-                result.orders.entry.id = o.orderId;
+                result.entry.id = o.orderId;
             }
             else { 
                 error = 'entry: '+ ( o.msg ? o.msg : '' );
@@ -162,7 +162,7 @@ class BinanceUSDMUser extends BrokerUserInterface {
 
             return this.client.submitNewOrder(slOrder).then( (o) => {
                 if ( o && o.orderId ) {
-                    result.orders.sl.id = o.orderId;
+                    result.sl.id = o.orderId;
                 }
                 else { 
                     error = 'stop-loss: '+ ( o.msg ? o.msg : '' );
@@ -171,7 +171,7 @@ class BinanceUSDMUser extends BrokerUserInterface {
 
                 return this.client.submitNewOrder(tpOrder).then( (o) => {
                     if ( o && o.orderId ) {
-                        result.orders.tp.id = o.orderId;
+                        result.tp.id = o.orderId;
                     }
                     else { 
                         error = 'take-profit: '+ ( o.msg ? o.msg : '' );
