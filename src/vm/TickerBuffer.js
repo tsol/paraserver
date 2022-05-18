@@ -10,43 +10,37 @@ class TickerBuffer {
         this.symbol = symbol;
         this.timeframe = timeframe;
         this.candleProxy = candleProxy;
-
         this.buffer = [];
     }
 
+    peekHistoryCandle() {
+        if (this.buffer.length <= 0)
+            { return null; }
+        return this.buffer[0];
+    }
+
+    fetchHistoryCandles(closeTime) {
+        // todo: optimize
+        const fetched = this.buffer.filter( c => c.closeTime <= closeTime );
+        this.buffer = this.buffer.filter( c => c.closeTime > closeTime );
+        return fetched;
+    }
+
+    getSymbol() { return this.symbol };
+    getTimeframe() { return this.timeframe; }
+
     async loadPeriod(timeFrom,timeEnd)
     {
-
+        try {
+            this.buffer = await this.candleProxy.
+                getCandlesPeriod( this.symbol, this.timeframe, timeFrom, timeEnd, true );
+            return { res: true, symbol: this.symbol };
+        }
+        catch (error) {
+            console.log('TBUF cought error: '+error.message);
+            return { res: false, symbol: this.symbol };
+        }
     }
-
-
-    subscribeToBroker(srcBroker)
-    {   
-        this.srcBroker = srcBroker;
-        this.srcBroker.subscribe(this.symbol,this.timeframe,this);
-    }
-
-    /* broker IO */
-    newCandleFromBroker(candle) {
-        
-        if (!candle.closed) { return; }
-
-        console.log(
-                'TBUF: closed candle from broker: '+
-                candle.symbol+'-'+candle.timeframe
-                + ' (' + TF.timestampToDate(candle.closeTime)+ ')'
-        );
-        
-        this.addCandle(candle);
-    }
-
-    addCandle(candle)
-    {   
-        this.buffer.push(candle);      
-    }
-
-
-
 
  
 }

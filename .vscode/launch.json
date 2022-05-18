@@ -17,6 +17,15 @@
         {
             "type": "pwa-node",
             "request": "launch",
+            "name": "Run pserver3.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/pserver3.js"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
             "name": "Run kotoserv.js",
             "skipFiles": [
                 "<node_internals>/**"

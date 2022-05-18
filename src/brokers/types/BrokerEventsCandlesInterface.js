@@ -8,7 +8,7 @@
 class BrokerEventsCandlesInterface
 {
 
-    newCandleFromBroker(candle) {}
+    newCandleFromBroker(candle,eventTime) {}
 
 }
 

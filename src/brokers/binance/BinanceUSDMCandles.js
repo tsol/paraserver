@@ -477,7 +477,7 @@ class Stream {
     handleData(data) {
         let objectCandle = PIO.parseCandleFromWSS(this.symbol,this.timeframe,data);
         if (objectCandle) {
-            this.subscribers.forEach( s => s.newCandleFromBroker(objectCandle) );
+            this.subscribers.forEach( s => s.newCandleFromBroker(objectCandle,data['E']) );
         }
     }
 
