@@ -19,11 +19,15 @@ mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
 
             const candleProxy = new CandleProxy(mysqlCandles, brokerCandles);
             const candleProcessor = new CandleProcessor();
-            const candleSequencer = new CandleSequencer(['BTCUSDT'],['1h'],candleProxy,candleProcessor);
+            // 'BTCUSDT','ETHUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT','ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT','AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'
+            const candleSequencer = new CandleSequencer(
+                ['BTCUSDT','ETHUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT','ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT','AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'],
+                ['1m'],
+                candleProxy,candleProcessor);
 
             candleSequencer.init(
-                TH.timestampDaysBack(2),
-                TH.timestampDaysBack(1)
+                TH.timestampDaysBack(1),
+                null
             ).then( () => { console.log('Sequencer initialized'); });
 
         })

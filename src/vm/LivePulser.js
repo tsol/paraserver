@@ -10,16 +10,23 @@ const TH = require('../helpers/time.js');
 
 class LivePulser extends BrokerEventsCandlesInterface {
 
-    constructor (symbols, timeframes, candleSequencer)
+    constructor (symbols, timeframes, pulseTF, candleSequencer)
     {
+      super();
       this.symbols = symbols;
       this.timeframes = timeframes;
+      this.pulseTF = pulseTF;
       this.sequnecer = candleSequencer;
 
       this.currentCloseTime = null;
       this.arrived = {};
       this.expecting = {};
+
+      this.bufferedLiveCandles = [];
+      this.isLive = false;
     }
+
+    switchLive() { this.isLive = true; }
 
     updateSymbols(symbols) {
       this.symbols = symbols;
@@ -34,7 +41,7 @@ class LivePulser extends BrokerEventsCandlesInterface {
 
       let expectTimeframes = [];
       this.timeframes.forEach( t => {
-        if ( (closeTime+1) % TF.get(t).length > 0) { expectTimeframes.push(t); }
+        if ( (closeTime+1) % TF.get(t).length == 0) { expectTimeframes.push(t); }
       });
 
       for (var s of this.symbols) {
@@ -43,7 +50,7 @@ class LivePulser extends BrokerEventsCandlesInterface {
         }
       }
 
-      console.log('PLSR: pulseStart '+TH.ls(closeTime)+', expecting: '+
+      console.log('PLSR: pulseStart '+TH.ls(closeTime)+' ('+closeTime+'), waiting for: '+
         Object.keys(this.expecting).join(', '));
 
     }
@@ -51,6 +58,17 @@ class LivePulser extends BrokerEventsCandlesInterface {
     pulseRelease()
     {
       this.sequnecer.livePulse(this.currentCloseTime,this.arrived,this.expecting);
+
+      this.bufferedLiveCandles = this.bufferedLiveCandles.filter( b => b[0] > this.currentCloseTime );
+
+      if (this.isLive) {
+        this.bufferedLiveCandles.forEach( b => {
+            console.log('PLSR: BUFFERED LIVE CANDLE AFTER PULSE:')
+            this.sequnecer.livePriceUpdate(b[1],b[0]);
+          });
+      }
+
+   
     }
 
 
@@ -71,10 +89,18 @@ class LivePulser extends BrokerEventsCandlesInterface {
     newCandleFromBroker(candle,eventTime)
     {
 
-      if (! candle.closed ) {
-        this.sequnecer.livePriceUpdate(candle,eventTime);
+      if (! candle.closed && (candle.timeframe == this.pulseTF)) {
+        if ( this.isLive && 
+          ((this.currentCloseTime == null) || (eventTime <= this.currentCloseTime))
+        ) {
+          this.sequnecer.livePriceUpdate(candle,eventTime);
+          return;
+        }
+        this.bufferedLiveCandles.push([eventTime,candle]);
         return;
       }
+
+      // closed candle arrived
 
       if (this.currentCloseTime == null) {
         this.pulseStart(candle.closeTime);
@@ -88,7 +114,7 @@ class LivePulser extends BrokerEventsCandlesInterface {
       const key = candle.symbol+'-'+candle.timeframe;
 
       if (! this.expecting[ key ]) {
-        throw new Error('PLSR: was not expecting timeframe');
+        return;
       }
 
       this.arrived[key] = candle;

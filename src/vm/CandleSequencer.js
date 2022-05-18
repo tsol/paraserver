@@ -9,13 +9,19 @@
 
 candleProcessor must implement:
 
-    processUpdate(unclosedCandle)
+    processUpdate(...params)
 
     processPhaseStart(timestamp)
     processCandle(closedCandle, isLive)
     processPhaseEnd()
 
-
+TODO:
+    1. split processHistory via setImmediate
+    2. each live candle check highs and lows - if they exceed previous values
+    and exceeding != closePrice - arrange several priceUpdate calls
+    (also check if nothing changed - don't do update)
+    3. add Timeout to pulse collection
+    4. align days with UTC time
 */
 
 const TickerBuffer = require('./TickerBuffer.js');
@@ -43,8 +49,9 @@ class CandleSequencer {
 
         this.tbuffers = [];
 
-        this.pulseTF = this.getSmallestTimeframe();
-
+        this.pulseTF = timeframes.sort( (a,b) => TF.get(a).length - TF.get(b).length )[0];
+        this.timeframes.sort( (a,b) => TF.get(b).length - TF.get(a).length );
+    
     }
 
     getIsLive() {
@@ -83,7 +90,7 @@ class CandleSequencer {
 
         if (! timeEnd) {
             this.modeLive = true;
-            this.pulser = new LivePulser(symbols,timeframes,this);
+            this.pulser = new LivePulser(this.symbols,this.timeframes,this.pulseTF,this);
             timeEnd = (new Date()).getTime();
         }
         
@@ -91,6 +98,7 @@ class CandleSequencer {
             for (var t of this.timeframes) {
                 const tbuf = new TickerBuffer(s,t,this.candleProxy);
                 this.tbuffers.push(tbuf);
+                console.log('CSEQ: add tbuffer '+s+'-'+t);
                 if (this.modeLive) {
                     brokerCandles.subscribe(s,t,this.pulser);
                 }
@@ -107,18 +115,18 @@ class CandleSequencer {
         this.processHistory();
 
         if (this.modeLive) {
-            this.livePulseCache.forEach( p => this.processLivePulse(p.closeTime,p.arrived) );
+            if (this.livePulseCache) {
+                console.log('CSEQ: releasing pulses from cache:');
+                this.livePulseCache.forEach( p => this.processLivePulse(p.closeTime,p.arrived) );
+            }
             this.isLive = true;
             this.candleProcessor.switchLive();
+            this.pulser.switchLive();
         }
 
     }
 
-    getSmallestTimeframe()
-    {
-        return this.timeframes.sort( (a,b) => TF.get(a).length - TF.get(b).length )[0];
-    }
-
+ 
     getHistoryPulseBuffer()
     {
         for (var tb of this.tbuffers) {
@@ -214,7 +222,7 @@ class CandleSequencer {
         }
 
         if (! this.isLive ) {
-
+            console.log('CSEQ: pulse stored in cache '+TH.ls(closeTime));
             this.livePulseCache.push({
                 closeTime, arrived
             });
@@ -222,6 +230,7 @@ class CandleSequencer {
             return;
         }
 
+        console.log('CSEQ: live pulse release '+TH.ls(closeTime));
         this.processLivePulse(closeTime,arrived);
     }
 
