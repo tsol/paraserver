@@ -16,12 +16,15 @@ candleProcessor must implement:
     processPhaseEnd()
 
 TODO:
-    1. split processHistory via setImmediate
-    2. each live candle check highs and lows - if they exceed previous values
+    * 1. split processHistory via setImmediate
+    * 2. each live candle check highs and lows - if they exceed previous values
     and exceeding != closePrice - arrange several priceUpdate calls
     (also check if nothing changed - don't do update)
-    3. add Timeout to pulse collection
-    4. align days with UTC time
+    3. check long loading using setTimeout 
+    4. check two simultanious vms with different or same symbols
+    5. add Timeout to pulse collection
+    6. align days with UTC time
+    7. history mode with 1m pulse - priceUpdate mode
 */
 
 const TickerBuffer = require('./TickerBuffer.js');
@@ -31,7 +34,11 @@ const LivePulser = require('./LivePulser');
 const { TF } = require('../types/Timeframes.js');
 
 
+const { setImmediate } = require('node:timers/promises')
+
 class CandleSequencer {
+
+    static SPLIT_CANDLES = 1000;
 
     constructor(symbols,timeframes,candleProxy,candleProcessor) {
         
@@ -48,15 +55,69 @@ class CandleSequencer {
         this.lastPulseTime = null;
 
         this.tbuffers = [];
+        this.lastPriceUpdate = {};
 
         this.pulseTF = timeframes.sort( (a,b) => TF.get(a).length - TF.get(b).length )[0];
         this.timeframes.sort( (a,b) => TF.get(b).length - TF.get(a).length );
-    
+        
+
     }
 
     getIsLive() {
         return this.isLive;
     }
+
+    lastPriceUpdateReset(closedCandle)
+    {
+        this.lastPriceUpdate[ closedCandle.symbol ] = {
+            cur: closedCandle.close,
+            high: closedCandle.close,
+            low: closedCandle.close
+        };
+    }
+
+    lastPriceUpdateGetDiffs(unclosedCandle)
+    {
+        const c = unclosedCandle;
+
+        let res = { cur: c.close, high: c.close, low: c.close }
+
+        const prev = this.lastPriceUpdate[ c.symbol ];
+
+        if (! prev ) {
+            res.high = c.high;
+            res.low = c.low; 
+            this.lastPriceUpdate[ c.symbol ] = res;
+            return res;
+        }
+
+        let wasChange = false;
+
+        if (c.high > prev.high) {
+            res.high = c.high;
+            prev.high = c.high;
+            wasChange = true;
+        }
+
+        if (c.low < prev.low) {
+            res.low = c.low;
+            prev.low = c.low;
+            wasChange = true;
+        }
+
+        if (prev.cur !== c.close) {
+            wasChange = true;
+            prev.cur = c.close;
+        }
+
+        if (wasChange) {
+            return res;
+        }
+
+        return null;
+
+    }
+
 
 
 /*
@@ -105,23 +166,26 @@ class CandleSequencer {
             }
         }
 
-        let historyLoadStats = await this.loadHistory(timeStart,timeEnd);
+        let historyLoadStats = await setImmediate(this.loadHistory(timeStart,timeEnd));
         
         // cleanup failed to load symbols:
         let symbolsToRemove = {};
         historyLoadStats.filter( s => !s.res ).forEach( s => symbolsToRemove[s.symbol]=1 );
         Object.keys(symbolsToRemove).forEach( sr => this.removeSymbol(sr));
 
-        this.processHistory();
+        await setImmediate(this.processHistory());
+
+        console.log('CSEQ: history done');
 
         if (this.modeLive) {
-            if (this.livePulseCache) {
+            if (this.livePulseCache.length > 0) {
                 console.log('CSEQ: releasing pulses from cache:');
                 this.livePulseCache.forEach( p => this.processLivePulse(p.closeTime,p.arrived) );
             }
-            this.isLive = true;
-            this.candleProcessor.switchLive();
             this.pulser.switchLive();
+            this.candleProcessor.switchLive();
+            this.isLive = true;
+
         }
 
     }
@@ -138,16 +202,13 @@ class CandleSequencer {
         throw new Error('CSEQ: could not find pulse buffer: '+this.pulseTF);        
     }
 
-    // todo: split history process, using setImmediate block 
-    processHistory()
-    {
-        if (this.tbuffers.length <= 0) {
-            console.log('CSEQ: no history to process'); 
-            return;
-        }
 
-        const pulseBuffer = this.getHistoryPulseBuffer();
-        let pc = pulseBuffer.peekHistoryCandle(); // pulse candle
+    async processHistoryPart()
+    {
+        console.log('CSEQ: process history part... ('+TH.ls(this.lastPulseTime)+')');
+
+        let pc = this.pulseBuffer.peekHistoryCandle(); // pulse candle
+        let count = 0;
 
         while (pc) {
             this.lastPulseTime = pc.closeTime;
@@ -158,23 +219,46 @@ class CandleSequencer {
 
             for (var tb of this.tbuffers) {
                 //console.log(' * '+tb.getSymbol()+'-'+tb.getTimeframe());
-                tb.fetchHistoryCandles(this.lastPulseTime).forEach( c => 
-                    this.candleProcessor.processCandle(c)
-                );
+                tb.fetchHistoryCandles(this.lastPulseTime).forEach( c => {
+                    this.candleProcessor.processCandle(c);
+                    this.lastPriceUpdateReset(c);
+                    count++;
+                });
             }
 
             this.candleProcessor.processPhaseEnd();
 
-            pc = pulseBuffer.peekHistoryCandle();
+            if (count >= CandleSequencer.SPLIT_CANDLES) {
+                return false;
+            }
+
+            pc = this.pulseBuffer.peekHistoryCandle();
+        }
+        return true;
+    }
+
+    // todo: split history process, using setImmediate block 
+    async processHistory()
+    {
+        if (this.tbuffers.length <= 0) {
+            console.log('CSEQ: no history to process'); 
+            return;
         }
 
+        this.pulseBuffer = this.getHistoryPulseBuffer();
+        let done = false;
+
+        while (!done) {
+            done = await setImmediate(this.processHistoryPart());
+        }
+ 
     }
 
 
     loadHistory(timeStart,timeEnd) {
         let loadResults = [];
         for (var tbuf of this.tbuffers) {
-            loadResults.push( tbuf.loadPeriod(timeStart,timeEnd));
+            loadResults.push( setImmediate(tbuf.loadPeriod(timeStart,timeEnd)) );
         }
         return Promise.all(loadResults);
     }
@@ -199,13 +283,17 @@ class CandleSequencer {
 
     livePriceUpdate(unclosedCandle,eventTime) {
         if (this.isLive) {
+            
+            const priceDiff = this.lastPriceUpdateGetDiffs(unclosedCandle);
+            if (! priceDiff ) { return; }
+            
             this.candleProcessor.priceUpdate(
                 unclosedCandle.symbol,
                 unclosedCandle.openTime,
                 eventTime,
-                unclosedCandle.low,
-                unclosedCandle.high,
-                unclosedCandle.close
+                priceDiff.low,
+                priceDiff.high,
+                priceDiff.cur
             );
         }
     }

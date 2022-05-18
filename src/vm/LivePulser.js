@@ -26,7 +26,10 @@ class LivePulser extends BrokerEventsCandlesInterface {
       this.isLive = false;
     }
 
-    switchLive() { this.isLive = true; }
+    switchLive() { 
+      this.isLive = true;
+      this.releaseBufferedCandles();
+    }
 
     updateSymbols(symbols) {
       this.symbols = symbols;
@@ -58,17 +61,22 @@ class LivePulser extends BrokerEventsCandlesInterface {
     pulseRelease()
     {
       this.sequnecer.livePulse(this.currentCloseTime,this.arrived,this.expecting);
-
       this.bufferedLiveCandles = this.bufferedLiveCandles.filter( b => b[0] > this.currentCloseTime );
+      this.releaseBufferedCandles();
+   
+    }
 
-      if (this.isLive) {
+    releaseBufferedCandles()
+    {
+      if (this.isLive && this.bufferedLiveCandles.length > 0) {
+        console.log('PLSR: releasing buffered candles:')
         this.bufferedLiveCandles.forEach( b => {
-            console.log('PLSR: BUFFERED LIVE CANDLE AFTER PULSE:')
             this.sequnecer.livePriceUpdate(b[1],b[0]);
           });
+        this.bufferedLiveCandles = [];
+        console.log('PLSR: release done')
       }
 
-   
     }
 
 
@@ -87,9 +95,11 @@ class LivePulser extends BrokerEventsCandlesInterface {
 */
 
     newCandleFromBroker(candle,eventTime)
-    {
-
+    { 
       if (! candle.closed && (candle.timeframe == this.pulseTF)) {
+      
+        //console.log('. '+candle.symbol+' '+TH.ls(eventTime));
+      
         if ( this.isLive && 
           ((this.currentCloseTime == null) || (eventTime <= this.currentCloseTime))
         ) {
