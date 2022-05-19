@@ -27,7 +27,7 @@ class CandleProcessor {
 
     processCandle(closedCandle) {
         // process closed candles
-        //console.log('CPRO: candle '+closedCandle.symbol+'-'+closedCandle.timeframe);
+        console.log('CPRO: closed candle '+closedCandle.symbol+'-'+closedCandle.timeframe);
     }
 
     processPhaseEnd() {

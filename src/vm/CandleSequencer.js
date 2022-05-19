@@ -20,11 +20,12 @@ TODO:
     * 2. each live candle check highs and lows - if they exceed previous values
     and exceeding != closePrice - arrange several priceUpdate calls
     (also check if nothing changed - don't do update)
-    3. check long loading using setTimeout 
+    * 3. check long loading using setTimeout 
     4. check two simultanious vms with different or same symbols
     5. add Timeout to pulse collection
     6. align days with UTC time
-    7. history mode with 1m pulse - priceUpdate mode
+    * 7. history mode with 1m pulse - priceUpdate mode
+    8.
 */
 
 const TickerBuffer = require('./TickerBuffer.js');
@@ -34,7 +35,7 @@ const LivePulser = require('./LivePulser');
 const { TF } = require('../types/Timeframes.js');
 
 
-const { setImmediate } = require('node:timers/promises')
+const { setImmediate, setTimeout } = require('node:timers/promises')
 
 class CandleSequencer {
 
@@ -42,6 +43,7 @@ class CandleSequencer {
 
     constructor(symbols,timeframes,candleProxy,candleProcessor) {
         
+
         this.modeLive = false; // after history load we want to run live
         this.isLive = false;   // current state
 
@@ -51,7 +53,6 @@ class CandleSequencer {
         this.candleProcessor = candleProcessor;
         
         this.pulser = null;
-        this.livePulseCache = [];
         this.lastPulseTime = null;
 
         this.tbuffers = [];
@@ -175,17 +176,14 @@ class CandleSequencer {
 
         await setImmediate(this.processHistory());
 
+        this.tbuffers = [];
+
         console.log('CSEQ: history done');
 
         if (this.modeLive) {
-            if (this.livePulseCache.length > 0) {
-                console.log('CSEQ: releasing pulses from cache:');
-                this.livePulseCache.forEach( p => this.processLivePulse(p.closeTime,p.arrived) );
-            }
             this.pulser.switchLive();
             this.candleProcessor.switchLive();
             this.isLive = true;
-
         }
 
     }
@@ -210,21 +208,37 @@ class CandleSequencer {
         let pc = this.pulseBuffer.peekHistoryCandle(); // pulse candle
         let count = 0;
 
+        let closedCandles = [];
+        let priceUpdates = [];
+
         while (pc) {
             this.lastPulseTime = pc.closeTime;
 
             console.log('CSEQ: pulse ['+TH.ls(pc.openTime)+' - '+TH.ls(pc.closeTime)+']');
 
-            this.candleProcessor.processPhaseStart(this.lastPulseTime);
+            closedCandles = [];
+            priceUpdates = [];
 
             for (var tb of this.tbuffers) {
                 //console.log(' * '+tb.getSymbol()+'-'+tb.getTimeframe());
                 tb.fetchHistoryCandles(this.lastPulseTime).forEach( c => {
-                    this.candleProcessor.processCandle(c);
-                    this.lastPriceUpdateReset(c);
+                    closedCandles.push(c);
+                    if (c.timeframe == this.pulseTF) {
+                        priceUpdates.push(c);
+                    }
                     count++;
                 });
             }
+
+            priceUpdates.forEach( puCandle =>
+                 this.livePriceUpdate(puCandle,this.lastPulseTime) );
+
+            this.candleProcessor.processPhaseStart(this.lastPulseTime);
+
+            closedCandles.forEach( c => {
+                this.candleProcessor.processCandle(c);
+                this.lastPriceUpdateReset(c);
+            });
 
             this.candleProcessor.processPhaseEnd();
 
@@ -263,6 +277,9 @@ class CandleSequencer {
         return Promise.all(loadResults);
     }
 
+    getSymbols() {
+        return this.symbols;
+    }
 
     removeSymbol(symbol) {
         console.log('CSEQ: removing symbol '+symbol);
@@ -282,48 +299,23 @@ class CandleSequencer {
 
 
     livePriceUpdate(unclosedCandle,eventTime) {
-        if (this.isLive) {
+        const priceDiff = this.lastPriceUpdateGetDiffs(unclosedCandle);
+        if (! priceDiff ) { return; }
             
-            const priceDiff = this.lastPriceUpdateGetDiffs(unclosedCandle);
-            if (! priceDiff ) { return; }
-            
-            this.candleProcessor.priceUpdate(
-                unclosedCandle.symbol,
-                unclosedCandle.openTime,
-                eventTime,
-                priceDiff.low,
-                priceDiff.high,
-                priceDiff.cur
-            );
-        }
+        this.candleProcessor.priceUpdate(
+            unclosedCandle.symbol,
+            unclosedCandle.openTime,
+            eventTime,
+            priceDiff.low,
+            priceDiff.high,
+            priceDiff.cur
+        );
     }
 
-    livePulse(closeTime, arrived, missed) {
-
-        const missedTickers = Object.keys(missed);
-        
-        if (missedTickers.length>0) {
-            missedTickers.forEach( key => {
-                this.removeSymbol( key.split('-')[0] );
-            });
-            this.pulser.updateSymbols(this.symbols);
-        }
-
-        if (! this.isLive ) {
-            console.log('CSEQ: pulse stored in cache '+TH.ls(closeTime));
-            this.livePulseCache.push({
-                closeTime, arrived
-            });
-
-            return;
-        }
-
-        console.log('CSEQ: live pulse release '+TH.ls(closeTime));
-        this.processLivePulse(closeTime,arrived);
-    }
-
-    processLivePulse(closeTime,arrived)
+    livePulse(closeTime, arrived)
     {
+        console.log('CSEQ: live pulse release '+TH.ls(closeTime));
+
         if (closeTime <= this.lastPulseTime) {
             console.log('CSEQ: skipping pulse '+TH.ls(closeTime));
             return;
