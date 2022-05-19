@@ -14,8 +14,8 @@ class CandleProcessor {
     priceUpdate(symbol,fromTime,toTime,lowPrice,highPrice,currentPrice) {
         // in-between phases live price update candles, stopLoss/takeProfit processi
 
-        console.log('CPRO: price update '+symbol+' ['+TH.ls(toTime)+'/'+toTime+'] '+
-            lowPrice+'/'+highPrice+'/'+currentPrice);
+        //console.log('CPRO: price update '+symbol+' ['+TH.ls(toTime)+'/'+toTime+'] '+
+        //    lowPrice+'/'+highPrice+'/'+currentPrice);
 
         // todo: first priceUpdate after switching live must consider lowPrice and highPrice
     }

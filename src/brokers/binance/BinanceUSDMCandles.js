@@ -279,6 +279,7 @@ class BinanceUSDMCandles extends BrokerCandlesInterface {
 
     unsubscribe(symbol,timeframe,subscriberObject)
     {
+        // todo: if last subscriber unsubscribed disconnect websocket stream
         const sid = symbol+'-'+timeframe;
         const foundStream = this.streams[sid];
         if (foundStream) {
