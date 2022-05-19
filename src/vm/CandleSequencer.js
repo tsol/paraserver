@@ -22,10 +22,11 @@ TODO:
     (also check if nothing changed - don't do update)
     * 3. check long loading using setTimeout 
     4. check two simultanious vms with different or same symbols
-    5. add Timeout to pulse collection
+    * 5. add Timeout to pulse collection
     6. align days with UTC time
     * 7. history mode with 1m pulse - priceUpdate mode
-    8.
+    8. split history load by days - fetch/process cycle
+    9. maybe dont collect all priceUpdates during history load (only pulse timeframe candles)
 */
 
 const TickerBuffer = require('./TickerBuffer.js');
@@ -43,7 +44,6 @@ class CandleSequencer {
 
     constructor(symbols,timeframes,candleProxy,candleProcessor) {
         
-
         this.modeLive = false; // after history load we want to run live
         this.isLive = false;   // current state
 
@@ -189,6 +189,21 @@ class CandleSequencer {
     }
 
  
+    destroy() {
+        this.isLive = false;
+
+        const brokerCandles = this.candleProxy.getBroker();
+        
+        if (this.modeLive) {
+            for (var s of this.symbols) {
+                for (var t of this.timeframes) {
+                    brokerCandles.unsubscribe(s,t,this.pulser);
+                }
+            }
+        }
+
+    }
+
     getHistoryPulseBuffer()
     {
         for (var tb of this.tbuffers) {
@@ -286,10 +301,8 @@ class CandleSequencer {
 
         if (this.modeLive) { // unsubscribe from live candle stream
             const brokerCandles = this.candleProxy.getBroker();
-            for (var tb of this.tbuffers) {
-                if (tb.getSymbol() == symbol) {
-                    brokerCandles.unsubscribe(symbol,tb.getTimeframe(),this.pulser);
-                }
+            for (var tf of this.timeframes) {
+                brokerCandles.unsubscribe(symbol,tf,this.pulser);
             }
         }
 
