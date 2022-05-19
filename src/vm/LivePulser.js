@@ -178,20 +178,24 @@ class LivePulser extends BrokerEventsCandlesInterface {
       if (! candle.closed ) {
 
         // only care for pulse timeframe (smallest) as price updates
-        if (candle.timeframe != this.pulseTF) { return; }
+        if ( !this.isLive || (candle.timeframe != this.pulseTF)) { return; }
 
-        if ( this.isLive ) {
-          if ( ! this.isGatheringPulse() || (eventTime <= this.currentPulseTime)) {
+        if ( ! this.isGatheringPulse() || (eventTime <= this.currentPulseTime)) {
             this.sequencer.livePriceUpdate(candle,eventTime);
             return;
-          }
         }
-
+        
         this.bufferedPriceUpdates.push({eventTime,candle});
         return;
       }
 
       // closed candle arrived
+
+      // when not live we collect pulse timeframe candles as price updates
+      if ( !this.isLive && (candle.timeframe == this.pulseTF)) {
+          this.bufferedPriceUpdates.push({eventTime:candle.closeTime,candle}); 
+      }
+
       const key = candle.symbol+'-'+candle.timeframe;
 
       if (! this.isGatheringPulse()) {
@@ -203,7 +207,7 @@ class LivePulser extends BrokerEventsCandlesInterface {
           return;
         }
       }
-      else if (this.currentPulseTime < candle.closeTime) {
+      else if (candle.closeTime > this.currentPulseTime) {
         console.log('PLSR: [WARN] releasing pulse because of new pulse commin')
         this.pulseRelease();
         this.pulseStart(candle.closeTime);

@@ -16,15 +16,8 @@ candleProcessor must implement:
     processPhaseEnd()
 
 TODO:
-    * 1. split processHistory via setImmediate
-    * 2. each live candle check highs and lows - if they exceed previous values
-    and exceeding != closePrice - arrange several priceUpdate calls
-    (also check if nothing changed - don't do update)
-    * 3. check long loading using setTimeout 
     4. check two simultanious vms with different or same symbols
-    * 5. add Timeout to pulse collection
     6. align days with UTC time
-    * 7. history mode with 1m pulse - priceUpdate mode
     8. split history load by days - fetch/process cycle
     9. maybe dont collect all priceUpdates during history load (only pulse timeframe candles)
 */
@@ -177,6 +170,8 @@ class CandleSequencer {
         await setImmediate(this.processHistory());
 
         this.tbuffers = [];
+
+        await setTimeout(70000);
 
         console.log('CSEQ: history done');
 

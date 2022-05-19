@@ -99,7 +99,7 @@ class Order {
     setQuantity(q) { this.quantity = q; }
     setBrokerORID (id) { this.brokerORID = id; }
     setBrokerSLID (id) { this.brokerSLID = id; }
-    setBrokerTPID (id) { this.brokerORID = id; }
+    setBrokerTPID (id) { this.brokerTPID = id; }
 
 
 
