@@ -47,7 +47,7 @@ class LivePulser extends BrokerEventsCandlesInterface {
             this.sequencer.livePriceUpdate(pu.candle,pu.eventTime)
           );
 
-          this.sequencer.livePulse(p.pulseTime,p.arrived);
+          this.sequencer.livePulse(p.pulseTime,p.arrived,1);
 
         });
       }
@@ -133,7 +133,10 @@ class LivePulser extends BrokerEventsCandlesInterface {
         return;
       }
 
-      this.sequencer.livePulse(this.currentPulseTime,this.arrived);
+      const currentTime = (new Date()).getTime();
+      const passedTime = currentTime - this.currentPulseTime;
+
+      this.sequencer.livePulse(this.currentPulseTime,this.arrived,passedTime);
       this.releaseBufferedCandles();
   
       this.prevPulseTime = this.currentPulseTime;

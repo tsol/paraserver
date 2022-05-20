@@ -15,9 +15,8 @@ candleProcessor must implement:
     processPhaseEnd()                   - phase ended - go ahead make orders
 
 TODO:
-    8. split history load by days - fetch candles/proces candles/free memory
     6. align days with UTC time
-    9. pass delay between pulse gather start and end to candleProcessor
+    * 9. pass delay between pulse gather start and end to candleProcessor
     so orderManager can exclude entering deals
 
 */
@@ -234,7 +233,7 @@ class CandleSequencer {
             priceUpdates.forEach( puCandle =>
                  this.livePriceUpdate(puCandle,this.lastPulseTime) );
 
-            this.candleProcessor.processPhaseStart(this.lastPulseTime);
+            this.candleProcessor.processPhaseStart(this.lastPulseTime,1);
 
             closedCandles.forEach( c => {
                 this.candleProcessor.processCandle(c);
@@ -347,7 +346,7 @@ class CandleSequencer {
         );
     }
 
-    livePulse(closeTime, arrived)
+    livePulse(closeTime, arrived, passedTime)
     {
         console.log('CSEQ: live pulse release '+TH.ls(closeTime));
 
@@ -357,7 +356,7 @@ class CandleSequencer {
         }
 
         this.lastPulseTime = closeTime;
-        this.candleProcessor.processPhaseStart(this.lastPulseTime);
+        this.candleProcessor.processPhaseStart(this.lastPulseTime, passedTime);
 
         for(var s of this.symbols) {
             for (var t of this.timeframes) {

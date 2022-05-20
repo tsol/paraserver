@@ -30,9 +30,10 @@ class CandleProcessor {
         // todo: first priceUpdate after switching live must consider lowPrice and highPrice
     }
 
-    processPhaseStart(candleCloseTime) {
+    processPhaseStart(candleCloseTime, passedTime) {
         // prepare for candleProcess
-        //console.log('CPRO: phase start '+TH.ls(candleCloseTime));
+        console.log('CPRO: phase start '+TH.ls(candleCloseTime)+' passed: '+
+            Number(passedTime/1000).toFixed(2)+' secs.');
     }
 
     processCandle(closedCandle) {
