@@ -11,18 +11,28 @@ class CandleProcessor {
         console.log('CPRO: switching live...');
     }
 
-    priceUpdate(symbol,fromTime,toTime,lowPrice,highPrice,currentPrice) {
-        // in-between phases live price update candles, stopLoss/takeProfit processi
+    /* priceUpdate
+    **
+    ** In-between phases live price update candles, stopLoss/takeProfit processing
+    ** lowPrice and highPrice show how price deviated since last priceUpdate on
+    ** this symbol (or last closed candle closeTime).
+    **
+    ** During history data priceUpdate is called on smallest timeframe close candle.
+    **
+    ** Note: on emulation its best to test your stopLosses first agains corresponding
+    ** maximum and after that - takeProfit (to get honest worst case scenario)
+    */ 
+    priceUpdate(symbol,eventTime,lowPrice,highPrice,currentPrice) {
 
-        console.log('CPRO: price update '+symbol+' ['+TH.ls(toTime)+'/'+toTime+'] '+
+        console.log('CPRO: price update '+symbol+' ['+TH.ls(eventTime)+'/'+eventTime+'] '+
             lowPrice+'/'+highPrice+'/'+currentPrice);
 
         // todo: first priceUpdate after switching live must consider lowPrice and highPrice
     }
 
-    processPhaseStart(timestamp) {
-        // prepare for candleProcess (empty orders queue?)
-        console.log('CPRO: phase start '+TH.ls(timestamp));
+    processPhaseStart(candleCloseTime) {
+        // prepare for candleProcess
+        //console.log('CPRO: phase start '+TH.ls(candleCloseTime));
     }
 
     processCandle(closedCandle) {
@@ -32,7 +42,7 @@ class CandleProcessor {
 
     processPhaseEnd() {
         // process orders queue, arbitration
-        console.log('CPRO: phase end');
+        //console.log('CPRO: phase end');
     }
 
 }

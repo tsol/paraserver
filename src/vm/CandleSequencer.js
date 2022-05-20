@@ -9,17 +9,17 @@
 
 candleProcessor must implement:
 
-    processUpdate(...params)
-
-    processPhaseStart(timestamp)
-    processCandle(closedCandle, isLive)
-    processPhaseEnd()
+    processUpdate(...params)            - between phases live price update
+    processPhaseStart(candleCloseTime)  - prepare for bunch of closed candles 
+    processCandle(closedCandle)         - closed candle  
+    processPhaseEnd()                   - phase ended - go ahead make orders
 
 TODO:
-    4. check two simultanious vms with different or same symbols
+    8. split history load by days - fetch candles/proces candles/free memory
     6. align days with UTC time
-    8. split history load by days - fetch/process cycle
-    9. maybe dont collect all priceUpdates during history load (only pulse timeframe candles)
+    9. pass delay between pulse gather start and end to candleProcessor
+    so orderManager can exclude entering deals
+
 */
 
 const TickerBuffer = require('./TickerBuffer.js');
@@ -33,7 +33,8 @@ const { setImmediate, setTimeout } = require('node:timers/promises')
 
 class CandleSequencer {
 
-    static SPLIT_CANDLES = 1000;
+    static SPLIT_PROCESS_CANDLES = 1000;
+    static SPLIT_LOAD_SIZE = 24*60*60*1000; //1*24*60*60*1000; // 1 day
 
     constructor(symbols,timeframes,candleProxy,candleProcessor) {
         
@@ -160,18 +161,8 @@ class CandleSequencer {
             }
         }
 
-        let historyLoadStats = await setImmediate(this.loadHistory(timeStart,timeEnd));
-        
-        // cleanup failed to load symbols:
-        let symbolsToRemove = {};
-        historyLoadStats.filter( s => !s.res ).forEach( s => symbolsToRemove[s.symbol]=1 );
-        Object.keys(symbolsToRemove).forEach( sr => this.removeSymbol(sr));
+        await this.loadAndProcessHistory(timeStart,timeEnd);
 
-        await setImmediate(this.processHistory());
-
-        this.tbuffers = [];
-
-        await setTimeout(70000);
 
         console.log('CSEQ: history done');
 
@@ -211,11 +202,11 @@ class CandleSequencer {
     }
 
 
-    async processHistoryPart()
+    async processHistoryBuffersPart()
     {
-        console.log('CSEQ: process history part... ('+TH.ls(this.lastPulseTime)+')');
+        console.log('CSEQ: process history part... ');
 
-        let pc = this.pulseBuffer.peekHistoryCandle(); // pulse candle
+        let pc = this.pulseBuffer.peekCandle(); // pulse candle
         let count = 0;
 
         let closedCandles = [];
@@ -231,7 +222,7 @@ class CandleSequencer {
 
             for (var tb of this.tbuffers) {
                 //console.log(' * '+tb.getSymbol()+'-'+tb.getTimeframe());
-                tb.fetchHistoryCandles(this.lastPulseTime).forEach( c => {
+                tb.fetchCandles(this.lastPulseTime).forEach( c => {
                     closedCandles.push(c);
                     if (c.timeframe == this.pulseTF) {
                         priceUpdates.push(c);
@@ -252,17 +243,17 @@ class CandleSequencer {
 
             this.candleProcessor.processPhaseEnd();
 
-            if (count >= CandleSequencer.SPLIT_CANDLES) {
+            if (count >= CandleSequencer.SPLIT_PROCESS_CANDLES) {
                 return false;
             }
 
-            pc = this.pulseBuffer.peekHistoryCandle();
+            pc = this.pulseBuffer.peekCandle();
         }
         return true;
     }
 
-    // todo: split history process, using setImmediate block 
-    async processHistory()
+
+    async processHistoryBuffers()
     {
         if (this.tbuffers.length <= 0) {
             console.log('CSEQ: no history to process'); 
@@ -273,19 +264,56 @@ class CandleSequencer {
         let done = false;
 
         while (!done) {
-            done = await setImmediate(this.processHistoryPart());
+            done = await setImmediate(this.processHistoryBuffersPart());
         }
  
     }
 
 
-    loadHistory(timeStart,timeEnd) {
+    async loadAndProcessHistory(timeStart,timeEnd) {
+
+        let currentStart = null;
+        let currentEnd = timeStart-1;
+        const maxParts = Math.ceil( (timeEnd-timeStart) / CandleSequencer.SPLIT_LOAD_SIZE );
+        let currentPart = 1;
+
+        console.log('CSEQ: load/process history: ['+TH.ls(timeStart)+'/'+TH.ls(timeEnd)+']');
+
+        while (currentEnd < timeEnd) {
+        
+            currentStart = currentEnd+1;
+            currentEnd = currentStart + CandleSequencer.SPLIT_LOAD_SIZE-1;
+            if (currentEnd > timeEnd) { currentEnd = timeEnd; }
+
+            console.log('CSEQ: load/process history part '+currentPart+'/'+maxParts+' ['+
+                TH.ls(currentStart) + '-' + TH.ls(currentEnd)+']');
+
+            let historyLoadStats = await setImmediate(
+                this.loadHistoryPeriod(currentStart,currentEnd)
+            );
+        
+            // cleanup failed to load symbols:
+            let symbolsToRemove = {};
+            historyLoadStats.filter( s => !s.res ).forEach( s => symbolsToRemove[s.symbol]=1 );
+            Object.keys(symbolsToRemove).forEach( sr => this.removeSymbol(sr));
+
+            await setImmediate(this.processHistoryBuffers());
+            currentPart++;
+        }
+
+        this.tbuffers = [];
+    }
+
+
+    loadHistoryPeriod(timeStart,timeEnd) {
         let loadResults = [];
         for (var tbuf of this.tbuffers) {
             loadResults.push( setImmediate(tbuf.loadPeriod(timeStart,timeEnd)) );
         }
         return Promise.all(loadResults);
     }
+
+
 
     getSymbols() {
         return this.symbols;
@@ -312,7 +340,6 @@ class CandleSequencer {
             
         this.candleProcessor.priceUpdate(
             unclosedCandle.symbol,
-            unclosedCandle.openTime,
             eventTime,
             priceDiff.low,
             priceDiff.high,

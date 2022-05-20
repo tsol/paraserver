@@ -10,7 +10,7 @@ const TH = require('../helpers/time.js');
 
 class LivePulser extends BrokerEventsCandlesInterface {
 
-    static PULSE_WAIT_TIMEOUT = 2000;
+    static PULSE_WAIT_TIMEOUT = 10000;
 
     constructor (symbols, timeframes, pulseTF, candleSequencer)
     {

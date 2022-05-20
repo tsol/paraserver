@@ -1,7 +1,5 @@
 /* 
-** TickerBuffer - responsible for cached candle supply for specific ticker
-**
-**
+** TickerBuffer - CandleSequencer helper responsible for cached candle supply for specific ticker
 */
 
 class TickerBuffer {
@@ -13,14 +11,17 @@ class TickerBuffer {
         this.buffer = [];
     }
 
-    peekHistoryCandle() {
+    peekCandle() {
         if (this.buffer.length <= 0)
             { return null; }
         return this.buffer[0];
     }
 
-    fetchHistoryCandles(closeTime) {
-        // todo: optimize
+    fetchCandles(closeTime) {
+        // todo: optimize, in most cases fetched is only first element of buffer
+        // in every case - its just first N elements of buffer.
+        // (N>1 could only happen when sequencer pulseTime is greater than this timeframe
+        // N==0 could happen if symbols hasnt been trading this time
         const fetched = this.buffer.filter( c => c.closeTime <= closeTime );
         this.buffer = this.buffer.filter( c => c.closeTime > closeTime );
         return fetched;
