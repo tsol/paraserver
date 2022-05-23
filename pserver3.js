@@ -4,8 +4,8 @@ const BinanceUSDMUser = require('./src/brokers/binance/BinanceUSDMUser.js');
 const MysqlCandles = require('./src/db/MysqlCandles.js');
 const CandleProxy = require('./src/db/CandleProxy.js');
 
-const CandleProcessor = require('./src/vm/CandleProcessor');
-const CandleSequencer = require('./src/vm/CandleSequencer');
+const CandleProcessor = require('./src/vm/types/CandleProcessor');
+const CandleSequencer = require('./src/vm/Sequencer/CandleSequencer');
 
 const TH = require('./src/helpers/time');
 
@@ -22,26 +22,14 @@ mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
             // 'BTCUSDT','ETHUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT','ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT','AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'
             
             const candleSequencer = new CandleSequencer([
-                'BTCUSDT','ETHUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT','ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT','AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'
-        
+                'BTCUSDT'
                 ],['1m'],
                 candleProxy,candleProcessor);
 
             candleSequencer.init(
-                TH.timestampDaysBack(1),
+                TH.timestampDaysBack(3),
                 null
             ).then( () => { console.log('Sequencer initialized'); });
-/*
-            const candleSequencer2 = new CandleSequencer([
-                'BTCUSDT','ETHUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT','ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT','AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'
-                ],['3m','15m'],
-                candleProxy,candleProcessor);
-
-            candleSequencer2.init(
-                TH.timestampDaysBack(1),
-                null
-            ).then( () => { console.log('Sequencer 2 initialized'); });
-*/
         })
     })
 });

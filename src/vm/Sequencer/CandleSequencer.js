@@ -23,9 +23,9 @@ TODO:
 
 const TickerBuffer = require('./TickerBuffer.js');
 
-const TH = require('../helpers/time.js');
+const TH = require('../../helpers/time.js');
 const LivePulser = require('./LivePulser');
-const { TF } = require('../types/Timeframes.js');
+const { TF } = require('../../types/Timeframes.js');
 
 
 const { setImmediate, setTimeout } = require('node:timers/promises')

@@ -1,4 +1,4 @@
-const TH = require('../helpers/time.js');
+const TH = require('../../helpers/time.js');
 
 class CandleProcessor {
 
