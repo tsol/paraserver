@@ -10,6 +10,8 @@ const ClientIO = require('./src/vm/ClientIO.js');
 
 const TH = require('./src/helpers/time');
 
+/* move to vm */
+
 const brokerCandles = new BinanceUSDMCandles(SETTINGS.users.harry.brokers.binance);
 const brokerUser = new BinanceUSDMUser(SETTINGS.users.utah.brokers.binance);
 const mysqlCandles = new MysqlCandles();
