@@ -1,5 +1,3 @@
-//const SETTINGS = require('../../private/private.js');
-const { Server } = require("socket.io");
 const WebClients = require("./WebClients.js");
 const BotClients = require("./BotClients.js");
 
@@ -10,9 +8,9 @@ class Clients {
         this.web = new WebClients();
     }
 
-    start(dataProcessor) {
-        this.bot.start(dataProcessor);
-        this.web.start(dataProcessor)
+    start(clientIO) {
+        this.bot.start(clientIO);
+        this.web.start(clientIO)
     }
 
     onNewRealOrder(order) {

@@ -8,13 +8,13 @@ class BotClients {
         this.lastBalance = 0;
     }
 
-    start(dataProcessor)
+    start(clientIO)
     {
         // Create a bot that uses 'polling' to fetch new updates
         const bot = new TelegramBot(SETTINGS.telebot.apiKey, {polling: true});
         
         this.bot = bot;
-        this.dataProcessor = dataProcessor;
+        this.clientIO = clientIO;
 
         bot.onText(/\/start/, (msg, match) => {
             const chatId = msg.chat.id;
@@ -46,7 +46,7 @@ class BotClients {
         bot.onText(/\/account/, (msg, match) => {
             const chatId = msg.chat.id;
         
-            dataProcessor.getAccountInformation().then( (res) => {
+            clientIO.getAccountInformation().then( (res) => {
                 const msg = this.renderAccountInfo(res.balance, res.pnl, res.positions);
                 bot.sendMessage(chatId, msg);
             });

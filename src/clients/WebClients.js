@@ -5,12 +5,12 @@ class WebClients {
 
     constructor() {
         this.sockets = [];
-        this.dataProcessor = null;
+        this.clientIO = null;
     }
  
-    start(dataProcessor)
+    start(clientIO)
     {
-        this.dataProcessor = dataProcessor;
+        this.clientIO = clientIO;
 
         const io = new Server({
             cors: {
@@ -30,8 +30,6 @@ class WebClients {
             });
         
             socket.on("get_chart", (arg) => {
-                if (!dataProcessor) return;
-        
                 if (! arg.tickerId ) {
                     console.log('SIO: invalid get_chart params');
                 }
@@ -46,71 +44,63 @@ class WebClients {
             
                 if (arg.timestamp) { param.timestamp = arg.timestamp; }
         
-                let data = dataProcessor.getTickerChart(param);
+                let data = clientIO.getTickerChart(param);
                 socket.emit("chart", data);
             });
         
             socket.on("get_flags", (arg) => {
-                if (!dataProcessor) return;
-                socket.emit("chart_flags", dataProcessor.getTickerFlags(arg.tickerId) );
+                socket.emit("chart_flags", clientIO.getTickerFlags(arg.tickerId) );
             });
         
             socket.on('restart_all', (arg) => {
-                if (!dataProcessor) return;
         
                 console.log('=====> RESTART START')
                 
-                dataProcessor.restartAll(arg.runLive);
+                clientIO.restartAll(arg.runLive);
                 
                 console.log('=====> RESTART END')
         
-                let data = dataProcessor.getOrdersList();
+                let data = clientIO.getOrdersList();
                 socket.emit("orders", data);
         
             });
         
             socket.on("list_tickers", (arg) => {
-                if (!dataProcessor) return;
-                let data = dataProcessor.getTickersState();
+                let data = clientIO.getTickersState();
                 socket.emit("tickers", data);
             });
         
             socket.on("list_orders", (arg) => {
-                if (!dataProcessor) return;
-                let data = dataProcessor.getOrdersList();
+                let data = clientIO.getOrdersList();
                 socket.emit("orders", data);
             });
         
         
             socket.on("get_order", (arg) => {
-                if (!dataProcessor) return;
-                let data = dataProcessor.getOrder(arg.orderId);
+                let data = clientIO.getOrder(arg.orderId);
                 socket.emit("order", data);
             });
         
         
             socket.on("make_real_order", (arg) => {
-                if (!dataProcessor) return;
                 socket.emit("new_real_order", 
-                    dataProcessor.doMakeOrderFromEmulated(arg.orderId)
+                    clientIO.doMakeOrderFromEmulated(arg.orderId)
                 );
             });
         
             socket.on("get_orders_stats", (arg) => {
-                if (!dataProcessor) return;
-                let orderStats = dataProcessor.getOrdersStatistics(arg.fromTimestamp, arg.toTimestamp);
-                let timeframes = dataProcessor.getTimeframes();
+                let orderStats = clientIO.getOrdersStatistics(arg.fromTimestamp, arg.toTimestamp);
+                let timeframes = clientIO.getTimeframes();
                 socket.emit("orders_stats", { timeframes: timeframes, stats: orderStats });
             });
         
             socket.on("get_orders_report", (arg) => {
-                if (!dataProcessor) return;
                 try {
                     console.log('generating report...');
                     if (arg.dateFrom) { arg.dateFrom = (new Date(arg.dateFrom)).getTime(); };
                     if (arg.dateTo)   { arg.dateTo = (new Date(arg.dateTo)).getTime(); };
         
-                    let ordersReport = dataProcessor.getReport(arg);
+                    let ordersReport = clientIO.getReport(arg);
                     console.log('sending report...');
                     socket.emit("orders_report", ordersReport );
                 }
