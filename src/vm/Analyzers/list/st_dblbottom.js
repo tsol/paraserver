@@ -5,7 +5,7 @@
 */
 
 const Strategy = require("../types/Strategy");
-const CDB = require('../../types/CandleDebug');
+const CDB = require('../../../types/CandleDebug');
 
 class StrategyDoubleBottom extends Strategy {
 

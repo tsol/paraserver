@@ -7,8 +7,8 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../types/CandleDebug');
-const { TF } = require('../../types/Timeframes.js');
+const CDB = require('../../../types/CandleDebug');
+const { TF } = require('../../../types/Timeframes.js');
 
 class StrategyHelper {
 

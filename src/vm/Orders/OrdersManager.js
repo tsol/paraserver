@@ -92,7 +92,7 @@ class OrdersManager {
     isClockUpdated(eventTime)
     {
         if (eventTime > this.lastUpdateTime) {      
-            this.lastUpdateTime = newTime;
+            this.lastUpdateTime = eventTime;
             return true;
         }
         return false;

@@ -4,7 +4,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../types/CandleDebug');
+const CDB = require('../../../types/CandleDebug');
 const RMA = require('../helpers/RMA.js');
 
 class AnRSI extends Analyzer {

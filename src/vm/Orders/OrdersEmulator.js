@@ -26,7 +26,7 @@ class OrdersEmulator {
         this.taggers = new OrderTaggers();
         this.brokerCandles = brokerCandles;
 
-
+        this.lastUpdateTime = null;
     }
 
     reset() {
@@ -38,6 +38,7 @@ class OrdersEmulator {
 
     priceUpdate (symbol,eventTime,lowPrice,highPrice,currentPrice)
     {
+        this.lastUpdateTime = eventTime;
 
         const orders = this.activeOrders.filter( o => (o.symbol === symbol) );
         let long  = orders.filter( o => o.isLong() );
@@ -209,7 +210,7 @@ class OrdersEmulator {
 
    
     closeOrder(order,isWin) {
-        order.doClose(isWin,this.getLastUpdateTime());
+        order.doClose(isWin,this.lastUpdateTime);
         this.activeOrders = this.activeOrders.filter( o => o !== order );
     }
 

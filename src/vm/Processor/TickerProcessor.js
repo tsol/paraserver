@@ -1,6 +1,6 @@
 
-const SETTINGS = require('../../private/private.js');
-const { TF } = require('../types/Timeframes.js');
+const SETTINGS = require('../../../private/private.js');
+const { TF } = require('../../types/Timeframes.js');
 
 
 class TickerProcessor {

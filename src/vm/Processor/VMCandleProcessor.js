@@ -22,7 +22,7 @@ class VMCandleProcessor extends CandleProcessor {
         for(var s of symbols){
             for(var t of timeframes) {
                 const key = s+'-'+t;
-                this.tickers = 
+                this.tickers[key] = 
                     new TickerProcessor(s,t,this.analyzersFactory.createBox());
             }
         }
@@ -31,7 +31,7 @@ class VMCandleProcessor extends CandleProcessor {
 
     getFlags() { return this.flags; }
     getTicker(symbol,timeframe) {
-        const key = closedCandle.symbol+'-'+closedCandle.timeframe;
+        const key = symbol+'-'+timeframe;
         return this.getTickerById(key);
     }
     getTickerById(key) {

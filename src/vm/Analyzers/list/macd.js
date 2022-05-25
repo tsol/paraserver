@@ -6,7 +6,7 @@
 **
 */
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../types/CandleDebug');
+const CDB = require('../../../types/CandleDebug');
 const EMA = require('../helpers/EMA.js');
 
 class MACD extends Analyzer {

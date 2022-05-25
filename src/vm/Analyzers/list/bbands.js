@@ -4,7 +4,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../types/CandleDebug');
+const CDB = require('../../../types/CandleDebug');
 const STDDEV = require('../helpers/STDDEV.js');
 
 class BollingerBands extends Analyzer {

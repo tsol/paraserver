@@ -16,7 +16,7 @@ DO not trade candles > 300 pips
 */
 
 const Strategy = require("../types/Strategy");
-const CDB = require('../../types/CandleDebug');
+const CDB = require('../../../types/CandleDebug');
 
 class TTCWOFF extends Strategy {
 

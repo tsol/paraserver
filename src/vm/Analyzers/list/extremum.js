@@ -1,5 +1,5 @@
 const Analyzer = require("../types/Analyzer.js");
-const CDB = require('../../types/CandleDebug.js');
+const CDB = require('../../../types/CandleDebug');
 
 class AnExtremum extends Analyzer {
 

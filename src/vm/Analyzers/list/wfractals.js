@@ -17,7 +17,7 @@ Bullish Fractal=
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../types/CandleDebug');
+const CDB = require('../../../types/CandleDebug');
 
 class AnWFractals extends Analyzer {
 
