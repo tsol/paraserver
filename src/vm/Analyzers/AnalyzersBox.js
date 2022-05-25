@@ -3,16 +3,39 @@
 ** for TickerProcessor to process his candles.
 */
 
+const AnalyzersIO = require("./AnalyzerIO");
+
 class AnalyzersBox {
 
-    constructor(analyzersInstancesArray) {
-        this.analyzers = analyzersInstancesArray;
+    constructor(factory,ordersManager) {
+        this.factory = factory;
+        this.analyzers = [];
+        this.io = new AnalyzersIO(this,ordersManager);
+        this.io.init();
+    }
 
+    hasAnalyzer(analyzerName) {
+        const found = this.analyzers.find( a => a.getId() == analyzerName );
+        if (found) { return found };
+        return null;
+    }
+
+    addAnalyzer(analyzerName) {
+        const found =  this.hasAnalyzer(analyzerName);
+        if (found) { return found };
+
+        const i = this.factory.getInstance(analyzerName);
+        if (! i ) { throw new Error('ANBOX: no such analyzer '+analyzerName); };
+
+        i.init(this.io);
+        this.analyzers.push(i);
+        return i;
     }
 
     addCandle(candle, flags) {
+        this.io.setCurrentCandleAndFlags(candle,flags);
         this.analyzers.forEach( (analyzer) => {
-            analyzer.addCandle(candle, flags);
+            analyzer.addCandle(candle, this.io);
         });
     }
 

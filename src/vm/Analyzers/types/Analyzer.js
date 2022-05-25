@@ -10,12 +10,16 @@ class Analyzer {
     constructor() {
     }
 
+    /* should perform io.require(analyzer) */
+    init(io) {
+    }
+
     /* return analyzer string name */
     getId() {
     }
 
     /* analyze new completed candle */
-    addCandle(candle, flags) {
+    addCandle(candle, flags, io) {
     }
 
     /* rotation. we must remove all events/flags with time equal or below */

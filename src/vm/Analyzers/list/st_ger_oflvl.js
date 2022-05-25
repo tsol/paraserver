@@ -28,11 +28,17 @@ class GEROFLVL extends Strategy {
 
         getId() { return 'geroflvl'; }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags);
+        init(io) {
+            io.require('atr14');
+            io.require('vlevels');
+            io.require('prices');
+        }
+
+        addCandle(candle,io) {
+            super.addCandle(candle,io);
             CDB.setSource(this.getId());
 
-            const atr = flags.get('atr14');
+            const atr = io.get('atr14');
             if (! atr ) { return false; }
 
 
@@ -53,11 +59,8 @@ class GEROFLVL extends Strategy {
                     return;
                 }
 
-        
-
                 const stopLoss = entry - this.direction * stopSize;
 
-                const io = flags.get('helper');
                 io.makeEntry(this, ( this.direction > 0 ? 'buy' : 'sell'), { 
                     rrRatio: GEROFLVL.RR_RATIO,
                     stopLoss: stopLoss 
@@ -69,14 +72,14 @@ class GEROFLVL extends Strategy {
 
             // try to find BPU1
 
-            const vlevels = flags.get('vlevels');
-            const vlevels_high = flags.get('vlevels_high');
+            const vlevels = io.get('vlevels');
+            const vlevels_high = io.get('vlevels_high');
 
             if (! vlevels || ! vlevels_high ) {
                 return false;
             }
         
-            const prices = flags.get('prices');
+            const prices = io.get('prices');
 
             const ph = candle.high;
             const pl = candle.low;

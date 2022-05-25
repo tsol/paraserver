@@ -24,15 +24,12 @@ class StrategyCrossMA3 extends Strategy {
             this.resetFinder();
         }
 
-        getId() { return this.name; }
-
-        getParams(timeframe) {
-            return {
-                statsMaxOrders: 15,
-                statsOkRatio: 38,
-                useBtc: 'F'
-            };
+        init(io) {
+            io.require('emac50');
+            io.require('emac200');
         }
+
+        getId() { return this.name; }
 
         resetFinder() {
             this.wasCross = false;
@@ -40,12 +37,12 @@ class StrategyCrossMA3 extends Strategy {
             this.countCloseBelow200 = 0;
         }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags);
+        addCandle(candle,io) {
+            super.addCandle(candle,io);
             CDB.setSource(this.getId());
 
-            const mac50 = flags.get('emac50');
-            const mac200 = flags.get('emac200');
+            const mac50 = io.get('emac50');
+            const mac200 = io.get('emac200');
 
             if (! mac50 || ! mac200 ) { return; }
 
@@ -99,7 +96,7 @@ class StrategyCrossMA3 extends Strategy {
 
             const stopFrom = (this.isLong ? candle.low : candle.high );
               
-            flags.get('helper').makeEntry(this, (this.isLong ? 'buy' : 'sell'), {
+            io.makeEntry(this, (this.isLong ? 'buy' : 'sell'), {
                 rrRatio: 1.5,
                 stopFrom,
                 stopATRRatio: 2,

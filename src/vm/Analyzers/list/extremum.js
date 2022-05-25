@@ -13,8 +13,8 @@ class AnExtremum extends Analyzer {
 
     getId() { return 'extremum'; }
 
-    addCandle(candle, flags) {
-        super.addCandle(candle, flags);
+    addCandle(candle, io) {
+        super.addCandle(candle, io);
         CDB.setSource(this.getId());
 
         if (this.firstCandle === undefined) {
@@ -58,7 +58,7 @@ class AnExtremum extends Analyzer {
     
         //console.log('spotted extremum on mid='+middle.openTime);
 
-        flags.set('extremum',{
+        io.set('extremum',{
             type: mainExtremum,
             high: highExtremum,
             low: lowExtremum,

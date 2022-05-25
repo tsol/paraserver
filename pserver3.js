@@ -10,11 +10,16 @@ const ClientIO = require('./src/vm/ClientIO.js');
 
 const TH = require('./src/helpers/time');
 
+const AnalyzersFactory = require('./src/vm/Analyzers/AnalyzersFactory.js');
+
+
 /* move to vm */
 
 const brokerCandles = new BinanceUSDMCandles(SETTINGS.users.harry.brokers.binance);
 const brokerUser = new BinanceUSDMUser(SETTINGS.users.utah.brokers.binance);
 const mysqlCandles = new MysqlCandles();
+const analyzersFactory = new AnalyzersFactory();
+
 
 mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
     brokerCandles.init().then( () => {
@@ -23,7 +28,7 @@ mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
             const candleProxy = new CandleProxy(mysqlCandles, brokerCandles);
        
             const clients = new Clients();
-            const vm = new VM(null,candleProxy,brokerUser,clients);
+            const vm = new VM(null,candleProxy,brokerUser,clients,analyzersFactory);
 
             clients.start( new ClientIO(vm) );
 

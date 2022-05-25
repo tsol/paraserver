@@ -38,6 +38,11 @@ class AnHLTrend extends Analyzer {
         this.trendDirection = 0;  /* confirmed trend -1 or +1 */
     }
 
+    init(io)
+    {
+        io.require('extremum');
+    }
+
     getId() { return 'hl_trend'; }
 
     resetTrend(byCandle) {
@@ -92,12 +97,12 @@ class AnHLTrend extends Analyzer {
         this.trendDirection = 0;
     }
 
-    addCandle(candle,flags) {
-        super.addCandle(candle,flags);
+    addCandle(candle,io) {
+        super.addCandle(candle,io);
         CDB.setSource(this.getId());
 
-        if (flags.get('extremum')) {
-            this.processExtremum(flags.get('extremum'),flags);
+        if (io.get('extremum')) {
+            this.processExtremum(io.get('extremum'),io);
         }
 
         /* current candle punched our trend or expectations */
@@ -112,7 +117,7 @@ class AnHLTrend extends Analyzer {
             }
         }
         
-        flags.set('hl_trend',{
+        io.set('hl_trend',{
             trend: this.isInTrend(),
             direction: this.trendDirection,
             swings: Math.abs(this.updateDirection),
@@ -121,22 +126,22 @@ class AnHLTrend extends Analyzer {
         
     }
 
-    processExtremum(extremumFlag,flags)
+    processExtremum(extremumFlag, io)
     {
         const extremum = extremumFlag;
       
         if ( extremum.type === 'high') {
-            this.updateHigherHigh(extremum.candle,flags);
+            this.updateHigherHigh(extremum.candle,io);
         }
         else {
-            this.updateLowerLow(extremum.candle,flags);
+            this.updateLowerLow(extremum.candle,io);
         }
 
         if ( extremum.high ) {
             if (this.lastHigh === undefined ) {
                 this.lastHigh = extremum.candle;
                 
-                flags.set('hl_trend.new.high',extremum.candle);
+                io.set('hl_trend.new.high',extremum.candle);
 
                 CDB.labelTop(extremum.candle,'fH');
                 CDB.circleHigh(extremum.candle, {color: 'yellow'});
@@ -161,7 +166,7 @@ class AnHLTrend extends Analyzer {
             if (this.lastLow === undefined ) {
                 this.lastLow = extremum.candle;
                 
-                flags.set('hl_trend.new.low',extremum.candle);
+                io.set('hl_trend.new.low',extremum.candle);
 
                 CDB.labelBottom(extremum.candle,'fL');
                 CDB.circleLow(extremum.candle, {color: 'yellow'});
@@ -201,7 +206,7 @@ class AnHLTrend extends Analyzer {
 
     }
 
-    updateHigherHigh(candle,flags) {
+    updateHigherHigh(candle,io) {
         
         if (this.lastHigh == undefined)
             { return; }
@@ -218,7 +223,7 @@ class AnHLTrend extends Analyzer {
                     this.lastLow = this.lowestOnSwing;
                     this.lowestOnSwing = undefined;
 
-                    flags.set('hl_trend.new.low',this.lastLow);
+                    io.set('hl_trend.new.low',this.lastLow);
 
                     CDB.circleLow(this.lastLow, {color:'green'});
                     CDB.labelBottom(this.lastLow, 'HL');
@@ -228,7 +233,7 @@ class AnHLTrend extends Analyzer {
                 this.lastHigh = candle;
                 this.updateDirection++;
 
-                flags.set('hl_trend.new.high',candle);
+                io.set('hl_trend.new.high',candle);
                 CDB.circleHigh(candle, {color: 'green'});
                 CDB.labelTop(candle,'HH');
                 
@@ -260,7 +265,7 @@ class AnHLTrend extends Analyzer {
             
     }
 
-    updateLowerLow(candle, flags) {
+    updateLowerLow(candle,io) {
 
         if (this.lastLow === undefined) {
             return;
@@ -280,7 +285,7 @@ class AnHLTrend extends Analyzer {
                     this.lastHigh = this.highestOnSwing;
                     this.highestOnSwing = undefined;
                     
-                    flags.set('hl_trend.new.high',this.lastHigh);
+                    io.set('hl_trend.new.high',this.lastHigh);
                     
                     CDB.circleHigh(this.lastHigh, {color:'green'});
                     CDB.labelTop(this.lastHigh, 'LH');
@@ -291,7 +296,7 @@ class AnHLTrend extends Analyzer {
                 this.updateDirection--;
                 //console.log('hl_trend_lower_low');
 
-                flags.set('hl_trend.new.low',candle);
+                io.set('hl_trend.new.low',candle);
                     
                 CDB.circleLow(candle, {color: 'red'});
                 CDB.labelBottom(candle,'LL');

@@ -22,19 +22,28 @@ class StrategyCrossWMA extends Strategy {
             };
         }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags);
+        init(io)
+        {
+            io.require('wfractals');
+            io.require('mac20');
+            io.require('mac50');
+            io.require('mac100');
+
+        }
+
+        addCandle(candle,io) {
+            super.addCandle(candle,io);
             CDB.setSource(this.getId());
 
-            const wf = flags.get('wfractals');
+            const wf = io.get('wfractals');
             if (! wf) { return; } // no fractal this time
-            if (! flags.get('mac100') ) { return; } // 100 candles not yet passed
+            if (! io.get('mac100') ) { return; } // 100 candles not yet passed
 
             const isLong = (wf.type === 'low');
             
-            const mac20 = flags.get('mac20');
-            const mac50 = flags.get('mac50');
-            const mac100 = flags.get('mac100');
+            const mac20 = io.get('mac20');
+            const mac50 = io.get('mac50');
+            const mac100 = io.get('mac100');
 
             let stopLoss = null;
 
@@ -52,7 +61,7 @@ class StrategyCrossWMA extends Strategy {
             }
 
 
-            flags.get('helper').makeEntry(this, ( isLong ? 'buy' : 'sell'), {
+            io.makeEntry(this, ( isLong ? 'buy' : 'sell'), {
                 rrRatio: 1.5,
                 stopLoss: stopLoss,
                 //usePrevSwing:true

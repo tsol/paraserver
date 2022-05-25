@@ -21,13 +21,18 @@ class MACDF extends Analyzer {
         this.prevMACD = null;
     }
 
+    init(io)
+    {
+        io.require('macd');
+    }
+
     getId() { return 'macdf'; }
 
-    addCandle(candle,flags) {
-        super.addCandle(candle,flags);
+    addCandle(candle,io) {
+        super.addCandle(candle,io);
         CDB.setSource(this.getId());
 
-        const macd = flags.get('macd');
+        const macd = io.get('macd');
 
         if (! macd ) { return; }
         if ( this.prevMACD == null) {
@@ -78,7 +83,7 @@ class MACDF extends Analyzer {
 
         this.prevMACD = macd;
 
-        flags.set(this.getId(), res);
+        io.set(this.getId(), res);
     }
     
 }

@@ -24,8 +24,8 @@ class AnRSI extends Analyzer {
             return this.name;
         }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags);
+        addCandle(candle,io) {
+            super.addCandle(candle,io);
             CDB.setSource(this.getId());
 
             if (! this.prevCandle) {
@@ -67,7 +67,7 @@ class AnRSI extends Analyzer {
             }
 */
 
-            flags.set(this.name, rsi);            
+            io.set(this.name, rsi);            
             CDB.offChart(candle,this.name,rsi);
         }
 

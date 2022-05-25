@@ -7,7 +7,7 @@ const AnalyzersBox = require('./AnalyzersBox.js');
 
 class AnalyzersFactory {
 
-    constructor(orderManager) {
+    constructor() {
 
         this.items = [
             ['atr14',       'atr',          14,     null],
@@ -50,20 +50,18 @@ class AnalyzersFactory {
 
             ['prices',      'prices',        { maxCandles: 100 },   null],
             ['prev_swing',  'prev_swing',     null,   null],
-
-            ['helper',      'helper',       orderManager, null ],
          
-            //['dblbottom',   'st_dblbottom',    true,    null],
-            //['macwfma',     'st_mac_wfma',     null,    null],
+            ['dblbottom',   'st_dblbottom',    true,    null],
+            ['macwfma',     'st_mac_wfma',     null,    null],
 
             ['tpcwfma',     'st_tpc_wfma',     null,    null],
 
             ['cma3buy',     'st_tpc_cma3',         true,    null],
             ['cma3sell',    'st_tpc_cma3',         false,   null],
             
-            //['dbltop',      'st_dblbottom',    false,   null],
-            //['ttcwoff',     'st_ttc_woff',     null,    null],
-            //['geroflvl',    'st_ger_oflvl',    null,    null],
+            ['dbltop',      'st_dblbottom',    false,   null],
+            ['ttcwoff',     'st_ttc_woff',     null,    null],
+            ['geroflvl',    'st_ger_oflvl',    null,    null],
 
         ];
 
@@ -94,23 +92,23 @@ class AnalyzersFactory {
 
     }
 
-    getInstance(analyzerName, params) {
+    getInstance(analyzerName) {
         const p = this.items.find( p => p[0] === analyzerName );
         if (! p) { throw new Error('ANF: could not get instance of '+analyzerName); }
         const AnalyzerClass = p[3];
-        const constructorParams = params || p[2];
+        const constructorParams = p[2];
         return new AnalyzerClass(constructorParams);
     }
 
-    createBox() {
+    createBox(strategiesToInit, ordersManager) {
+ 
+        const box = new AnalyzersBox( this, ordersManager );
 
-        let anArray = [];
+        strategiesToInit.forEach( s => {
+            box.addAnalyzer(s);
+        });
 
-        this.items.forEach( (p) => {
-            anArray.push( this.getInstance(p[0],null) );
-        })
-
-        return new AnalyzersBox( anArray );
+        return box;        
     }
 
 }

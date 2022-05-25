@@ -25,11 +25,18 @@ class StrategyDoubleBottom extends Strategy {
             statsOkRatio: 0
         };
     }
+
     constructor(isLong) {
         super();
         this.isLong = isLong;
         this.name = 'dbl'+(isLong ? 'bottom' : 'top');
         this.resetFinder();
+    }
+
+    init(io)
+    {
+        io.require('hl_trend');
+        io.require('vlevels');
     }
 
     getId() { return this.name; }
@@ -50,20 +57,20 @@ class StrategyDoubleBottom extends Strategy {
 
  
 
-    addCandle(candle, flags) {
-        super.addCandle(candle, flags);
+    addCandle(candle, io) {
+        super.addCandle(candle, io);
         
         CDB.setSource(this.getId());    
 
         if (this.firstBottom == undefined) {
-            this.checkFirstBottom(flags);
+            this.checkFirstBottom(io);
             return;
         }
 
         if (this.candleBreaksZone(candle)) {
             this.label(candle,'xB')
             this.resetFinder();
-            this.checkFirstBottom(flags);
+            this.checkFirstBottom(io);
             return;
         }
 
@@ -98,7 +105,7 @@ class StrategyDoubleBottom extends Strategy {
             this.circle(this.firstBottom, StrategyDoubleBottom.DBG_BOTTOMS);
             this.circle(this.secondBottom, StrategyDoubleBottom.DBG_BOTTOMS);
             
-            if ( ! this.makeEntry(candle, flags) ) {
+            if ( ! this.makeEntry(candle, io) ) {
                 this.label(candle,'NE');
             }
 
@@ -116,8 +123,8 @@ class StrategyDoubleBottom extends Strategy {
     }
 
 
-    checkFirstBottom(flags) {
-        const possibleBottom = flags.get('hl_trend.new.'+(this.isLong ? 'low' : 'high')); 
+    checkFirstBottom(io) {
+        const possibleBottom = io.get('hl_trend.new.'+(this.isLong ? 'low' : 'high')); 
         if (! possibleBottom )
             { return false; }
 
@@ -203,7 +210,7 @@ class StrategyDoubleBottom extends Strategy {
     }
 
 
-    makeEntry(candle, flags) {
+    makeEntry(candle, io) {
         
         const tf = candle.timeframe;
         const settings = StrategyDoubleBottom.TF_SETTINGS[tf];
@@ -214,10 +221,10 @@ class StrategyDoubleBottom extends Strategy {
         }
     
         let levelTouchWeight = 0;
-        let touchFirst = this.countTouchWeights(this.firstBottom,flags);
+        let touchFirst = this.countTouchWeights(this.firstBottom,io);
         levelTouchWeight += ( this.isLong ? touchFirst.sw : touchFirst.rw );
 
-        let touchSecond = this.countTouchWeights(this.secondBottom,flags);
+        let touchSecond = this.countTouchWeights(this.secondBottom,io);
         levelTouchWeight += ( this.isLong ? touchSecond.sw : touchSecond.rw );
 
         if (levelTouchWeight < settings.reqlvl ) {
@@ -231,7 +238,7 @@ class StrategyDoubleBottom extends Strategy {
         
         this.label(candle,'W:'+levelTouchWeight);
 
-        flags.get('helper').makeEntry(this, ( this.isLong ? 'buy' : 'sell' ), {
+        io.makeEntry(this, ( this.isLong ? 'buy' : 'sell' ), {
             rrRatio: settings.ratio,
             stopFrom: ( this.isLong ? this.necklineCandle.high : this.necklineCandle.low )
         });
@@ -240,13 +247,13 @@ class StrategyDoubleBottom extends Strategy {
 
     }
 
-    countTouchWeights(candle, flags)
+    countTouchWeights(candle, io)
     {
         let result = {
             rw: 0, sw: 0, rwH: 0, swH: 0
         };
 
-        const vlevels = flags.get('vlevels');
+        const vlevels = io.get('vlevels');
         if (vlevels) { 
             let bt = ( this.isLong ? 
                     vlevels.getBottomTouchWeights(candle) :
@@ -256,7 +263,7 @@ class StrategyDoubleBottom extends Strategy {
             result.sw += bt.sw;
         }
 
-        const vlevels_high = flags.get('vlevels_high');
+        const vlevels_high = io.get('vlevels_high');
         if (vlevels_high) { 
             let bt = ( this.isLong ?
                 vlevels_high.getBottomTouchWeights(candle) :

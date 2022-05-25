@@ -29,15 +29,22 @@ class AnHills extends Analyzer {
         this.prevBottomCandle = undefined;
     }
 
+    init(io)
+    {
+        io.require('atr14');
+        io.require(this.followMac);
+        io.require('extremum');
+    }
+
     getId() { return 'hills'; }
 
-    addCandle(candle, flags) {
-        super.addCandle(candle, flags);
+    addCandle(candle, io) {
+        super.addCandle(candle, io);
         
         CDB.setSource(this.getId());
 
-        const atr = flags.get('atr14');
-        const mac = flags.get(this.followMac);
+        const atr = io.get('atr14');
+        const mac = io.get(this.followMac);
 
         if ( ! atr || ! mac) {
             return false;
@@ -49,7 +56,7 @@ class AnHills extends Analyzer {
             this.deltaSwitchLevel = currentMac;
         }
 
-        const extrem = flags.get('extremum');
+        const extrem = io.get('extremum');
 
         if (extrem && extrem.high) {
                 if (this.prevTopCandle == undefined) {
@@ -89,7 +96,7 @@ class AnHills extends Analyzer {
                 if (direction < 0) {
                     if (this.prevTopCandle) {
                         CDB.circleHigh( this.prevTopCandle, { radius: 2, color: 'pink' } );
-                        flags.set('hills.new.high', this.prevTopCandle);
+                        io.set('hills.new.high', this.prevTopCandle);
                     }
                     this.prevTopCandle = undefined;
                     this.prevBottomCandle = undefined;
@@ -97,7 +104,7 @@ class AnHills extends Analyzer {
                 else if (direction > 0) {
                     if (this.prevBottomCandle) {
                         CDB.circleLow( this.prevBottomCandle, { radius: 2, color: 'pink' } );
-                        flags.set('hills.new.low', this.prevBottomCandle);
+                        io.set('hills.new.low', this.prevBottomCandle);
                     }
                     this.prevBottomCandle = undefined;
                     this.prevTopCandle = undefined;

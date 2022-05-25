@@ -19,6 +19,13 @@ class MATREND extends Analyzer {
         this.resetFinder();
     }
 
+    init(io)
+    {
+        io.require(this.ma1);
+        io.require(this.ma2);
+        io.require(this.ma3);
+    }
+
     getId() { return this.name; }
 
     resetFinder() {
@@ -27,15 +34,15 @@ class MATREND extends Analyzer {
         this.cntDivNeg = 0;
     }
 
-    addCandle(candle,flags) {
-        super.addCandle(candle,flags);
+    addCandle(candle,io) {
+        super.addCandle(candle,io);
         CDB.setSource(this.getId());
 
         let trend = 'NO';
 
-        const ma1 = flags.get(this.ma1);
-        const ma2 = flags.get(this.ma2);
-        const ma3 = flags.get(this.ma3);
+        const ma1 = io.get(this.ma1);
+        const ma2 = io.get(this.ma2);
+        const ma3 = io.get(this.ma3);
         
         if ( (ma1 > ma2) && (ma2 > ma3)) {
             trend = 'UP';
@@ -55,12 +62,12 @@ class MATREND extends Analyzer {
                 this.resetFinder();
                 CDB.labelBottom(candle,'X'); // break trend
             }
-            return flags.set(this.name,trend);
+            return io.set(this.name,trend);
         }
 
         if (this.currentTrend == 'NO') { // dont set trend until switch
             if (this.prevTrend == trend) {
-                return flags.set(this.name,'NO');
+                return io.set(this.name,'NO');
             }
         }
 
@@ -69,7 +76,7 @@ class MATREND extends Analyzer {
             this.currentTrend = trend;
             this.prevDiv = Math.abs(ma1-ma2);
             CDB.labelBottom(candle,trend);
-            return flags.set(this.name,trend);
+            return io.set(this.name,trend);
         }
 
         const curDiv = Math.abs(ma1-ma2);
@@ -81,7 +88,7 @@ class MATREND extends Analyzer {
                 this.resetFinder();
                 trend = 'NO';
                 CDB.labelBottom(candle,'xN');
-                return flags.set(this.name,trend);
+                return io.set(this.name,trend);
             }         
         }
 
@@ -89,7 +96,7 @@ class MATREND extends Analyzer {
 
         CDB.labelTop(candle,(trend == 'UP' ? '^' : 'v'))
 
-        flags.set(this.name, trend);
+        io.set(this.name, trend);
     
     }
     

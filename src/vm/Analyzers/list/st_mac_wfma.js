@@ -36,27 +36,37 @@ class StrategyCrossWMA2 extends Strategy {
             };
         }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags);
+        addCandle(candle,io) {
+            super.addCandle(candle,io);
             CDB.setSource(this.getId());
-            this.run(candle,flags);
+            this.run(candle,io);
             this.prevCandle = candle;
         }
 
-        run(candle,flags) {
-            super.addCandle(candle,flags);
+        init(io)
+        {
+            io.require('wfractals');
+            io.require('atr14');
+            io.require('rsi14');
+            io.require('rmac9');
+            io.require('rmac30');
+            io.require('rmac75');
+        }
+
+        run(candle,io) {
+            super.addCandle(candle,io);
             CDB.setSource(this.getId());
 
-            const wf = flags.get('wfractals');
+            const wf = io.get('wfractals');
             if (! wf ) { return; }
 
             const wfCandle = wf.candle;
-            const rsi14 = flags.get('rsi14');
-            const atr14 = flags.get('atr14');
+            const rsi14 = io.get('rsi14');
+            const atr14 = io.get('atr14');
 
-            const rmac21 = flags.get('rmac9');
-            const rmac50 = flags.get('rmac30');
-            const rmac200 = flags.get('rmac75');
+            const rmac21 = io.get('rmac9');
+            const rmac50 = io.get('rmac30');
+            const rmac200 = io.get('rmac75');
 
             const isLong = ( wf.type === 'low' );
             let swingSize = 0;
@@ -84,7 +94,7 @@ class StrategyCrossWMA2 extends Strategy {
             
            // if (swingSize < atr14*0.7) { return; }
  
-            flags.get('helper').makeEntry(this, (isLong ? 'buy' : 'sell'), {
+            io.makeEntry(this, (isLong ? 'buy' : 'sell'), {
                 rrRatio: this.getParams(candle.timeframe).rrRatio,
                 stopLoss: ( isLong ? wfCandle.low : wfCandle.high )
                 //usePrevSwing:true

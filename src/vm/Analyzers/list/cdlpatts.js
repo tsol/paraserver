@@ -32,35 +32,35 @@ class AnCandlePatterns extends Analyzer {
 
         getId() { return 'cdlpatts'; }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags);
+        addCandle(candle,io) {
+            super.addCandle(candle,io);
             CDB.setSource(this.getId());
 
             if (this.isShootingStar(candle)) {
-                this.setPattern(candle,flags,'shu','down');
+                this.setPattern(candle,'shu','down');
             }
             else if (this.isHammer(candle)) {
-                this.setPattern(candle,flags,'ham','up');
+                this.setPattern(candle,'ham','up');
             }
 
             if (this.prevCandle !== undefined) {
                              
                 if ( this.prevCandle.isGreen() && candle.isRed() ) {
                     if (candle.closeBelow(this.prevCandle)) {
-                        this.setPattern(candle,flags,'clb','down'); // close below pattern
+                        this.setPattern(candle,'clb','down'); // close below pattern
                     }
                     else if (candle.close < this.prevCandle.open) {
-                        this.setPattern(candle,flags,'egd','down'); // engulfing body candle bearish
+                        this.setPattern(candle,'egd','down'); // engulfing body candle bearish
                     }
                     return;
                 }
     
                 if ( this.prevCandle.isRed() && candle.isGreen() ) {
                     if (candle.closeAbove(this.prevCandle)) {
-                        this.setPattern(candle,flags,'cla','up'); // close above pattern
+                        this.setPattern(candle,'cla','up'); // close above pattern
                     }
                     else if (candle.close > this.prevCandle.open) {
-                        this.setPattern(candle,flags,'egu','up'); // engulfing body candle bullish
+                        this.setPattern(candle,'egu','up'); // engulfing body candle bullish
                     }
                     return;
                 }
@@ -71,7 +71,7 @@ class AnCandlePatterns extends Analyzer {
             this.prevCandle = candle;
 
             if (this.lastPatternBias) {
-                flags.set(this.getId()+'.bias',this.lastPatternBias);
+                io.set(this.getId()+'.bias',this.lastPatternBias);
             }
 
         }
@@ -92,10 +92,10 @@ class AnCandlePatterns extends Analyzer {
             return ( (o>target) && (c>target) );
         }
 
-        setPattern(candle,flags,name,bias) {
+        setPattern(candle,name,bias) {
             CDB.circleMiddle(candle,{ color: 'cyan', radius: 3, alpha: 0.1 });
             CDB.labelBottom(candle,name);
-            flags.set(this.getId()+'.new.'+name,candle);
+            io.set(this.getId()+'.new.'+name,candle);
             this.lastPatternBias = bias;
         }
 

@@ -17,43 +17,50 @@ class AnVLevels extends Analyzer {
 
         getId() { return 'vlevels'; }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags)
+        init(io)
+        {
+            io.require('hl_trend');
+            io.require('hills');
+            io.require('extremum');
+        }
+
+        addCandle(candle,io) {
+            super.addCandle(candle,io)
             CDB.setSource(this.getId());
 
             /* cut levels from begining */
             const cutSince = candle.openTime - TF.getLevelLimitTime(candle.timeframe);
             this.forgetBefore(cutSince);
 
-            const extremum = flags.get('extremum');            
-            const atr = flags.get('atr14');
+            const extremum = io.get('extremum');            
+            const atr = io.get('atr14');
             
-            const hillLow = flags.get('hills.new.low');
+            const hillLow = io.get('hills.new.low');
             if (hillLow) {
                 this.addBounceLevel(true, hillLow.openTime, hillLow.low,
                     atr, 30, hillLow);
             }
 
-            const hillHigh = flags.get('hills.new.high');
+            const hillHigh = io.get('hills.new.high');
             if (hillHigh) {
                 this.addBounceLevel(false, hillHigh.openTime, hillHigh.high,
                     atr, 30, hillHigh);
             }
 
-            let extremumCandle = flags.get('hl_trend.new.high');
+            let extremumCandle = io.get('hl_trend.new.high');
             if ( extremumCandle ) {
                 this.addBounceLevel(false, extremumCandle.openTime, extremumCandle.high,
                      atr, 10, extremumCandle);
             }
 
-            extremumCandle = flags.get('hl_trend.new.low');
+            extremumCandle = io.get('hl_trend.new.low');
             if ( extremumCandle ) {
                 this.addBounceLevel(true, extremumCandle.openTime, extremumCandle.low,
                      atr, 10, extremumCandle);
             }
 
-            flags.set('vlevels', this);
-            flags.set('vlevels_high', flags.getHTF('vlevels'));
+            io.set('vlevels', this);
+            io.set('vlevels_high', io.getHTF('vlevels'));
             
         }
 

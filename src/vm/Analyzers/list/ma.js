@@ -26,8 +26,8 @@ class AnMA extends Analyzer {
             return this.name;
         }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags);
+        addCandle(candle,io) {
+            super.addCandle(candle,io);
             CDB.setSource(this.getId());
 
             this.values.push( this.getDataFromCandle(this.source, candle) );
@@ -43,7 +43,7 @@ class AnMA extends Analyzer {
             const sum = this.values.reduce( (a,b) => a + b, 0 );
             const result = sum / this.values.length;
     
-            flags.set(this.name, result);
+            io.set(this.name, result);
 
             CDB.onChart(candle, this.name, result);
 

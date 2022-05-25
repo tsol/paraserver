@@ -21,8 +21,8 @@ class AnATR extends Analyzer {
             return this.name;
         }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags);
+        addCandle(candle,io) {
+            super.addCandle(candle,io);
             CDB.setSource(this.getId());
 
             if (this.prevCandle === undefined) {
@@ -42,7 +42,7 @@ class AnATR extends Analyzer {
             //console.log(this.ranges);
             //console.log('ATR: len='+this.ranges.length+' sum='+sumRanges+' atr='+atr)
             
-            flags.set(this.name, atr);
+            io.set(this.name, atr);
             
             CDB.offChart(candle,this.name,atr);
             this.prevCandle = candle;

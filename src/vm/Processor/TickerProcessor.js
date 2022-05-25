@@ -38,7 +38,7 @@ class TickerProcessor {
 
         flags.start(this.symbol, this.timeframe);
         flags.set('is_live', isLive);
-        
+    
         this.analyzersBox.addCandle(candle, flags);
         
     }

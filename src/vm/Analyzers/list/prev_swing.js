@@ -18,21 +18,27 @@ class PrevSwing extends Analyzer {
         this.lastCandle = null;
     }
 
+    init(io)
+    {
+        io.require('hl_trend');
+        io.require('hills');
+    }
+
     getId() { return 'prev_swing'; }
 
-    addCandle(candle,flags) {
-        super.addCandle(candle,flags);
+    addCandle(candle,io) {
+        super.addCandle(candle,io);
         this.lastCandle = candle;
 
-        const h = flags.get('hl_trend.new.high');
+        const h = io.get('hl_trend.new.high');
         if (h) { this.highs.unshift(h); }
 
-        const l = flags.get('hl_trend.new.low');
+        const l = io.get('hl_trend.new.low');
         if (l) { this.lows.unshift(l); }
         
         // hills can apear with serious delay, so we make sure to
         // resort array
-        const hh = flags.get('hills.new.high');
+        const hh = io.get('hills.new.high');
         if (hh) { 
             if ( ! this.highs.find( i => i == hh ) ) { 
                 this.highs.unshift(hh);
@@ -40,7 +46,7 @@ class PrevSwing extends Analyzer {
             }
         }
 
-        const lh = flags.get('hills.new.low');
+        const lh = io.get('hills.new.low');
         if (lh) {
             if ( ! this.lows.find( i => i == lh ) ) {
                 this.lows.unshift(lh);
@@ -50,7 +56,7 @@ class PrevSwing extends Analyzer {
 
         this.forgetBefore(this.getTimeCandlesBack(candle,PrevSwing.MAX_CANDLE_LENGTH));
 
-        flags.set(this.getId(),this);   
+        io.set(this.getId(),this);   
     }
 
     findHigh(maxCandlesBack,closesAbove) {

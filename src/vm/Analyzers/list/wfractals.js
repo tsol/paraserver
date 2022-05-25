@@ -31,8 +31,8 @@ class AnWFractals extends Analyzer {
             return this.name;
         }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags);
+        addCandle(candle,io) {
+            super.addCandle(candle,io);
             CDB.setSource(this.getId());
 
             this.candles.push(candle);
@@ -51,7 +51,7 @@ class AnWFractals extends Analyzer {
                 &&  (h > c[3].high)
                 &&  (h > c[4].high)
             ) {
-                flags.set('wfractals',{ type: 'high', candle: mc } );
+                io.set('wfractals',{ type: 'high', candle: mc } );
                 CDB.labelTop(mc, '^');
             }
 
@@ -61,7 +61,7 @@ class AnWFractals extends Analyzer {
                 &&  (l < c[3].low)
                 &&  (l < c[4].low)
             ) {
-                flags.set('wfractals',{ type: 'low', candle: mc } );
+                io.set('wfractals',{ type: 'low', candle: mc } );
                 CDB.labelBottom(mc, 'v');
             }
 

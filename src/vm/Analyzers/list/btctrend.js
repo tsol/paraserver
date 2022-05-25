@@ -2,7 +2,7 @@
 ** Flag: btctrend - shows if bitcoin-usd 1 hour is above mac9 (uptrend or down)
 **
 ** sets flag only on BTCUSDT-1h ticker, which can be addressed by 
-** flags.getTickerFlag('BTCUSDT-1h','btctrend')
+** io.getTickerFlag('BTCUSDT-1h','btctrend')
 **
 */
 
@@ -15,22 +15,27 @@ class AnBTCTrend extends Analyzer {
             super();
         }
 
+        init(io) {
+            io.require('atr14');
+            io.require('mac9');
+        }
+
         getId() {
             return 'btctrend';
         }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags);
+        addCandle(candle,io) {
+            super.addCandle(candle,io);
 
-            if (flags.currentId() !== 'BTCUSDT-1h') { 
+            if (io.getFlags().currentId() !== 'BTCUSDT-1h') { 
                 // propogandate flag to every ticker flag space:
-                //const btcflag = flags.getTickerFlag('BTCUSDT-1h','btctrend');
-                //if (btcflag) { flags.set('btctrend',btcflag); }
+                //const btcflag = io.getTickerFlag('BTCUSDT-1h','btctrend');
+                //if (btcflag) { io.set('btctrend',btcflag); }
                 return;
             }
 
-            const mac9 = flags.get('mac9');
-            const atr14 = flags.get('atr14');
+            const mac9 = io.get('mac9');
+            const atr14 = io.get('atr14');
 
             if (! mac9 || ! atr14 ) { return; }
                 
@@ -57,7 +62,7 @@ class AnBTCTrend extends Analyzer {
                 }
             }
 
-            flags.set('btctrend',setTrend);
+            io.set('btctrend',setTrend);
 
         }
 

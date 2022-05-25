@@ -9,13 +9,15 @@ const CandleSequencer = require('./Sequencer/CandleSequencer');
 
 class VM {
 
-    constructor(dataDB, candleProxy, brokerUser, clients) {
+    constructor(dataDB, candleProxy, brokerUser, clients, analyzersFactory) {
         this.dataDB = dataDB;
         this.brokerUser = brokerUser;
         this.candleProxy = candleProxy;
         this.clients = clients;
+        this.analyzersFactory = analyzersFactory;
+
         this.ordersManager = new OrdersManager(brokerUser,candleProxy.getBroker(),clients);
-        this.processor = new VMCandleProcessor(this.ordersManager);
+        this.processor = new VMCandleProcessor(this.ordersManager, analyzersFactory);
         this.sequencer = null;
 
         this.symbols = null;
@@ -42,7 +44,7 @@ class VM {
         this.toTime = toTime;
         this.options = options;
 
-        this.processor.init(symbols,timeframes);
+        this.processor.init(symbols,timeframes,strategies);
 
         this.sequencer = new CandleSequencer(symbols,timeframes,
             this.candleProxy,this.processor);

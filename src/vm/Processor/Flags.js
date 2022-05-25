@@ -42,6 +42,7 @@ class Flags {
     }
 
     get(field) {
+        if (! this.currentTicker[ field ] ) { return null; }
         return this.currentTicker[ field ];
     }
 

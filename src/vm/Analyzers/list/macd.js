@@ -27,8 +27,8 @@ class MACD extends Analyzer {
 
     getId() { return this.name; }
 
-    addCandle(candle,flags) {
-        super.addCandle(candle,flags);
+    addCandle(candle,io) {
+        super.addCandle(candle,io);
         CDB.setSource(this.getId());
 
         const slow = this.slowEMA.getEMA(candle.close);
@@ -50,7 +50,7 @@ class MACD extends Analyzer {
         };
 
         CDB.onChart(candle, this.name, res);
-        flags.set(this.name, res);
+        io.set(this.name, res);
     }
     
 }

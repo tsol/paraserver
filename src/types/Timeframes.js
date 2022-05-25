@@ -6,14 +6,14 @@ class Timeframes
     HOUR_LENGTH = this.MIN_LENGTH * 60;
 
     TFRAMES = [
-        { name: '1d', htf: null,  levelDays: 62, days: 365,  trade: false, limit: 0, levelsLimitTime: 0, length: this.DAY_LENGTH },
-        //{ name: '4h',  htf: null,  levelDays: 31, days: 400,  trade: false, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
-        { name: '1h',  htf: '1d',  levelDays: 14, days: 92,  trade: true,  limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
-        { name: '30m', htf: '1d',  levelDays: 14, days: 92,  trade: false, limit: 0, levelsLimitTime: 0, length: 30 * this.MIN_LENGTH },
-        { name: '15m', htf: '1d',  levelDays: 14, days: 92,  trade: false, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
-
-        { name: '3m', htf: '1h',  levelDays: 1, days: 1,  trade: true, limit: 0, levelsLimitTime: 0, length: 3 * this.MIN_LENGTH },
-        { name: '1m', htf: '1h',  levelDays: 1, days: 1,  trade: true, limit: 0, levelsLimitTime: 0, length: 1 * this.MIN_LENGTH },
+        { name: '1d',  htf: null,  levelDays: 365, days: 800,  trade: false, limit: 0, levelsLimitTime: 0, length: this.DAY_LENGTH },
+        { name: '4h',  htf: '1d',  levelDays:  93, days: 365,  trade: false, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
+        { name: '1h',  htf: '1d',  levelDays:  14, days: 31,   trade: true,  limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
+        { name: '30m', htf: '4h',  levelDays:   7, days: 14,   trade: false, limit: 0, levelsLimitTime: 0, length: 30 * this.MIN_LENGTH },
+        { name: '15m', htf: '4h',  levelDays:   5, days: 7,    trade: false, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
+        { name: '5m',  htf: '4h',  levelDays:   5, days: 7,    trade: false, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
+        { name: '3m',  htf: '1h',  levelDays:   2, days: 3,    trade: true,  limit: 0, levelsLimitTime: 0, length: 3 * this.MIN_LENGTH },
+        { name: '1m',  htf: '1h',  levelDays:   1, days: 3,    trade: true,  limit: 0, levelsLimitTime: 0, length: 1 * this.MIN_LENGTH },
 
     ];
 

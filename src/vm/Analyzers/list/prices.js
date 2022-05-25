@@ -25,8 +25,8 @@ class PRICES extends Analyzer {
 
     getId() { return 'prices'; }
 
-    addCandle(candle,flags) {
-        super.addCandle(candle,flags);
+    addCandle(candle,io) {
+        super.addCandle(candle,io);
         CDB.setSource(this.getId());
 
         if (this.prevCandle) {
@@ -42,7 +42,7 @@ class PRICES extends Analyzer {
         
         this.prevCandle = candle;
 
-        flags.set(this.getId(), this);
+        io.set(this.getId(), this);
     }
 
     findPrice(price)

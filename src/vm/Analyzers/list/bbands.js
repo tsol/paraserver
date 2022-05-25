@@ -24,8 +24,8 @@ class BollingerBands extends Analyzer {
             return this.name;
         }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags);
+        addCandle(candle,io) {
+            super.addCandle(candle,io);
             CDB.setSource(this.getId());
 
             const price = this.getDataFromCandle(this.source, candle);
@@ -44,7 +44,7 @@ class BollingerBands extends Analyzer {
             const bandd = maValue - dev;
 
             const res = { u: bandu, d: bandd, m: maValue };
-            flags.set(this.name, res);
+            io.set(this.name, res);
 
             CDB.onChart(candle, this.name, res);
 

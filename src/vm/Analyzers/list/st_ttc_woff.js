@@ -30,12 +30,19 @@ class TTCWOFF extends Strategy {
 
         getId() { return 'ttcwoff'; }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags);
+        init(io)
+        {
+            io.require('atr14');
+            io.require('emac20');
+            io.require('cdlpatts');
+        }
+
+        addCandle(candle,io) {
+            super.addCandle(candle,io);
             CDB.setSource(this.getId());
 
-            const atr = flags.get('atr14');
-            const ma = flags.get('emac20');
+            const atr = io.get('atr14');
+            const ma = io.get('emac20');
 
             if (! ma || ! atr ) { return false; }
 
@@ -45,7 +52,7 @@ class TTCWOFF extends Strategy {
             if (candle.high < ma)
                 { return this.belowCnt++; }
  
-            const pip = flags.get('helper').getSymbolInfo(candle.symbol).tickSize; 
+            const pip = io.getSymbolInfo(candle.symbol).tickSize; 
 
             //console.log('PIP: '+candle.symbol+' '+pip);
 
@@ -55,8 +62,8 @@ class TTCWOFF extends Strategy {
 
                 if ( (candle.bodyLow() > ma) && (this.aboveCnt >= TTCWOFF.MIN_LENGTH))
                 {
-                    if (!tooBig && flags.get('cdlpatts.new.ham')) {
-                        this.makeEntry(true,candle,flags);
+                    if (!tooBig && io.get('cdlpatts.new.ham')) {
+                        this.makeEntry(true,candle,io);
                     }
                 }
 
@@ -68,8 +75,8 @@ class TTCWOFF extends Strategy {
 
                 if ( (candle.bodyHigh() < ma) && (this.belowCnt >= TTCWOFF.MIN_LENGTH))
                 {
-                    if (!tooBig && flags.get('cdlpatts.new.shu')) {
-                        this.makeEntry(false,candle,flags);   
+                    if (!tooBig && io.get('cdlpatts.new.shu')) {
+                        this.makeEntry(false,candle,io);   
                     }
                 }
 
@@ -79,10 +86,10 @@ class TTCWOFF extends Strategy {
         }
 
 
-        makeEntry(isBuy,candle,flags) {
-            const io = flags.get('helper');
+        makeEntry(isBuy,candle,io) {
+         
             const pip = io.getSymbolInfo(candle.symbol).tickSize; 
-            const atr = flags.get('atr14');
+            const atr = io.get('atr14');
             
             let slMargin = pip *
                     ( atr > 100 ? 50 : 20 );

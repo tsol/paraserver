@@ -23,15 +23,15 @@ class AnEMA extends Analyzer {
             return this.name;
         }
 
-        addCandle(candle,flags) {
-            super.addCandle(candle,flags);
+        addCandle(candle,io) {
+            super.addCandle(candle,io);
             CDB.setSource(this.getId());
 
             const currentValue = this.ema.getEMA(
                 this.getDataFromCandle(this.source, candle)
             );
 
-            flags.set(this.getId(),currentValue);
+            io.set(this.getId(),currentValue);
             CDB.onChart(candle, this.name, currentValue);
 
         }

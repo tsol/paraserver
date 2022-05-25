@@ -1,29 +1,30 @@
 const TH = require('../../helpers/time.js');
 const Flags = require('./Flags.js');
 const CandleProcessor = require('../types/CandleProcessor.js');
-const AnalyzersFactory = require('../Analyzers/AnalyzersFactory.js');
 const TickerProcessor = require('./TickerProcessor.js');
 
 class VMCandleProcessor extends CandleProcessor {
 
-    constructor(ordersManager) {
+    constructor(ordersManager, analyzersFactory) {
         super();
         this.isLive = false;
         this.ordersManager = ordersManager;
         this.flags = new Flags();
-        this.analyzersFactory = new AnalyzersFactory(ordersManager);
+        this.analyzersFactory = analyzersFactory;
         this.tickers = {};
         this.lastPrice = {};
     }
 
 
-    init(symbols,timeframes) {
+    init(symbols,timeframes,strategies) {
 
         for(var s of symbols){
             for(var t of timeframes) {
                 const key = s+'-'+t;
                 this.tickers[key] = 
-                    new TickerProcessor(s,t,this.analyzersFactory.createBox());
+                    new TickerProcessor(s,t,
+                        this.analyzersFactory.createBox(strategies, this.ordersManager)
+                    );
             }
         }
 
