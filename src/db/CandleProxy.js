@@ -58,6 +58,7 @@ class CandleProxy {
                 broker.loadCandlesPeriod(symbol,timeframe,needBrokerSince,needBrokerTo);
 
             PIO.removeUnclosedCandles(brokerCandles);
+            
             this.db.saveCandlesToDB(symbol,timeframe,brokerCandles);
 
             return brokerCandles;
@@ -79,7 +80,7 @@ class CandleProxy {
             }
 
             // only first part came from db, loading rest from broker
-            needBrokerSince = lastCandle.closeTime;
+            needBrokerSince = lastCandle.closeTime+1;
             needBrokerTo = toTimestamp;
 
             console.log('CDB: DB-BROKER ('+symbol+'-'+timeframe+') '
@@ -105,7 +106,7 @@ class CandleProxy {
         let brokerCandlesBeforeDb = [];
 
         needBrokerSince = sinceTimestamp;
-        needBrokerTo = firstCandle.openTime-1;
+        needBrokerTo = firstCandle.closeTime-1;
 
         console.log('CDB: BROKER-DB-? ('+symbol+'-'+timeframe+') '
             +TF.timestampToDate(needBrokerSince)
@@ -122,7 +123,7 @@ class CandleProxy {
 
         let brokerCandlesAfterDb = [];
         
-        needBrokerSince = lastCandle.closeTime;
+        needBrokerSince = lastCandle.closeTime+1;
         needBrokerTo = toTimestamp;
 
         if (needBrokerSince < needBrokerTo) {
@@ -141,6 +142,7 @@ class CandleProxy {
         }
 
         this.db.saveCandlesToDB(symbol,timeframe,[...brokerCandlesBeforeDb, ...brokerCandlesAfterDb]);    
+
         return [...brokerCandlesBeforeDb, ...dbCandles, ...brokerCandlesAfterDb];     
         
     }

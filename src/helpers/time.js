@@ -68,6 +68,13 @@ class TH
         return d.getTime();
     }
 
+    static utcDaysBack(days) {
+        var d = new Date();
+        d.setDate(d.getUTCDate() - days);
+        d.setUTCHours(0,0,0,0);
+        return d.getTime();
+    }
+
 }
 
 module.exports = TH;

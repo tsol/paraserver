@@ -2,6 +2,8 @@
 ** TickerBuffer - CandleSequencer helper responsible for cached candle supply for specific ticker
 */
 
+const SETTINGS = require('../../../private/private.js');
+
 class TickerBuffer {
 
     constructor(symbol,timeframe,candleProxy) {
@@ -32,9 +34,12 @@ class TickerBuffer {
 
     async loadPeriod(timeFrom,timeEnd)
     {
+        let useBroker = true;
+        if ( SETTINGS.onlyLocalCandles ) { useBroker = false; }
+
         try {
             this.buffer = await this.candleProxy.
-                getCandlesPeriod( this.symbol, this.timeframe, timeFrom, timeEnd, true );
+                getCandlesPeriod( this.symbol, this.timeframe, timeFrom, timeEnd, useBroker );
             return { res: true, symbol: this.symbol };
         }
         catch (error) {

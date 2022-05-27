@@ -209,6 +209,10 @@ class BinanceUSDMCandles extends BrokerCandlesInterface {
 
     async tryLoadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp)
     {
+        if (startTimestamp >= endTimestamp) {
+            console.log('BS-USDM: tryLoadCandlesSPeriod start >= end');
+            return []; 
+        }
         const sId = symbol+'-'+timeframe;
         console.log('BS-USDM: ('+sId+') TRY TO LOAD FROM '
             +TF.timestampToDate(startTimestamp)+' TO '+

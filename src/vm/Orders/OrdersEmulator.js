@@ -8,7 +8,9 @@ const { winRatio, fnum } = require('../../reports/helper.js');
 
 class OrdersEmulator {
 
-    static STAKE_USD = 100;
+    static RISK_REAL_USD = 250;
+
+    static STAKE_USD = 100; /* stake using leverage */
     static LEVERAGE = 20;
     static MARGINCALL_GAIN = -1*(OrdersEmulator.STAKE_USD / OrdersEmulator.LEVERAGE);
     
@@ -106,6 +108,18 @@ class OrdersEmulator {
         flags
     ) {
 
+        /*
+        const totalRisk = this.calcActiveOrdersMaxLoss(); 
+
+        console.log('OEMU: new order '+symbol+'/'+strategy+' total_risk='+totalRisk+
+            ' orders='+this.activeOrders.length);
+
+        if (Math.abs(totalRisk) > OrdersEmulator.RISK_REAL_USD ) {
+            //console.log('OEMU: ABOVE RISK ')
+            return null;
+        }
+        */
+
         let flagsSnapshot = null;
 
         if (! SETTINGS.noFlagsSnapshot) {
@@ -140,6 +154,10 @@ class OrdersEmulator {
         );
         
         if (newStopLoss !== stopLoss) {
+            
+            /* filter */
+            return null;
+            
             try {        
                 aligned = this.brokerCandles.getAlignedOrderDetails(symbol,entryPrice,
                 OrdersEmulator.STAKE_USD,newStopLoss,newTakeProfit);
@@ -190,12 +208,18 @@ class OrdersEmulator {
         order.setComment(comment);
 
         /* filter */
-        //if (order.tags.CU5.value !== 'Y') { return null; }
+        if (order.tags.CU5.value !== 'Y') { return null; }
 
         this.orders.push(order);
         this.activeOrders.push(order);
         return order;
 
+    }
+
+    calcActiveOrdersMaxLoss()
+    {
+        const ml = this.activeOrders.reduce( (sum, o) => sum+o.getTagValue('MAXLSS'), 0 );
+        return ml;
     }
 
     getOrders() {

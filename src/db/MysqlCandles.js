@@ -63,10 +63,10 @@ class MysqlCandles {
         const sqlQuery = 
             "SELECT * FROM "+tableName+" "
             +"WHERE "
-            +"(open_time >= "+startTimestamp+")"
+            +"(close_time >= "+startTimestamp+")"
             +" AND "
-            +"(open_time <= "+endTimestamp+")"
-            +" ORDER BY open_time";
+            +"(close_time <= "+endTimestamp+")"
+            +" ORDER BY close_time";
 
 
         await PIO.touchTable(this.connection, tableName);
@@ -117,12 +117,13 @@ class MysqlCandles {
         })
 
         this.connection.query(sqlQuery, [values], function (err, result) {
-          if (err){
+          if (err) {
               console.log('FAILED INSERT:');
               console.log(sqlQuery);
               console.log('VALUES:');
               console.log(values);
-              throw err;
+              console.log(err);
+              return;
           }
           console.log("MYSQLCANDLES: number of records inserted: " + result.affectedRows);
         });

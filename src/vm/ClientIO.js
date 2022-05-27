@@ -1,3 +1,8 @@
+/* This is interface for all our possible clients's requests.
+** 
+** Telegram Bot or WebSockets http client - all get this object as their
+** interface to the system.
+*/
 
 class ClientIO {
 

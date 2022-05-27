@@ -54,8 +54,8 @@ class VMCandleProcessor extends CandleProcessor {
 
     priceUpdate(symbol,eventTime,lowPrice,highPrice,currentPrice) {
 
-        console.log('CPRO: price update '+symbol+' ['+TH.ls(eventTime)+'/'+eventTime+'] '+
-            lowPrice+'/'+highPrice+'/'+currentPrice);
+        //console.log('CPRO: price update '+symbol+' ['+TH.ls(eventTime)+'/'+eventTime+'] '+
+        //    lowPrice+'/'+highPrice+'/'+currentPrice);
         this.lastPrice[ symbol ] = currentPrice;
         this.ordersManager.priceUpdate(symbol,eventTime,lowPrice,highPrice,currentPrice);
 
@@ -63,13 +63,13 @@ class VMCandleProcessor extends CandleProcessor {
 
     processPhaseStart(candleCloseTime, passedTime) {
         // prepare for candleProcess
-        console.log('CPRO: phase start '+TH.ls(candleCloseTime)+' passed: '+
-            Number(passedTime/1000).toFixed(2)+' secs.');
+        // console.log('CPRO: phase start '+TH.ls(candleCloseTime)+' passed: '+
+        //     Number(passedTime/1000).toFixed(2)+' secs.');
     }
 
     processCandle(closedCandle) {
         // process closed candles
-        console.log('CPRO: closed candle '+closedCandle.symbol+'-'+closedCandle.timeframe);
+        // console.log('CPRO: closed candle '+closedCandle.symbol+'-'+closedCandle.timeframe);
     
         const ticker = this.getTicker(closedCandle.symbol,closedCandle.timeframe);
 

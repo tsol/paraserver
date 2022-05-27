@@ -45,14 +45,15 @@ class AnalyzersIO {
             useTargetLevel, usePrevSwing
         } ) 
     {
-        
+        /*
         if (this.getOpenOrder(
             this.candle.symbol, this.candle.timeframe, strategyObject.getId()
             )) {
             //console.log('HELPER: order already open');
             return false;
         }
-
+        */
+       
         const isBuy = ( type === 'buy' );
         const direction = ( isBuy ? 1 : -1 );
 

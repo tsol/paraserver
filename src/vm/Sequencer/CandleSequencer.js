@@ -33,7 +33,7 @@ const { setImmediate, setTimeout } = require('node:timers/promises')
 class CandleSequencer {
 
     static SPLIT_PROCESS_CANDLES = 1000;
-    static SPLIT_LOAD_SIZE = 24*60*60*1000; //1*24*60*60*1000; // 1 day
+    static SPLIT_LOAD_SIZE = 30*24*60*60*1000; //1*24*60*60*1000; // 10 days
 
     constructor(symbols,timeframes,candleProxy,candleProcessor) {
         
@@ -284,6 +284,8 @@ class CandleSequencer {
             currentEnd = currentStart + CandleSequencer.SPLIT_LOAD_SIZE-1;
             if (currentEnd > timeEnd) { currentEnd = timeEnd; }
 
+            if (currentStart >= currentEnd) { break; }
+
             console.log('CSEQ: load/process history part '+currentPart+'/'+maxParts+' ['+
                 TH.ls(currentStart) + '-' + TH.ls(currentEnd)+']');
 
@@ -370,26 +372,6 @@ class CandleSequencer {
         this.candleProcessor.processPhaseEnd();
 
     }
-
-
-
-/*
-    function ensureFooIsSet(timeout) {
-        var start = Date.now();
-        return new Promise(waitForFoo); 
-        
-        function waitForFoo(resolve, reject) {
-            if (window.lib && window.lib.foo)
-                resolve(window.lib.foo);
-            else if (timeout && (Date.now() - start) >= timeout)
-                reject(new Error("timeout"));
-            else
-                setTimeout(waitForFoo.bind(this, resolve, reject), 30);
-        }
-    }
-*/
-
-
 
 }
 

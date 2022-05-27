@@ -9,11 +9,7 @@ const VM = require('./src/vm/VM.js');
 const ClientIO = require('./src/vm/ClientIO.js');
 
 const TH = require('./src/helpers/time');
-
 const AnalyzersFactory = require('./src/vm/Analyzers/AnalyzersFactory.js');
-
-
-/* move to vm */
 
 const brokerCandles = new BinanceUSDMCandles(SETTINGS.users.harry.brokers.binance);
 const brokerUser = new BinanceUSDMUser(SETTINGS.users.utah.brokers.binance);
@@ -34,15 +30,34 @@ mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
 
             // ['BTCUSDT','ETHUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT','ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT','AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'];
        
-            const symbols    = ['BTCUSDT'];
-            const timeframes = ['1m'];
-            const strategies = ['cma3buy'];
-            const fromTime   = TH.timestampDaysBack(3);
-            const toTime     = null;
+            let symbols    = null;
+            let timeframes = ['1h','1d'];
+            let strategies = ['macdf','cma3buy','cma3sell','tpcwfma'];
+            let fromTime   = TH.utcDaysBack(92);
+            let toTime     = null;
 
-            vm.init(symbols,timeframes,strategies,fromTime,toTime,{})
+
+            if (SETTINGS.dev) {
+                if (SETTINGS.debugSymbols)      { symbols = SETTINGS.debugSymbols; }
+                if (SETTINGS.debugTimeframes)   { timeframes = SETTINGS.debugTimeframes; }
+                if (SETTINGS.debugStrategies)   { strategies = SETTINGS.debugStrategies; }
+                if (SETTINGS.debugDays)         { fromTime = TH.utcDaysBack(SETTINGS.debugDays); }
+                
+                toTime = (new Date()).getTime();
+            }
+
+            brokerCandles.getTradableSymbols().then( (allSymbols) => {
+               
+                if (! symbols ) { symbols = allSymbols; }
+
+                symbols = symbols.filter( c => c !== 'BTCUSDT' ); symbols.unshift('BTCUSDT');
+
+                vm.init(symbols,timeframes,strategies,fromTime,toTime,{})
                 .then( () => { console.log('VM initialized'); });
-        
+
+            });
+
+
         })
     })
 });
