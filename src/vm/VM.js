@@ -1,5 +1,5 @@
 /* 
-** VM object, containing one virtual trading bot system.
+** VM object, containing one virtual trading system.
 **
 */
 
