@@ -1,12 +1,19 @@
 
 const OrderTaggers = require('./taggers/OrderTaggers.js');
 const { TF } = require('../../types/Timeframes.js');
+const TH = require('../../helpers/time');
+
 const Order = require('../../types/Order.js');
 
 const SETTINGS = require('../../../private/private.js');
 const { winRatio, fnum } = require('../../reports/helper.js');
 
 class OrdersEmulator {
+
+    static SHTDN_MAX_RISK_USD = -40;
+    static SHTDN_REQ_SAME_TYPE = 66.6;
+    static SHTDN_REQ_BELOW_TAKE_REACHED = 5;
+    static SHTDN_REQ_BELOW_LOSS_REACHED = 60;
 
     static RISK_REAL_USD = 250;
 
@@ -227,8 +234,47 @@ class OrdersEmulator {
     }
 
 
+    scheduleMinutely() {
+        
+        if (this.activeOrders.length < 30) { return; }
+        
+        let byTime = {};
+
+        let orders = this.activeOrders.filter( o => {
+            return (o.lossPercentReached > o.takePercentReached);
+        });
+
+        for ( var o of orders ) {
+            if (! byTime[ o.time ]) { byTime[ o.time ] = []; }
+            byTime[ o.time ].push(o);
+        }
+
+        //console.log('OEMU: MORE THAN 30 ORDERS '+TH.ls(this.lastUpdateTime));
+        //console.log(byTime);
+
+        for ( var tm in byTime ) {
+            let arr = byTime[tm];
+            if (! arr || arr.length <= 20 ) { continue; }
+    
+            let cnt = arr.length;
+            let gain = arr.reduce( (sum, order) => sum + order.gain, 0 );
+    
+            console.log('OEMU: many_orders '+TH.ls(this.lastUpdateTime)
+                +' start='+tm+' cnt='+cnt+' gain='+gain);
+            
+            if ( (gain / cnt > 3.5) || (gain / cnt < -2.5) ) {
+                this.closeAll(arr);
+            }
+
+        }
+
+    }
+
+
     closeAll(ordersArray) {
         let orders = (ordersArray || this.activeOrders);
+        console.log('OEMU: closing all');
+        console.log(orders);
         orders.forEach( o => this.closeOrder(o, o.gain > 0) && o.setTag('SHTDN','Y') );
     }
 
@@ -274,7 +320,7 @@ class OrdersEmulator {
         }
 
         if (! toTimestamp ) {
-            toTimestamp = TF.currentTimestamp()+60000;
+            toTimestamp = TH.currentTimestamp()+60000;
         }
 
         let uniqSS = {};  // unique SYMBOL-STRATEGY hash
