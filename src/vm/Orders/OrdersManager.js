@@ -91,7 +91,7 @@ class OrdersManager {
 
     isClockUpdated(eventTime)
     {
-        if (eventTime > this.lastUpdateTime) {      
+        if ( ! this.lastUpdateTime || (eventTime > this.lastUpdateTime)) {      
             this.lastUpdateTime = eventTime;
             return true;
         }
@@ -102,8 +102,8 @@ class OrdersManager {
     runSchedule() {
 
         const now = new Date(this.lastUpdateTime);
-        const hour = now.getHours();
-        const minute = now.getMinutes();
+        const minute = Math.ceil(now.getTime() / 1000*60);
+        const hour = Math.ceil(minute / 60);
 
         if (this.previousHour !== hour) {
             this.previousHour = hour;
@@ -118,7 +118,9 @@ class OrdersManager {
     }
 
     scheduleHourly() {};
-    scheduleMinutely() {}
+    scheduleMinutely() {
+        this.emulator.scheduleMinutely();
+    }
 
 
 

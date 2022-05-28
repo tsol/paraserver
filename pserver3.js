@@ -36,14 +36,18 @@ mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
             let fromTime   = TH.utcDaysBack(92);
             let toTime     = null;
 
-
             if (SETTINGS.dev) {
                 if (SETTINGS.debugSymbols)      { symbols = SETTINGS.debugSymbols; }
                 if (SETTINGS.debugTimeframes)   { timeframes = SETTINGS.debugTimeframes; }
                 if (SETTINGS.debugStrategies)   { strategies = SETTINGS.debugStrategies; }
-                if (SETTINGS.debugDays)         { fromTime = TH.utcDaysBack(SETTINGS.debugDays); }
+                if (SETTINGS.debugFrom)         { fromTime = TH.dateToTimestamp(SETTINGS.debugFrom); }
+                if (SETTINGS.debugTo)           { toTime = TH.dateToTimestamp(SETTINGS.debugTo); }
                 
-                toTime = (new Date()).getTime();
+                if (SETTINGS.debugDays) { 
+                    fromTime = TH.utcDaysBack(SETTINGS.debugDays);
+                    toTime = (new Date()).getTime();
+                }
+                
             }
 
             brokerCandles.getTradableSymbols().then( (allSymbols) => {

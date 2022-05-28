@@ -3,6 +3,9 @@ class TH
 
     // locale string
     // old name: timestampToDate(timestamp)
+
+    static timestampToDate(timestamp) { return this.ls(timestamp); };
+
     static ls(timestamp) {
         let od = new Date(timestamp);
         return od.toLocaleDateString('ru-RU')+' '+od.toLocaleTimeString('ru-RU');

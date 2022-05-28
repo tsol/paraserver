@@ -24,9 +24,14 @@ class TickerBuffer {
         // in every case - its just first N elements of buffer.
         // (N>1 could only happen when sequencer pulseTime is greater than this timeframe
         // N==0 could happen if symbols hasnt been trading this time
-        const fetched = this.buffer.filter( c => c.closeTime <= closeTime );
-        this.buffer = this.buffer.filter( c => c.closeTime > closeTime );
-        return fetched;
+        let fetched = [];
+        const first = this.buffer[0];
+        if (! first || first.closeTime > closeTime) { return []; }
+        this.buffer.shift();
+        return [ first ];
+        //const fetched = this.buffer.filter( c => c.closeTime <= closeTime );
+        //this.buffer = this.buffer.filter( c => c.closeTime > closeTime );
+        //return fetched;
     }
 
     getSymbol() { return this.symbol };

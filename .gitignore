@@ -4,4 +4,5 @@ private/private.js
 *~
 DEADJOE
 ^z\d*$
-vscode-profile-
+vscode-profile-*
+

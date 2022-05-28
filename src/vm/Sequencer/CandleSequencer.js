@@ -33,7 +33,10 @@ const { setImmediate, setTimeout } = require('node:timers/promises')
 class CandleSequencer {
 
     static SPLIT_PROCESS_CANDLES = 1000;
-    static SPLIT_LOAD_SIZE = 30*24*60*60*1000; //1*24*60*60*1000; // 10 days
+    static SPLIT_LOAD_SIZE = 3*24*60*60*1000; //1*24*60*60*1000; 
+
+    // todo: make SPLIT_LOAD_SIZE dynamic depending on mimimal timeframe
+    // and symbols ( 87 symbols + 1m ~= 3 days )
 
     constructor(symbols,timeframes,candleProxy,candleProcessor) {
         
@@ -214,7 +217,7 @@ class CandleSequencer {
         while (pc) {
             this.lastPulseTime = pc.closeTime;
 
-            console.log('CSEQ: pulse ['+TH.ls(pc.openTime)+' - '+TH.ls(pc.closeTime)+']');
+            //console.log('CSEQ: pulse ['+TH.ls(pc.openTime)+' - '+TH.ls(pc.closeTime)+']');
 
             closedCandles = [];
             priceUpdates = [];
