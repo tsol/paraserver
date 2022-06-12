@@ -16,7 +16,9 @@ class StrategyDoubleBottom extends Strategy {
 
     static TF_SETTINGS = {
         '5m':   { reqlvl: 40, ratio: 1.35 },
-        '15m':   { reqlvl: 40, ratio: 1.35 }
+        '15m':  { reqlvl: 40, ratio: 1.35 },
+        '30m':   { reqlvl: 40, ratio: 1.5 },
+        '1h':   { reqlvl: 40, ratio: 1.5 }
     };
 
     getParams(timeframe) {
@@ -88,6 +90,7 @@ class StrategyDoubleBottom extends Strategy {
             if (this.totalCount > StrategyDoubleBottom.MAX_BOTTOMS_LENGTH) {
                 this.label(candle,'xL')
                 this.resetFinder();
+                this.checkFirstBottom(io);
                 return;
             }
 
@@ -104,7 +107,9 @@ class StrategyDoubleBottom extends Strategy {
             
             this.circle(this.firstBottom, StrategyDoubleBottom.DBG_BOTTOMS);
             this.circle(this.secondBottom, StrategyDoubleBottom.DBG_BOTTOMS);
-            
+
+            this.label(this.necklineCandle,'NCK');
+
             if ( ! this.makeEntry(candle, io) ) {
                 this.label(candle,'NE');
             }
@@ -240,7 +245,8 @@ class StrategyDoubleBottom extends Strategy {
 
         io.makeEntry(this, ( this.isLong ? 'buy' : 'sell' ), {
             rrRatio: settings.ratio,
-            stopFrom: ( this.isLong ? this.necklineCandle.high : this.necklineCandle.low )
+            //stopFrom: ( this.isLong ? this.necklineCandle.high : this.necklineCandle.low ),
+            usePrevSwing: true
         });
 
         return true;
