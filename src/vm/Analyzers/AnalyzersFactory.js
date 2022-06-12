@@ -34,11 +34,17 @@ class AnalyzersFactory {
             ['rmac50',     'rma',          {source:'c', period: 50}, null],
             ['rmac200',    'rma',          {source:'c', period: 200}, null],
 
+            ['mac5',        'ma',           {source:'c', period: 5}, null],
+            ['emac18',      'ema',           {source:'c', period: 18}, null],
+            ['mac89',       'ma',           {source:'c', period: 89}, null],
+            ['emac35',      'ema',           {source:'c', period: 35}, null],
+            ['emac144',      'ema',           {source:'c', period: 144}, null],
+
             ['mat1',       'matrend',      {ma1:'emac20',ma2:'emac50',ma3:'emac200',name:'1'}, null],
             ['macd',       'macd',         {}, null],
             ['bbands',     'bbands',       {}, null],
             
-            ['btctrend',   'btctrend',    null,   null],
+            ['btc4h',   'btctrend',         '4h',   null],
             ['macdf',      'macdf',        {},   null],
 
             ['wfractals',   'wfractals',    null,   null],
@@ -62,6 +68,7 @@ class AnalyzersFactory {
             ['dbltop',      'st_dblbottom',    false,   null],
             ['ttcwoff',     'st_ttc_woff',     null,    null],
             ['geroflvl',    'st_ger_oflvl',    null,    null],
+            ['hoffman1',    'st_hoffman1',    null,    null],
 
         ];
 

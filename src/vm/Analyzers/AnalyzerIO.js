@@ -1,4 +1,4 @@
-const CDB = require('../../types/CandleDebug');
+
 
 class AnalyzersIO {
 
@@ -20,10 +20,15 @@ class AnalyzersIO {
     init() {
         this.require('atr14');
         this.require('prev_swing');
+        this.require('btc4h');
     }
 
     require(analyzerName) {
         return this.box.addAnalyzer(analyzerName);
+    }
+
+    getHTF(flagName) {
+        return this.flags.getHTF(flagName);
     }
 
     get(flagName) {
@@ -54,6 +59,7 @@ class AnalyzersIO {
         }
         */
        
+        const isLimit = Boolean(entryPrice);
         const isBuy = ( type === 'buy' );
         const direction = ( isBuy ? 1 : -1 );
 
@@ -70,39 +76,43 @@ class AnalyzersIO {
         if (! stopFrom ) { stopFrom = entryPrice };
     
         if (! stopLoss ) { stopLoss = stopFrom - direction * atr14 * stopATRRatio; } 
+        if (usePrevSwing) {
+            stopLoss = this.calcPrevSwingSL(type,stopLoss);
+        }
+
         const stopHeight = Math.abs(entryPrice - stopLoss);
 
         if (! takeProfit) { takeProfit = entryPrice + direction * stopHeight * rrRatio; }
 
-        if (usePrevSwing) {
-            const psw = this.calcPrevSwingSL(type,stopFrom,rrRatio);
-            if (! psw) { return false; }
-            takeProfit = psw.takeProfit;
-            stopLoss = psw.stopLoss;
-        }
-
  
-        CDB.labelTop(this.candle,'EN');
-        CDB.circleMiddle(this.candle,{ color: 'blue', radius: 5, alpha: 0.1 });
-        CDB.entry(this.candle,takeProfit,stopLoss);
+        const params = {
+            time: this.candle.closeTime,
+            strategy: strategyObject.getId(),
+            symbol: this.candle.symbol,
+            timeframe: this.candle.timeframe,
+            isLong: isBuy,
+            entryPrice: entryPrice, 
+            takeProfit: takeProfit, 
+            stopLoss: stopLoss,
+            comment: cmt,
+            flags: this.flags,
+            candle: this.candle
+        };
 
-        return this.ordersManager.newOrder(
-            this.candle.closeTime,
-            strategyObject.getId(),
-            this.candle.symbol,
-            this.candle.timeframe,
-            isBuy,
-            entryPrice, 
-            takeProfit, 
-            stopLoss,
-            cmt,
-            this.flags 
+
+        return (isLimit ? 
+            this.ordersManager.limitOrder( params ) : 
+            this.ordersManager.marketOrder( params )
         );
 
     }
 
     getOpenOrder(symbol,timeframe,strategy) {
         return this.ordersManager.emulator.getOpenOrder(symbol,timeframe,strategy);
+    }
+
+    getFlags() {
+        return this.flags;
     }
 
     /* parent box interface */
@@ -114,33 +124,23 @@ class AnalyzersIO {
 
     /* helpers */
 
-    // returns { stopLoss, takeProfit }
-    calcPrevSwingSL(orderType,entryPrice,ratio)
+    // returns stopLoss
+    calcPrevSwingSL(orderType,stopLoss)
     {
         const isLong = (orderType == 'buy');
         const sw = this.flags.get('prev_swing');
         if (! sw) { return null; }
-  
-        const swCandleHigh = sw.findHigh(AnalyzersIO.ENTRY_SWSL_FIND_MAX_CANDLES,entryPrice);
-        const swCandleLow = sw.findLow(AnalyzersIO.ENTRY_SWSL_FIND_MAX_CANDLES,entryPrice);
-
+       
         if (isLong) { 
-            if (! sw.getHigh()) { return null; } 
-            takeProfit = sw.getHigh().high;
-            if (takeProfit <= entryPrice) { return null; }
+            const swCandleLow = sw.findLow(AnalyzersIO.ENTRY_SWSL_FIND_MAX_CANDLES,stopLoss);
+            if (! swCandleLow ) { return stopLoss; } 
+            return swCandleLow.low;
         }
-        else {
-            if (! sw.getLow()) { return null; } 
-            takeProfit = sw.getLow().low;
-            if (takeProfit >= entryPrice) { return null; }
-        }
-
-        const stopDir = ( isLong ? -1 : 1 );
-        const takeHeight = Math.abs(takeProfit - entryPrice);
-        const stopLoss = entryPrice + stopDir * takeHeight / ratio;
-
-        return { takeProfit, stopLoss };
-
+    
+        const swCandleHigh = sw.findHigh(AnalyzersIO.ENTRY_SWSL_FIND_MAX_CANDLES,stopLoss);
+        if (! swCandleHigh ) { return stopLoss; } 
+        return swCandleHigh.high;
+ 
     }
 
 

@@ -1,4 +1,4 @@
-const OrdersEmulator = require('./OrdersEmulator.js');
+const OrdersEmulator = require('./OrdersEmulator');
 const OrdersReal = require('./OrdersReal.js');
 const { TF } = require('../../types/Timeframes.js');
 
@@ -7,6 +7,8 @@ const PeriodTagsCompare = require('../../reports/PeriodTagsCompare.js');
 
 class OrdersManager {
     
+    static LIMIT_ORDER_TIMEOUT_CANDLES = 1;
+
     constructor(brokerUser, brokerCandles, clients) {
         this.emulator = new OrdersEmulator(brokerCandles);
         this.report = new PeriodTagsCompare();
@@ -33,7 +35,7 @@ class OrdersManager {
         return this.brokerCandles.getSymbolInfo(symbol);
     }
 
-    newOrder(
+    marketOrder({
         time,
         strategy,
         symbol,
@@ -43,11 +45,12 @@ class OrdersManager {
         takeProfit, 
         stopLoss,
         comment,
-        flags 
-    ) {
+        flags,
+        candle 
+    }) {
         const isLive = flags.get('is_live');
 
-        const emulatedOrder = this.emulator.newOrder(
+        const emulatedOrder = this.emulator.marketOrder({
             time,
             strategy,
             symbol,
@@ -57,8 +60,9 @@ class OrdersManager {
             takeProfit, 
             stopLoss,
             comment,
-            flags
-        );
+            flags,
+            candle
+        });
 
         if (! emulatedOrder ) { return null; }
 
@@ -69,6 +73,24 @@ class OrdersManager {
         }
 
         return emulatedOrder;
+    }
+
+
+    limitOrder( params ) {
+
+        const expire = params.time + OrdersManager.LIMIT_ORDER_TIMEOUT_CANDLES *
+             TF.getTimeframeLength(params.timeframe);
+
+        params.expire = expire;
+
+        this.emulator.limitOrder( params );
+
+        const isLive = params.flags.get('is_live');
+
+        if ( isLive ) {
+            // todo: limit real order
+        }
+
     }
 
 

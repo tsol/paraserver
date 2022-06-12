@@ -1,4 +1,5 @@
 const TH = require('../../helpers/time.js');
+const { TF } = require('../../types/Timeframes.js');
 const Flags = require('./Flags.js');
 const CandleProcessor = require('../types/CandleProcessor.js');
 const TickerProcessor = require('./TickerProcessor.js');
@@ -21,10 +22,12 @@ class VMCandleProcessor extends CandleProcessor {
         for(var s of symbols){
             for(var t of timeframes) {
                 const key = s+'-'+t;
+                let box = 
+                ( TF.get(t).pulseOnly ? null :
+                    this.analyzersFactory.createBox(strategies, this.ordersManager)
+                );
                 this.tickers[key] = 
-                    new TickerProcessor(s,t,
-                        this.analyzersFactory.createBox(strategies, this.ordersManager)
-                    );
+                    new TickerProcessor(s,t,box);
             }
         }
 

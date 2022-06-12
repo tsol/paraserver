@@ -2,18 +2,29 @@ const { weekNum } = require('../../../reports/helper.js');
 
 const CU5 = require('./list/custom5.js');
 const MACDF = require('./list/macdf.js');
+const SESSIONS = require('./list/sessions.js');
+const BTC = require('./list/btc.js');
+const MAXPRF = require('./list/maxprf.js');
+const MCORRECT = require('./list/mcorrect.js');
+const USDVOL = require('./list/usdvol.js');
 
 class OrderTaggers {
 
-    constructor() {
+    constructor(params) {
         this.previousHour = null;
         this.previousDay = null;
         this.previousMonth = null;
         this.previousWeek = null;
+        this.params = params;
 
         this.filters = [
-            new MACDF(),
-            new CU5(),
+            new MAXPRF(params),
+            new MCORRECT(params),
+            new USDVOL(params),
+            new MACDF(params),
+            new CU5(params),
+            new SESSIONS(params),
+            new BTC(params)
         ];
 
     }

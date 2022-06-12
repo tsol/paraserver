@@ -43,6 +43,7 @@ class AnRMA extends Analyzer {
                 case 'o': { data = candle.open; break; }
                 case 'h': { data = candle.high; break; }
                 case 'l': { data = candle.low; break; }
+                case 'v': { data = candle.volume; break; }
                 default: { throw new Error('unknown source code for moving avarage'); }
             }
             return data;

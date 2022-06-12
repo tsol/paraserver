@@ -8,16 +8,26 @@
 
 const Analyzer = require("../types/Analyzer");
 const CDB = require('../../../types/CandleDebug');
+const BTC = require("../../Orders/taggers/list/btc");
 
-class AnBTCTrend extends Analyzer {
+class BTCTREND extends Analyzer {
+
+        static SYMBOL       = 'BTCUSDT';
+        static TIMEFRAMES   = ['1h','4h','1d'];
+        static MA           = 'emac';
+        static MA_PERIODS   = [9,20,200];
 
         constructor() {
             super();
+            this.emas = [];
+            BTCTREND.MA_PERIODS.forEach( p => {
+                this.emas.push(BTCTREND.MA+p);
+            });
         }
 
         init(io) {
             io.require('atr14');
-            io.require('mac9');
+            this.emas.forEach( ema => io.require(ema) );
         }
 
         getId() {
@@ -27,45 +37,54 @@ class AnBTCTrend extends Analyzer {
         addCandle(candle,io) {
             super.addCandle(candle,io);
 
-            if (io.getFlags().currentId() !== 'BTCUSDT-1h') { 
-                // propogandate flag to every ticker flag space:
-                //const btcflag = io.getTickerFlag('BTCUSDT-1h','btctrend');
-                //if (btcflag) { io.set('btctrend',btcflag); }
-                return;
-            }
+            if (candle.symbol !== BTCTREND.SYMBOL) { return; }
+            if (!BTCTREND.TIMEFRAMES.includes(candle.timeframe)) { return; }
 
-            const mac9 = io.get('mac9');
             const atr14 = io.get('atr14');
+            if (! atr14 ) { return; }
+ 
+            
+            BTCTREND.MA_PERIODS.forEach( p => {
+                let ema = io.get(BTCTREND.MA+p);
+               
+                io.set('bt-'+candle.timeframe+'-'+p,
+                    ( ema ? this.getTrend(candle,ema,atr14) : 0 )
+                );
+               
+            });
+         
+        }
 
-            if (! mac9 || ! atr14 ) { return; }
-                
+        getTrend(candle,ema,atr14) {
+
             let setTrend = 0;
 
-            if (candle.close > mac9) {
+            if (candle.close > ema) {
                 setTrend = 1;
-                if (candle.bodyLow() > mac9) { 
+                if (candle.bodyLow() > ema) { 
                     setTrend = 2;
-                    if (candle.low > mac9) { 
+                    if (candle.low > ema) { 
                         setTrend = 3; 
-                        if (candle.low > mac9 + atr14/2 ) { setTrend = 4; }
+                        if (candle.low > ema + atr14/2 ) { setTrend = 4; }
                     }
                 }
             }
-            else if (candle.close < mac9) {
+            else if (candle.close < ema) {
                 setTrend = -1;
-                if (candle.bodyHigh() < mac9) { 
+                if (candle.bodyHigh() < ema) { 
                     setTrend = -2;
-                    if (candle.high < mac9) { 
+                    if (candle.high < ema) { 
                         setTrend = -3; 
-                        if (candle.high < mac9 - atr14/2 ) { setTrend = -4; }
+                        if (candle.high < ema - atr14/2 ) { setTrend = -4; }
                     }
                 }
             }
 
-            io.set('btctrend',setTrend);
+            return setTrend;
 
         }
 
+
 }
 
-module.exports = AnBTCTrend;
+module.exports = BTCTREND;

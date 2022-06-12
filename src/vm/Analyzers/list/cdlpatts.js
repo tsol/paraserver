@@ -30,6 +30,10 @@ class AnCandlePatterns extends Analyzer {
             this.lastPatternBias = undefined;
         }
 
+        init(io) {
+            this.io = io;
+        }
+
         getId() { return 'cdlpatts'; }
 
         addCandle(candle,io) {
@@ -95,7 +99,7 @@ class AnCandlePatterns extends Analyzer {
         setPattern(candle,name,bias) {
             CDB.circleMiddle(candle,{ color: 'cyan', radius: 3, alpha: 0.1 });
             CDB.labelBottom(candle,name);
-            io.set(this.getId()+'.new.'+name,candle);
+            this.io.set(this.getId()+'.new.'+name,candle);
             this.lastPatternBias = bias;
         }
 

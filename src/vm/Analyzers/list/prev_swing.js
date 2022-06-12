@@ -22,6 +22,7 @@ class PrevSwing extends Analyzer {
     {
         io.require('hl_trend');
         io.require('hills');
+        io.require('wfractals');
     }
 
     getId() { return 'prev_swing'; }
@@ -30,6 +31,13 @@ class PrevSwing extends Analyzer {
         super.addCandle(candle,io);
         this.lastCandle = candle;
 
+        const wf = io.get('wfractals')
+        if (wf) {
+            if (wf.type=='high') { this.highs.unshift(wf.candle); }
+            if (wf.type=='low') { this.lows.unshift(wf.candle); }
+        }
+
+/*
         const h = io.get('hl_trend.new.high');
         if (h) { this.highs.unshift(h); }
 
@@ -50,25 +58,27 @@ class PrevSwing extends Analyzer {
         if (lh) {
             if ( ! this.lows.find( i => i == lh ) ) {
                 this.lows.unshift(lh);
-                this.highs.sort( (a,b) => b.openTime - a.openTime );
+                this.lows.sort( (a,b) => b.openTime - a.openTime );
             }
         }
+
+*/
 
         this.forgetBefore(this.getTimeCandlesBack(candle,PrevSwing.MAX_CANDLE_LENGTH));
 
         io.set(this.getId(),this);   
     }
 
-    findHigh(maxCandlesBack,closesAbove) {
+    findHigh(maxCandlesBack,highAbove) {
         if (! this.lastCandle ) { return null; }
         const fromTime = this.getTimeCandlesBack(this.lastCandle,maxCandlesBack);
-        return this.highs.find( c => (c.openTime > fromTime) && (c.bodyHigh() > closesAbove) );
+        return this.highs.find( c => (c.openTime > fromTime) && (c.bodyHigh() > highAbove) );
     }
 
-    findLow(maxCandlesBack,closesBelow) {
+    findLow(maxCandlesBack,lowBelow) {
         if (! this.lastCandle ) { return null; }
         const fromTime = this.getTimeCandlesBack(this.lastCandle,maxCandlesBack);
-        return this.lows.find( c => (c.openTime > fromTime) && (c.bodyLow() < closesBelow) );        
+        return this.lows.find( c => (c.openTime > fromTime) && (c.bodyLow() < lowBelow) );        
     }
 
 

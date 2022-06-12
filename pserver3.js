@@ -31,8 +31,8 @@ mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
             // ['BTCUSDT','ETHUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT','ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT','AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'];
        
             let symbols    = null;
-            let timeframes = ['1h','1d'];
-            let strategies = ['macdf','cma3buy','cma3sell','tpcwfma'];
+            let timeframes = ['1h'];
+            let strategies = [];
             let fromTime   = TH.utcDaysBack(92);
             let toTime     = null;
 

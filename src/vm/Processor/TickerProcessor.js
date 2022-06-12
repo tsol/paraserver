@@ -6,12 +6,11 @@ const { TF } = require('../../types/Timeframes.js');
 class TickerProcessor {
 
     constructor(symbol,timeframe,analyzersBox) {
-    
         this.candles = [];
         this.symbol = symbol;
         this.timeframe = timeframe;
         this.analyzersBox = analyzersBox;
-        this.limit = TF.get(timeframe).limit;              
+        this.limit = TF.get(timeframe).limit;            
     }
    
     getId() {
@@ -30,11 +29,14 @@ class TickerProcessor {
 
     addCandle(candle,flags,isLive)
     {
+
         this.candles.push(candle);
 
         while (this.candles.length > this.limit) {
             this.forgetFirstCandle();
         }
+
+        if (! this.analyzersBox ) { return; }
 
         flags.start(this.symbol, this.timeframe);
         flags.set('is_live', isLive);
@@ -45,7 +47,9 @@ class TickerProcessor {
 
     forgetFirstCandle() {
         const firstCandle = this.candles.shift();
-        this.analyzersBox.forgetBefore(firstCandle.openTime);
+        if (this.analyzersBox ) {
+            this.analyzersBox.forgetBefore(firstCandle.openTime);
+        }
     }
 
     getState() {

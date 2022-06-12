@@ -95,11 +95,12 @@ class CandleDebug {
         });        
     }
 
-    static entry(candle, takeProfit, stopLoss) {
+    static entry(candle, entryPrice, takeProfit, stopLoss) {
         if (SETTINGS.noCandleDebug) { return; }
         candle.visualDebug.push({
             type: 'entry',
             src: 'entries',
+            ep: entryPrice,
             tp: takeProfit,
             sl: stopLoss,
             by: this.source

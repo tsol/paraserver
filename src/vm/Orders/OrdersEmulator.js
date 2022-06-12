@@ -1,4 +1,6 @@
 
+const CDB = require('../../types/CandleDebug');
+
 const OrderTaggers = require('./taggers/OrderTaggers.js');
 const { TF } = require('../../types/Timeframes.js');
 const TH = require('../../helpers/time');
@@ -10,6 +12,7 @@ const { winRatio, fnum } = require('../../reports/helper.js');
 
 class OrdersEmulator {
 
+/*
     static SHTDN_MAX_RISK_USD = -40;
     static SHTDN_REQ_SAME_TYPE = 66.6;
     static SHTDN_REQ_BELOW_TAKE_REACHED = 5;
@@ -17,22 +20,27 @@ class OrdersEmulator {
 
     static RISK_REAL_USD = 250;
 
-    static STAKE_USD = 100; /* stake using leverage */
-    static LEVERAGE = 20;
-    static MARGINCALL_GAIN = -1*(OrdersEmulator.STAKE_USD / OrdersEmulator.LEVERAGE);
-    
-    static COST_BUY_PERCENT = 0.0004;  // 4 cents from every 100 dollars
-    static COST_SELL_PERCENT = 0.0004; // 0.04 % taker comission
-
-    static COST_PERCENT = OrdersEmulator.COST_BUY_PERCENT+OrdersEmulator.COST_SELL_PERCENT;
-
     static TRAILING_STOP_TRIGGER = 50; 
-    static TRAILING_LOSSLESS = OrdersEmulator.COST_PERCENT * 2;
+    static TRAILING_LOSSLESS = (this.params.COST_BUY_PERCENT+this.params.COST_SELL_PERCENT) * 2;
+*/
+
+    constructor(brokerCandles) {        
+        this.params = {};
+
+        // todo: params from private.js, later from users prefs in db
+
+        this.params.STAKE_USD = 100; /* stake using leverage */
+        this.params.LEVERAGE = 20;
+        this.params.MARGINCALL_GAIN = -1*(this.params.STAKE_USD / this.params.LEVERAGE);
+        this.params.COST_BUY_PERCENT = 0.0004;  // 4 cents from every 100 dollars
+        this.params.COST_SELL_PERCENT = 0.0004; // 0.04 % taker comission
     
-    constructor(brokerCandles) {
+
         this.orders = [];
         this.activeOrders = [];
-        this.taggers = new OrderTaggers();
+        this.limitOrders = [];
+
+        this.taggers = new OrderTaggers(this.params);
         this.brokerCandles = brokerCandles;
 
         this.lastUpdateTime = null;
@@ -96,13 +104,61 @@ class OrdersEmulator {
         });
 
 
+        this.limitOrdersPriceUpdate(symbol,eventTime,lowPrice,highPrice,currentPrice);
+
         return;
 
     }
 
 
+    limitOrdersPriceUpdate (symbol,eventTime,lowPrice,highPrice,currentPrice)
+    {
+        let orders = this.limitOrders.filter( o => (o.symbol === symbol) );
 
-    newOrder(
+        orders.forEach( (o) => {
+            if (o.isLong) {
+                if (highPrice >= o.entryPrice) {
+                    console.log('OEMU: limit BUY order TRIGGERED '+o.symbol+'-'+o.timeframe
+                    +' '+TH.ls(eventTime)+' ('+eventTime+')');
+                    this.killLimitOrder(o);
+                    this.marketOrder(o);
+                }
+            }
+            else {
+                if (lowPrice <= o.entryPrice) {
+                    console.log('OEMU: limit SELL order TRIGGERED '+o.symbol+'-'+o.timeframe
+                    +' '+TH.ls(eventTime)+' ('+eventTime+')');
+
+                    this.killLimitOrder(o);
+                    this.marketOrder(o);
+                }                
+            } 
+        });
+
+        orders = this.limitOrders.filter( o => (o.symbol === symbol) );
+
+        orders.forEach( o => {
+            if (eventTime >= o.expire) {
+                this.killLimitOrder(o);
+                console.log('OEMU: limit order timeout '+o.symbol+'-'+o.timeframe
+                +' '+TH.ls(eventTime)+' ('+eventTime+')');
+            }
+        });
+
+    }
+
+
+    limitOrder( params ) {
+        console.log('OEMU: new limit order: '+params.symbol+'-'+params.timeframe+' '
+        + TH.ls(params.time) +'('+params.time+') -> '+TH.ls(params.expire)+' ('+params.expire+')');
+        this.limitOrders.push(params);
+    }
+
+    killLimitOrder(order) {
+        this.limitOrders = this.limitOrders.filter( o => o !== order );
+    }
+
+    marketOrder({
         time,
         strategy,
         symbol,
@@ -112,16 +168,20 @@ class OrdersEmulator {
         takeProfit, 
         stopLoss,
         comment,
-        flags
-    ) {
+        flags,
+        candle
+    }) {
 
         /*
+        
+        // TODO: move to tagger (dynamic tagger)
+
         const totalRisk = this.calcActiveOrdersMaxLoss(); 
 
         console.log('OEMU: new order '+symbol+'/'+strategy+' total_risk='+totalRisk+
             ' orders='+this.activeOrders.length);
 
-        if (Math.abs(totalRisk) > OrdersEmulator.RISK_REAL_USD ) {
+        if (Math.abs(totalRisk) > this.params.RISK_REAL_USD ) {
             //console.log('OEMU: ABOVE RISK ')
             return null;
         }
@@ -137,7 +197,7 @@ class OrdersEmulator {
         let aligned = null;
         try {        
             aligned = this.brokerCandles.getAlignedOrderDetails(symbol,entryPrice,
-                OrdersEmulator.STAKE_USD,stopLoss,takeProfit);
+                this.params.STAKE_USD,stopLoss,takeProfit);
             stopLoss = aligned.stopLoss;
             takeProfit = aligned.takeProfit;
             quantity = aligned.quantity;
@@ -146,40 +206,6 @@ class OrdersEmulator {
             console.log("BAD ORDER PARAMS: "+e.message);
             return null;
         }
-
-
-/* margin call SL/TP bound */
-        
-        let oldStopLoss = stopLoss;
-        let oldTakeProfit = takeProfit;
-        let newStopLoss = stopLoss;
-        let newTakeProfit = takeProfit;
-
-        [ newStopLoss, newTakeProfit ] = this.correctMarginCallSLTP(
-             entryPrice, isLong, stopLoss, takeProfit,
-             quantity, -1*OrdersEmulator.MARGINCALL_GAIN
-        );
-        
-        if (newStopLoss !== stopLoss) {
-            
-            /* filter */
-            return null;
-            
-            try {        
-                aligned = this.brokerCandles.getAlignedOrderDetails(symbol,entryPrice,
-                OrdersEmulator.STAKE_USD,newStopLoss,newTakeProfit);
-                newStopLoss = aligned.stopLoss;
-                newTakeProfit = aligned.takeProfit;
-            } catch (e) {
-                console.log("BAD ORDER PARAMS: "+e.message);
-                return null;
-            }
-        }
-
-        // stopLoss = newStopLoss;
-        // takeProfit = newTakeProfit;
-
-/* / margin call */
 
         const order = new Order({
             time: time,
@@ -190,32 +216,22 @@ class OrdersEmulator {
             entryPrice: entryPrice,
             quantity: quantity,
             stopLoss: stopLoss,
-            takeProfit: takeProfit
+            takeProfit: takeProfit,
+            candle: candle
         });
 
         order.setFlags(flagsSnapshot);
-
-        const profitPreview = this.previewProfit(isLong,
-            order.quantity,order.entryPrice,order.takeProfit); 
-        order.setTag('MAXPRF',fnum(profitPreview,3));
-
-        const lossPreview = this.previewProfit(isLong,
-            order.quantity,order.entryPrice,order.stopLoss); 
-        order.setTag('MAXLSS',fnum(lossPreview,3));
-
-        if ( oldStopLoss !== newStopLoss ) {
-            order.setTag('MCORR','Y');
-            order.setTag('MCORR_SL',oldStopLoss+' => '+newStopLoss);
-        }
-        else {
-            order.setTag('MCORR','N');
-        }
   
         order.setTags( this.taggers.getTags(order, flags, this.orders, order.tags) );
         order.setComment(comment);
 
         /* filter */
-        if (order.tags.CU5.value !== 'Y') { return null; }
+        //if (order.tags.CU5.value !== 'Y') { return null; }
+        
+        CDB.setSource(strategy);
+        CDB.labelTop(candle,'EN');
+        CDB.circleMiddle(candle,{ color: 'blue', radius: 5, alpha: 0.1 });
+        CDB.entry(candle,entryPrice,takeProfit,stopLoss);
 
         this.orders.push(order);
         this.activeOrders.push(order);
@@ -235,7 +251,13 @@ class OrdersEmulator {
 
 
     scheduleMinutely() {
-        
+        return;
+/*
+    static SHTDN_MAX_RISK_USD = -40;
+    static SHTDN_REQ_SAME_TYPE = 66.6;
+    static SHTDN_REQ_BELOW_TAKE_REACHED = 5;
+    static SHTDN_REQ_BELOW_LOSS_REACHED = 60;
+*/
         if (this.activeOrders.length < 30) { return; }
         
         let byTime = {};
@@ -248,9 +270,6 @@ class OrdersEmulator {
             if (! byTime[ o.time ]) { byTime[ o.time ] = []; }
             byTime[ o.time ].push(o);
         }
-
-        //console.log('OEMU: MORE THAN 30 ORDERS '+TH.ls(this.lastUpdateTime));
-        //console.log(byTime);
 
         for ( var tm in byTime ) {
             let arr = byTime[tm];
@@ -412,59 +431,19 @@ class OrdersEmulator {
     recalcOrderGain(order,currentPrice)
     {
         order.setPrice(currentPrice);
-        order.recalcGain(OrdersEmulator.COST_BUY_PERCENT, OrdersEmulator.COST_SELL_PERCENT);
+        order.recalcGain(this.params.COST_BUY_PERCENT, this.params.COST_SELL_PERCENT);
     }
 
     isMarginCallReached(order) {
-        if (order.gain <= OrdersEmulator.MARGINCALL_GAIN) {
-            order.setGain(OrdersEmulator.MARGINCALL_GAIN);
+        if (order.gain <= this.params.MARGINCALL_GAIN) {
+            order.setGain(this.params.MARGINCALL_GAIN);
             order.setTag('MC','Y');
             return true;
         }
         return false;
     }
 
-    correctMarginCallSLTP(entryPrice, isLong, stopLoss, takeProfit, quantity, positiveTargetLoss)
-    {
-        const newStopLoss =
-         this.calcTargetLossPrice(positiveTargetLoss, entryPrice, isLong, quantity);
 
-        if (    (isLong && (newStopLoss <= stopLoss))
-            || (!isLong && (newStopLoss >= stopLoss))
-        ) { return [stopLoss, takeProfit]; }
-     
-        const ratio = Math.abs(entryPrice-newStopLoss) / Math.abs(entryPrice-stopLoss);
-        const oldTakeHeight = entryPrice - takeProfit;
-        const newTakeProfit = entryPrice - 1*oldTakeHeight*ratio;
-
-        return [ newStopLoss, newTakeProfit ];
-    }
-
-
-    /* */
-    calcTargetLossPrice(positiveTargetLoss, entryPrice, isLong, quantity)
-    {
-        const z = ( isLong ? 1 : -1);
-        const res = (( entryPrice * (z - OrdersEmulator.COST_BUY_PERCENT) - positiveTargetLoss / quantity )
-            / (OrdersEmulator.COST_SELL_PERCENT + z));
-        return res;
-    }
-
-    previewProfit(isLong, quantity, entryPrice, takeProfit)
-    {
-        const boughtInUSD = quantity * entryPrice;
-        const soldInUSD = quantity * takeProfit;
-        const commissionInUSD = soldInUSD * OrdersEmulator.COST_SELL_PERCENT +
-                                boughtInUSD * OrdersEmulator.COST_BUY_PERCENT;
-        let gain = 0;
-
-        if (isLong ) {
-            gain = soldInUSD - boughtInUSD - commissionInUSD;
-        } else { // sell
-            gain = boughtInUSD - soldInUSD - commissionInUSD;
-        }
-        return gain;
-    }
 
 
 }

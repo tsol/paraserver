@@ -4,8 +4,9 @@
 
 class Tagger {
 
-    constructor() {
+    constructor(params) {
         this.reset();
+        this.params = params;
     }
 
     reset() {

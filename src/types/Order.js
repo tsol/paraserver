@@ -14,7 +14,7 @@ class Order {
         SELL: 'sell'
     })
 
-    constructor({ time,strategy,symbol,timeframe,isLong,entryPrice,quantity,stopLoss,takeProfit })
+    constructor({ time,strategy,symbol,timeframe,isLong,entryPrice,quantity,stopLoss,takeProfit,candle })
     {
 
         this.id = symbol+'-'+timeframe+'-'+strategy+'-'+time;
@@ -29,6 +29,8 @@ class Order {
         this.takeProfit = takeProfit;
         this.stopLoss = stopLoss;
         this.currentPrice = entryPrice;
+
+        this.candle = candle;
 
         //this.trailingEntryPrice = entryPrice;
         //this.origStopLoss = stopLoss;
