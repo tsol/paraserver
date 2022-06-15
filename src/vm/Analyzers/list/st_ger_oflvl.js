@@ -88,8 +88,8 @@ class GEROFLVL extends Strategy {
 
             if (prices.findPrice(ph).times >= GEROFLVL.MATCH_CANDLES) {
     
-                let wh = vlevels_high.getTopTouchWeights(candle);
-                let w = vlevels.getTopTouchWeights(candle)
+                let wh = vlevels_high.getTopTouchWeights(candle,null);
+                let w = vlevels.getTopTouchWeights(candle,null)
                 let tw = w.rw + w.sw + wh.rw + wh.sw;
 
                 if (tw > 0) {

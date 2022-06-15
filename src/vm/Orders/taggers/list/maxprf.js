@@ -7,8 +7,6 @@ const { TF } = require('../../../../types/Timeframes.js');
 const Tagger = require('../types/Tagger'); 
 const { fnum } = require('../../../../reports/helper');
 
-const OrdersEmulator = require('../../OrdersEmulator');
-
 class MAXPRF extends Tagger {
     
 

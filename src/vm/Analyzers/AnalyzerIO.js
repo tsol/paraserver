@@ -2,15 +2,16 @@
 
 class AnalyzersIO {
 
-    static ENTRY_DEF_RR_RATIO                 = 1.35;
+    static ENTRY_DEF_RR_RATIO                 = 1.5;
     static ENTRY_STOP_ATR_RATIO               = 1;
     static ENTRY_TARGET_LEVEL_REQ_WEIGHT      = 40;
     static ENTRY_TARGET_LEVEL_SEARCH_RATIO    = 1.8;
     static ENTRY_SWSL_FIND_MAX_CANDLES        = 25;
 
-    constructor(box, ordersManager) {
+    constructor(box, ordersManager, candleProcessor) {
         this.box = box;
         this.ordersManager = ordersManager;
+        this.candleProcessor = candleProcessor;
 
         this.candle = null;
         this.flags = null;
@@ -37,6 +38,11 @@ class AnalyzersIO {
 
     set(flagName, value) {
         this.flags.set(flagName,value);
+    }
+
+    getCandlesFrom(closeTime)
+    {
+        return this.candleProcessor.getCandlesFrom(this.candle.symbol,this.candle.timeframe,closeTime);
     }
 
     getSymbolInfo(symbol) {

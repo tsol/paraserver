@@ -27,6 +27,10 @@ class TickerProcessor {
     }
 
 
+    getCandlesFrom(closeTime) {
+        return this.candles.filter( c => c.closeTime > closeTime );
+    }
+
     addCandle(candle,flags,isLive)
     {
 

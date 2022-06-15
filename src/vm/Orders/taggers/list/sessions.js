@@ -9,10 +9,10 @@ const Tagger = require('../types/Tagger');
 class SESSIONS extends Tagger {
     
     static UTC_HRS = {
-        SYD: [ 0,1,2,3,4,5,6,21,22,23 ],
+        SYD: [ 0,1,2,3,4,5,6,                                      21,22,23 ],
         TOK: [ 0,1,2,3,4,5,6,7,8,9 ],
-        LON: [ 7,8,9,10,11,12,13,14,15,16 ],
-        NYC: [ 12,13,14,15,16,17,18,19,20 ]
+        LON: [               7,8,9,10,11,12,13,14,15,16 ],
+        NYC: [                           12,13,14,15,16,17,18,19,20 ]
     };
 
     getTags(order, flags, orders, tags) // return if order should pass

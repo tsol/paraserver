@@ -7,7 +7,7 @@ const CDB = require('../../../types/CandleDebug');
 
 class MACDF extends Analyzer {
 
-    static SWITCH_LEN = 16; /* 16 */
+    static SWITCH_LEN = 3; /* 16 */
 
     constructor({swlen}) 
     {

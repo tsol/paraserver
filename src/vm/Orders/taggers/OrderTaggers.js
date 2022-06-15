@@ -1,12 +1,12 @@
 const { weekNum } = require('../../../reports/helper.js');
 
-const CU5 = require('./list/custom5.js');
 const MACDF = require('./list/macdf.js');
 const SESSIONS = require('./list/sessions.js');
 const BTC = require('./list/btc.js');
 const MAXPRF = require('./list/maxprf.js');
 const MCORRECT = require('./list/mcorrect.js');
-const USDVOL = require('./list/usdvol.js');
+const RSI = require('./list/rsi.js');
+const HOS = require('./list/hos.js');
 
 class OrderTaggers {
 
@@ -20,11 +20,11 @@ class OrderTaggers {
         this.filters = [
             new MAXPRF(params),
             new MCORRECT(params),
-            new USDVOL(params),
             new MACDF(params),
-            new CU5(params),
             new SESSIONS(params),
-            new BTC(params)
+            new BTC(params),
+            new RSI(params),
+            new HOS(params)
         ];
 
     }

@@ -24,7 +24,7 @@ class VMCandleProcessor extends CandleProcessor {
                 const key = s+'-'+t;
                 let box = 
                 ( TF.get(t).pulseOnly ? null :
-                    this.analyzersFactory.createBox(strategies, this.ordersManager)
+                    this.analyzersFactory.createBox(strategies, this.ordersManager, this)
                 );
                 this.tickers[key] = 
                     new TickerProcessor(s,t,box);
@@ -47,6 +47,12 @@ class VMCandleProcessor extends CandleProcessor {
     getLastPrice(symbol) {
         return this.lastPrice[ symbol ];
     }
+
+    getCandlesFrom(symbol, timeframe, closeTime) {
+        const ticker = this.getTicker(symbol,timeframe);
+        return ticker.getCandlesFrom(closeTime);
+    }
+
 
 /* candle processing */
 

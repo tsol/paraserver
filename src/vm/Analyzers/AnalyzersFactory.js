@@ -41,6 +41,9 @@ class AnalyzersFactory {
             ['emac144',      'ema',           {source:'c', period: 144}, null],
 
             ['mat1',       'matrend',      {ma1:'emac20',ma2:'emac50',ma3:'emac200',name:'1'}, null],
+
+            ['hos',        'hos',         {}, null],
+
             ['macd',       'macd',         {}, null],
             ['bbands',     'bbands',       {}, null],
             
@@ -65,7 +68,6 @@ class AnalyzersFactory {
             ['cma3buy',     'st_tpc_cma3',         true,    null],
             ['cma3sell',    'st_tpc_cma3',         false,   null],
             
-            ['dbltop',      'st_dblbottom',    false,   null],
             ['ttcwoff',     'st_ttc_woff',     null,    null],
             ['geroflvl',    'st_ger_oflvl',    null,    null],
             ['hoffman1',    'st_hoffman1',    null,    null],
@@ -107,9 +109,9 @@ class AnalyzersFactory {
         return new AnalyzerClass(constructorParams);
     }
 
-    createBox(strategiesToInit, ordersManager) {
+    createBox(strategiesToInit, ordersManager, candleProcessor) {
  
-        const box = new AnalyzersBox( this, ordersManager );
+        const box = new AnalyzersBox( this, ordersManager, candleProcessor );
 
         strategiesToInit.forEach( s => {
             box.addAnalyzer(s);

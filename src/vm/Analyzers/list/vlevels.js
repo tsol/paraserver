@@ -13,6 +13,7 @@ class AnVLevels extends Analyzer {
         constructor() {
             super();
             this.levels = [];
+            this.levelId = 0;
         }
 
         getId() { return 'vlevels'; }
@@ -74,6 +75,8 @@ class AnVLevels extends Analyzer {
             return levels;
         }
 
+
+
         addBounceLevel(bounceUp, time, y, atr, weight, candle) {
             let wasFound = false;
             for (const l of this.levels)
@@ -86,9 +89,15 @@ class AnVLevels extends Analyzer {
             if (wasFound || weight < 30) {
                 return;
             }
-            const newLevel = new Level();
+            this.levelId++;
+            const newLevel = new Level(this.levelId);
             newLevel.addPoint(time,y,bounceUp,atr,weight,candle);
             this.levels.push(newLevel);
+            if (bounceUp) {
+                CDB.labelBottom(candle,'NL='+this.levelId);
+            } else {
+                CDB.labelTop(candle,'NL='+this.levelId);
+            }
         }
 
         forgetBefore(time) {
@@ -121,69 +130,54 @@ class AnVLevels extends Analyzer {
         }
 
 
-        getBottomTouchWeights(candle)
+        getBottomTouchWeights(candle,olderThan)
         {
             let resistWeight = 0;
             let supportWeight = 0;
+            let levelIds = [];
 
-            this.levels.forEach( (l) => {
+            const levels = ( olderThan ? 
+                this.levels.filter(l => l.fromX < olderThan ) : this.levels );
 
-                if (    l.inLevelExact(candle.bodyLow()) 
-                    ||  l.inLevelExact(candle.low)
-                ) {
+            levels.forEach( (l) => {
+                if (  l.inLevelExact(candle.low) ) {
                     resistWeight += l.resistWeight;
                     supportWeight += l.supportWeight;
+                    levelIds.push(l.getId());
                 }
             })
 
             return {
                 rw: resistWeight,
-                sw: supportWeight
+                sw: supportWeight,
+                ids: levelIds
             };
         }
 
-        getTopTouchWeights(candle)
+        getTopTouchWeights(candle,olderThan)
         {
             let resistWeight = 0;
             let supportWeight = 0;
+            let levelIds = [];
 
-            this.levels.forEach( (l) => {
+            const levels = ( olderThan ? 
+                this.levels.filter(l => l.fromX < olderThan ) : this.levels );
 
-                if (    l.inLevelExact(candle.bodyHigh()) 
-                    ||  l.inLevelExact(candle.high)
-                ) {
+            levels.forEach( (l) => {
+                if (l.inLevelExact(candle.high)) {
                     resistWeight += l.resistWeight;
                     supportWeight += l.supportWeight;
+                    levelIds.push(l.getId());
                 }
             })
 
             return {
                 rw: resistWeight,
-                sw: supportWeight
+                sw: supportWeight,
+                ids: levelIds
             };
         }
 
-
-        getTopTouchWeights(candle)
-        {
-            let resistWeight = 0;
-            let supportWeight = 0;
-
-            this.levels.forEach( (l) => {
-
-                if (    l.inLevelExact(candle.bodyHigh()) 
-                    ||  l.inLevelExact(candle.high)
-                ) {
-                    resistWeight += l.resistWeight;
-                    supportWeight += l.supportWeight;
-                }
-            })
-
-            return {
-                rw: resistWeight,
-                sw: supportWeight
-            };
-        }
 
         exactPriceMatch(arrayOfPrices)
         {
@@ -211,8 +205,9 @@ class AnVLevels extends Analyzer {
 
 class Level {
 
-    constructor() {
+    constructor(id) {
         this.points = [];
+        this.id = id;
         this.y0 = undefined;
         this.y1 = undefined;
         this.resY0 = undefined;
@@ -226,6 +221,8 @@ class Level {
         this.prices = []; // all prices forming level cached here
     }
 
+    getId() { return this.id; };
+    
     addPoint(time,level,bounceUp,height,weight,candle) {
         const wasPoint = this.points.find( p => p.time === time );
         if (wasPoint) { return; }
@@ -252,6 +249,7 @@ class Level {
 
     toJSON() {
         return {
+            i: this.id,
             y0: this.resY0,
             y1: this.resY1,
             r: this.countResist,

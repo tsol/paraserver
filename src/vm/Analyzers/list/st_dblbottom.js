@@ -7,94 +7,102 @@
 const Strategy = require("../types/Strategy");
 const CDB = require('../../../types/CandleDebug');
 
-class StrategyDoubleBottom extends Strategy {
+class EntryFinder {
 
     static MAX_BOTTOMS_LENGTH   = 25;
     static MAX_ENTRY_LENGTH     = 40;
-    
+    static REQ_LEVEL            = 40;
+    static RR_RATIO             = 1.5;
+    static NECK_HEIGHT_MULT     = 0.95;
+
     static DBG_BOTTOMS          = { radius: 1.7, color: 'black' };
-
-    static TF_SETTINGS = {
-        '5m':   { reqlvl: 40, ratio: 1.35 },
-        '15m':  { reqlvl: 40, ratio: 1.35 },
-        '30m':   { reqlvl: 40, ratio: 1.5 },
-        '1h':   { reqlvl: 40, ratio: 1.5 }
-    };
-
-    getParams(timeframe) {
-        return {
-            statsMaxOrders: 1,
-            statsOkRatio: 0
-        };
-    }
-
-    constructor(isLong) {
-        super();
+ 
+    constructor(strategyObject,id,isLong,firstBottom) {
+        this.id = id;
         this.isLong = isLong;
-        this.name = 'dbl'+(isLong ? 'bottom' : 'top');
-        this.resetFinder();
-    }
+        this.strategyObject = strategyObject;
 
-    init(io)
-    {
-        io.require('hl_trend');
-        io.require('vlevels');
-    }
+        this.firstBottom = firstBottom;
 
-    getId() { return this.name; }
+        if (this.isLong) {
+            this.firstBottomY0 = firstBottom.low;
+            this.firstBottomY1 = firstBottom.bodyLow();
+        }
+        else {
+            this.firstBottomY0 = firstBottom.bodyHigh();
+            this.firstBottomY1 = firstBottom.high;
+        }
 
-    resetFinder() {
-        this.firstBottom = undefined;
-        this.firstBottomY0 = undefined;
-        this.firstBottomY1 = undefined;
-
-        this.secondBottom = undefined;
+        this.secondBottom = null;
         this.greenCount = 0;
         this.redCount = 0;
         this.totalCount = 0;
         
-        this.highestNeckline = undefined;
-        this.necklineCandle = undefined;
+        this.neckCandle = null;
+
+        this.secondCandle = null;
+        this.prevCandle = null;
+        this.wfcandle = null;   // should be at leas one wfractal
+
+        this.label(firstBottom,'B1');
+
+        console.log('DBL: new finder #'+id+', '+isLong+', '+firstBottom.symbol);
+
     }
 
- 
+    getId() { return this.id; }
 
     addCandle(candle, io) {
-        super.addCandle(candle, io);
         
-        CDB.setSource(this.getId());    
-
-        if (this.firstBottom == undefined) {
-            this.checkFirstBottom(io);
-            return;
-        }
-
         if (this.candleBreaksZone(candle)) {
             this.label(candle,'xB')
-            this.resetFinder();
-            this.checkFirstBottom(io);
-            return;
+            return false;
         }
 
-        if (this.secondBottom == undefined) {
+        if (this.totalCount == 0) {
+            this.secondCandle = candle;
+        }
+
+        this.totalCount++;
+
+        if (this.totalCount > 1) {
+            const wf = io.get('wfractals');
+            if (wf) {
+                if (this.isLong) {
+                    if (wf.type=='high') { this.wfcandle = wf; }
+                } else {
+                    if (wf.type=='low') { this.wfcandle = wf; }
+                }
+            }
+        }
+
+        if (! this.secondBottom) {
         
-            this.updateNeckline(candle);
+            this.updateNeck(candle);
 
             if (this.candleAboveZone(candle)) {
                 if (candle.isRed())
                     { this.redCount++; } else { this.greenCount++; }
             }
-
-            this.totalCount++;
-
-            if (this.totalCount > StrategyDoubleBottom.MAX_BOTTOMS_LENGTH) {
+ 
+            if (this.totalCount > EntryFinder.MAX_BOTTOMS_LENGTH) {
                 this.label(candle,'xL')
-                this.resetFinder();
-                this.checkFirstBottom(io);
-                return;
+                return false;
             }
 
             if (this.readyToSpotSecondBottom() && this.candleTouchesZone(candle)) {
+                
+                if (! this.wfcandle ) {
+                    this.label(candle,'xW');    // was no williams fractal
+                    return false;
+                }
+
+                if ( [this.firstBottom,this.prevCandle,this.secondCandle,candle]
+                    .includes(this.neckCandle)) {
+                    this.label(candle,'xNC');  // neckline is too close to secondBottom
+                    return false;
+                }
+                
                 this.secondBottom = candle;
                 this.label(candle,'B2');
             }
@@ -103,51 +111,36 @@ class StrategyDoubleBottom extends Strategy {
 
         // we have second bottom and a closure above neckline
 
-        if (this.secondBottom && this.closesAboveNeckline(candle) ) {
+        if (this.secondBottom && this.closesAboveNeck(candle) ) {
             
-            this.circle(this.firstBottom, StrategyDoubleBottom.DBG_BOTTOMS);
-            this.circle(this.secondBottom, StrategyDoubleBottom.DBG_BOTTOMS);
+            this.circle(this.firstBottom, EntryFinder.DBG_BOTTOMS);
+            this.circle(this.secondBottom, EntryFinder.DBG_BOTTOMS);
 
-            this.label(this.necklineCandle,'NCK');
+            this.label(this.neckCandle,'NCK');
 
             if ( ! this.makeEntry(candle, io) ) {
                 this.label(candle,'NE');
             }
 
-            return this.resetFinder();
+            return false;
         }
 
         // Limit length search for breaking neck
 
-        if (++this.totalCount > StrategyDoubleBottom.MAX_ENTRY_LENGTH) {
+        if (this.totalCount > EntryFinder.MAX_ENTRY_LENGTH) {
             this.label(candle,'xN')
-            return this.resetFinder();
+            return false;
         }
 
+        this.prevCandle = candle;
 
-    }
-
-
-    checkFirstBottom(io) {
-        const possibleBottom = io.get('hl_trend.new.'+(this.isLong ? 'low' : 'high')); 
-        if (! possibleBottom )
-            { return false; }
-
-        this.firstBottom = possibleBottom;
-
-        if (this.isLong) {
-            this.firstBottomY0 = possibleBottom.low;
-            this.firstBottomY1 = Math.min(possibleBottom.open, possibleBottom.close);
-        }
-        else {
-            this.firstBottomY0 = Math.max(possibleBottom.open, possibleBottom.close);
-            this.firstBottomY1 = possibleBottom.high;
-        }
-        this.label(possibleBottom,'B1');
         return true;
+
     }
+
 
     label(candle,text) {
+        text = this.id+'.'+text;
         if (this.isLong) {
             return CDB.labelBottom(candle,text);
         }
@@ -161,26 +154,24 @@ class StrategyDoubleBottom extends Strategy {
         return CDB.circleHigh(candle,param);
     }
 
-    updateNeckline(candle)
+    updateNeck(candle)
     {
         if (this.isLong) {
-            if ( (this.highestNeckline === undefined) || (candle.bodyHigh() > this.highestNeckline)) {
-                this.highestNeckline = candle.bodyHigh();
-                this.necklineCandle = candle;
+            if ( (!this.neckCandle) || (candle.bodyHigh() > this.neckCandle.bodyHigh())) {
+                this.neckCandle = candle;
             }
             return;
         }
-        if ((this.highestNeckline === undefined) || (candle.bodyLow() < this.highestNeckline)) {
-            this.highestNeckline = candle.bodyLow();
-            this.necklineCandle = candle;
+        if ( (!this.neckCandle) || (candle.bodyLow() < this.neckCandle.bodyLow())) {
+            this.neckCandle = candle;
         }
     }
 
-    closesAboveNeckline(candle) {
+    closesAboveNeck(candle) {
         if (this.isLong) {
-            return candle.bodyHigh() > this.highestNeckline;
+            return candle.close > this.neckCandle.bodyHigh();
         }
-        return candle.bodyLow() < this.highestNeckline;
+        return candle.close < this.neckCandle.bodyLow();
     }
 
     readyToSpotSecondBottom()
@@ -196,7 +187,7 @@ class StrategyDoubleBottom extends Strategy {
         if (this.isLong) {
             return candle.low > this.firstBottomY1;
         }
-        return candle.high < this.firstBottomY0;
+        return candle.low < this.firstBottomY0;
     }
 
     candleBreaksZone(candle) {
@@ -216,38 +207,69 @@ class StrategyDoubleBottom extends Strategy {
 
 
     makeEntry(candle, io) {
-        
-        const tf = candle.timeframe;
-        const settings = StrategyDoubleBottom.TF_SETTINGS[tf];
-
-        if (! settings ) {
-            //console.log('DBLBOTTOM: no entry for timeframe, no settings');
-            return false;
-        }
-    
+         
         let levelTouchWeight = 0;
+
         let touchFirst = this.countTouchWeights(this.firstBottom,io);
         levelTouchWeight += ( this.isLong ? touchFirst.sw : touchFirst.rw );
-
+//        levelTouchWeight += touchFirst.sw + touchFirst.rw;
+  
         let touchSecond = this.countTouchWeights(this.secondBottom,io);
         levelTouchWeight += ( this.isLong ? touchSecond.sw : touchSecond.rw );
+//        levelTouchWeight += touchSecond.sw + touchSecond.rw;
 
-        if (levelTouchWeight < settings.reqlvl ) {
-            // console.log('DBLBOTTOM: no entry, weight not enough '+levelTouchWeight+' < '
-            //    + settings.reqlvl );
+        /*
+        let sameLevel = false;
+        touchFirst.ids.forEach( tfId => { 
+            if (touchSecond.ids.includes(tfId)) { sameLevel = true; }
+        });
+        if ( ! sameLevel ) { return false; }
+*/
+        if (levelTouchWeight < EntryFinder.REQ_LEVEL ) {
             return false;
         }
-
-        //this.label(this.firstBottom,JSON.stringify(touchFirst));
-        //this.label(this.secondBottom,JSON.stringify(touchSecond));
         
-        this.label(candle,'W:'+levelTouchWeight);
+        let ids = [ ... touchFirst.ids, ... touchSecond.ids];
 
-        io.makeEntry(this, ( this.isLong ? 'buy' : 'sell' ), {
-            rrRatio: settings.ratio,
-            //stopFrom: ( this.isLong ? this.necklineCandle.high : this.necklineCandle.low ),
+        this.label(candle,'W:'+levelTouchWeight+' ['+ids.join(',')+']');
+
+        /* neck height SL/TP */
+/*      
+        let figureHeight = 0;
+        let entryPrice = candle.close;
+        let stopLoss = 0;
+        let takeProfit = 0;
+        let takeLen = 0;
+
+        if (this.isLong) {
+            figureHeight = this.neckCandle.bodyHigh() -
+                Math.min(this.firstBottom.bodyLow(),this.secondBottom.bodyLow());
+            takeProfit = this.neckCandle.bodyHigh() + 
+                figureHeight * EntryFinder.NECK_HEIGHT_MULT;
+            takeLen = takeProfit - entryPrice;
+            stopLoss = entryPrice - takeLen / EntryFinder.RR_RATIO;
+        }
+        else {
+            figureHeight = 
+                Math.max(this.firstBottom.bodyHigh(),this.secondBottom.bodyHigh()) -
+                this.neckCandle.bodyLow();
+                takeProfit = this.neckCandle.bodyLow() -
+                    figureHeight * EntryFinder.NECK_HEIGHT_MULT;
+                takeLen = entryPrice - takeProfit;
+                stopLoss = entryPrice + takeLen / EntryFinder.RR_RATIO;
+        }
+
+        io.makeEntry(this.strategyObject, ( this.isLong ? 'buy' : 'sell' ), {
+            rrRatio: EntryFinder.RR_RATIO,
+            takeProfit, stopLoss
+        });
+        
+*/
+        io.makeEntry(this.strategyObject, ( this.isLong ? 'buy' : 'sell' ), {
+            rrRatio: EntryFinder.RR_RATIO,
             usePrevSwing: true
         });
+
 
         return true;
 
@@ -255,33 +277,98 @@ class StrategyDoubleBottom extends Strategy {
 
     countTouchWeights(candle, io)
     {
-        let result = {
-            rw: 0, sw: 0, rwH: 0, swH: 0
-        };
+        // resist weight, support weight, level ids
+        let result = { rw: 0, sw: 0, ids: [] };
 
         const vlevels = io.get('vlevels');
-        if (vlevels) { 
-            let bt = ( this.isLong ? 
-                    vlevels.getBottomTouchWeights(candle) :
-                    vlevels.getTopTouchWeights(candle)
-            );
-            result.rw += bt.rw;
-            result.sw += bt.sw;
-        }
+        if (!vlevels) { return result; } 
+            
+        let bt = ( this.isLong ? 
+                vlevels.getBottomTouchWeights(candle,this.firstBottom.openTime) :
+                vlevels.getTopTouchWeights(candle,this.firstBottom.openTime)
+        );
 
-        const vlevels_high = io.get('vlevels_high');
-        if (vlevels_high) { 
-            let bt = ( this.isLong ?
-                vlevels_high.getBottomTouchWeights(candle) :
-                vlevels_high.getTopTouchWeights(candle)
-            );
-            result.rwH += bt.rw;
-            result.swH += bt.sw;
-        }
-
+        result.rw += bt.rw;
+        result.sw += bt.sw;
+        result.ids = [ ... result.ids, ... bt.ids];
+        
         return result;
+    }
+
+
+
+}
+
+
+class DBLBOTTOM extends Strategy {
+
+    constructor() {
+        super();
+        this.finders = [];
+    }
+
+    init(io)
+    {
+        io.require('hl_trend');
+        io.require('vlevels');
+        io.require('wfractals');
+    }
+
+    getId() { return 'dblbottom'; }
+
+    nextFinderId() {
+        //return ++this.fid;
+        let max = 0;
+        this.finders.forEach( f => { if (f.getId() > max) { max = f.getId(); } });
+        return max+1;
+    }
+
+    newFinder(isLong,startCandle,io,currentCandle)
+    {
+        const exists = this.finders.find( f => (f.isLong==isLong)&&(f.firstBottom===startCandle) );
+        if (exists) { return null; }
+
+        const sinceCandles = io.getCandlesFrom(startCandle.closeTime);
+
+        const newId = this.nextFinderId();
+        const newFinder = new EntryFinder(this,newId,isLong,startCandle);
+
+        for (var c of sinceCandles) {
+            if (c !== currentCandle) { // currentCandle will be processed in main cycle
+                if (! newFinder.addCandle(c,io) ) {
+                    return null;
+                }
+            }
+        }
+
+        this.finders.push(newFinder);
+    }
+
+  
+    addCandle(candle, io) {
+        super.addCandle(candle, io);
+        CDB.setSource(this.getId());  
+                
+        const newHigh   = io.get('hl_trend.new.high');   
+        if (newHigh)
+            { this.newFinder(false,newHigh,io,candle); }
+
+        const newLow    = io.get('hl_trend.new.low'); 
+        if (newLow)
+            { this.newFinder(true,newLow,io,candle); }
+
+        let findersRemove = [];
+
+        for (var finder of this.finders) {
+            if ( ! finder.addCandle(candle,io) ) {
+                findersRemove.push(finder);
+            }
+        }
+
+        this.finders = this.finders.filter( f => ! findersRemove.includes(f) );
+
     }
 
 }
 
-module.exports = StrategyDoubleBottom;
+module.exports = DBLBOTTOM;
