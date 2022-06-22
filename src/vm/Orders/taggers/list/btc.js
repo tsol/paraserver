@@ -41,7 +41,6 @@ class BTC extends Tagger {
       
     }
 
-
     getBFP(orderType, btcTrend)
     {
         if (!btcTrend) { return 'N'; }

@@ -14,7 +14,7 @@ function orderStats(orders)
         return t;
     }, { gain: 0, win: 0, lost: 0 });
 
-    res.num = fOrders.length;
+    res.num = orders.length;
     res.ratio = ratio( res.win, res.lost );
     return res;
 }
@@ -34,5 +34,6 @@ function weekNum(dateObject) {
     
     return weekNumber;
 }
+
 
 module.exports = { winRatio, orderStats, fnum, weekNum };

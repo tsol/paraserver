@@ -226,6 +226,8 @@ class OrdersEmulator {
         order.setComment(comment);
 
         /* filter */
+
+        //if (! ((order.tags.WRK.value=='P')&&(order.tags.NYC.value=='P')&&(order.tags.MCORR.value=='N')) ) { return null; }
         //if (order.tags.CU5.value !== 'Y') { return null; }
         
         CDB.setSource(strategy);

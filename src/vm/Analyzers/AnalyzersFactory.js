@@ -47,7 +47,7 @@ class AnalyzersFactory {
             ['macd',       'macd',         {}, null],
             ['bbands',     'bbands',       {}, null],
             
-            ['btc4h',   'btctrend',         '4h',   null],
+            ['btctrend',   'btctrend',         '4h',   null],
             ['macdf',      'macdf',        {},   null],
 
             ['wfractals',   'wfractals',    null,   null],

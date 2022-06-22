@@ -7,6 +7,7 @@ const MAXPRF = require('./list/maxprf.js');
 const MCORRECT = require('./list/mcorrect.js');
 const RSI = require('./list/rsi.js');
 const HOS = require('./list/hos.js');
+const GD100 = require('./list/gd100.js');
 
 class OrderTaggers {
 
@@ -24,7 +25,8 @@ class OrderTaggers {
             new SESSIONS(params),
             new BTC(params),
             new RSI(params),
-            new HOS(params)
+            new HOS(params),
+            new GD100(params)
         ];
 
     }
@@ -58,7 +60,7 @@ class OrderTaggers {
 
         if (this.previousMonth !== month) {
             this.previousMonth = month;
-            //console.log('OSF: new month '+month+' at '+now.toLocaleDateString('ru-RU'));
+            console.log('OSF: new month '+month+' at '+now.toLocaleDateString('ru-RU'));
 
             this.filters.forEach( f => {
                 f.monthlyTick(order,flags,orders,month);
@@ -68,7 +70,7 @@ class OrderTaggers {
         if (this.previousWeek !== week) {
             this.previousWeek = week;
             
-            //console.log('OSF: new week '+week+' at '+now.toLocaleDateString('ru-RU'));
+            console.log('OSF: new week '+week+' at '+now.toLocaleDateString('ru-RU'));
 
             this.filters.forEach( f => {
                 f.weeklyTick(order,flags,orders,week);

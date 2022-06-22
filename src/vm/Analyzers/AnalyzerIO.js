@@ -21,7 +21,7 @@ class AnalyzersIO {
     init() {
         this.require('atr14');
         this.require('prev_swing');
-        this.require('btc4h');
+        this.require('btctrend');
     }
 
     require(analyzerName) {
