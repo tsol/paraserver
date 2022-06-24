@@ -3,15 +3,15 @@ const OrdersReal = require('./OrdersReal.js');
 const { TF } = require('../../types/Timeframes.js');
 
 const SETTINGS = require('../../../private/private.js');
-const PeriodTagsCompare = require('../../reports/PeriodTagsCompare.js');
+//const PeriodTagsCompare = require('../../reports/PeriodTagsCompare.js');
 
 class OrdersManager {
     
     static LIMIT_ORDER_TIMEOUT_CANDLES = 1;
 
     constructor(brokerUser, brokerCandles, clients) {
+
         this.emulator = new OrdersEmulator(brokerCandles);
-        this.report = new PeriodTagsCompare();
         this.clients = clients;
         this.brokerCandles = brokerCandles;
         this.real = new OrdersReal(brokerUser, clients);
@@ -50,7 +50,7 @@ class OrdersManager {
     }) {
         const isLive = flags.get('is_live');
 
-        const emulatedOrder = this.emulator.marketOrder({
+        const emulatedEntry = this.emulator.marketEntry({
             time,
             strategy,
             symbol,
@@ -64,15 +64,17 @@ class OrdersManager {
             candle
         });
 
-        if (! emulatedOrder ) { return null; }
+        if (! emulatedEntry ) { return null; }
 
         if ( isLive ) {
-            if (emulatedOrder.tags && emulatedOrder.tags.CU5.value === 'Y') {
-                this.doMakeOrderFromEmulated( emulatedOrder.id );
+            /*
+            if (emulatedEntry.tags && emulatedEntry.tags.CU5.value === 'Y') {
+                this.doMakeEntryFromEmulated( emulatedEntry.id );
             }
+            */
         }
 
-        return emulatedOrder;
+        return emulatedEntry;
     }
 
 
@@ -83,7 +85,7 @@ class OrdersManager {
 
         params.expire = expire;
 
-        this.emulator.limitOrder( params );
+        this.emulator.limitEntry( params );
 
         const isLive = params.flags.get('is_live');
 
@@ -148,11 +150,12 @@ class OrdersManager {
 
     /* user interface io */
    
-    getEmulatedOrdersList()
+    getEntriesList()
     {
-        return this.emulator.toJSON();
+        return this.emulator.toGUI();
     }
 
+    /*
     getEmulatedStatistics(fromTimestamp, toTimestamp) {
         return this.emulator.genStatistics(fromTimestamp, toTimestamp);
     }
@@ -170,10 +173,13 @@ class OrdersManager {
                 params.eval 
         );
     }
+*/
 
-    getEmulatedOrder(orderId) {
-        return this.emulator.getOrderById(orderId);
+    getEntry(entryId) {
+        return this.emulator.getEntryById(entryId);
     }
+
+/*
 
     async doMakeOrderFromEmulated(emulatedOrderId) {
         const emulatedOrder = this.emulator.getOrderById(emulatedOrderId);
@@ -205,6 +211,8 @@ class OrdersManager {
         return result;
 
     }
+*/
+
 
 
 }

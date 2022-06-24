@@ -52,36 +52,23 @@ class WebClients {
                 socket.emit("chart_flags", clientIO.getTickerFlags(arg.tickerId) );
             });
         
-            socket.on('restart_all', (arg) => {
-        
-                console.log('=====> RESTART START')
-                
-                clientIO.restartAll(arg.runLive);
-                
-                console.log('=====> RESTART END')
-        
-                let data = clientIO.getOrdersList();
-                socket.emit("orders", data);
-        
-            });
-        
             socket.on("list_tickers", (arg) => {
                 let data = clientIO.getTickersState();
                 socket.emit("tickers", data);
             });
         
-            socket.on("list_orders", (arg) => {
-                let data = clientIO.getOrdersList();
-                socket.emit("orders", data);
+            socket.on("list_entries", (arg) => {
+                let data = clientIO.getEntriesList();
+                socket.emit("entries", data);
             });
         
         
-            socket.on("get_order", (arg) => {
-                let data = clientIO.getOrder(arg.orderId);
-                socket.emit("order", data);
+            socket.on("get_entry", (arg) => {
+                let data = clientIO.getEntry(arg.entryId);
+                socket.emit("entry", data);
             });
         
-        
+        /*
             socket.on("make_real_order", (arg) => {
                 socket.emit("new_real_order", 
                     clientIO.doMakeOrderFromEmulated(arg.orderId)
@@ -109,6 +96,8 @@ class WebClients {
                     socket.emit("orders_report", [{ periodName: err.message }] )
                 }
             });   
+
+        */
         
         });
         

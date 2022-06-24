@@ -1,3 +1,6 @@
+
+// todo: should accept manipulate RealOrder class
+
 const UserEventsInterface = require('../../brokers/types/BrokerEventsUserInterface.js');
 
 class OrdersReal extends UserEventsInterface {

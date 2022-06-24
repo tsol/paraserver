@@ -1,11 +1,10 @@
 const TH = require('../../../../helpers/time');
-const { winRatio, orderStats } = require('../../../../reports/helper');
+const { entryStats } = require('../../../../reports/helper');
 const Tagger = require('../types/Tagger');
 
 class GD100 extends Tagger {
 
     static NUM_ORDERS       = 150;
-    static GAIN_PER_ORDER   = 0.1;
     static MIN_RATIO        = 40;
 
     constructor() {
@@ -32,9 +31,9 @@ class GD100 extends Tagger {
 
         Object.keys(spl).forEach( (k) => {
             if (spl[k].length >= GD100.NUM_ORDERS) {
-                let res = orderStats(spl[k]);
+                let res = entryStats(spl[k]);
 
-                if ((res.gain/res.num >= GD100.GAIN_PER_ORDER) && (res.ratio >= GD100.MIN_RATIO))
+                if (res.ratio >= GD100.MIN_RATIO )
                 {
                     this.allow.push(k);
                 }

@@ -2,10 +2,10 @@
 * USDVOUME TAG
 */
 
-const { TF } = require('../../../../types/Timeframes.js');
+const { TF } = require('../../../../../types/Timeframes.js');
 
-const Tagger = require('../types/Tagger'); 
-const { fnum } = require('../../../../reports/helper');
+const Tagger = require('../../types/Tagger'); 
+const { fnum } = require('../../../../../reports/helper');
 
 class USDVOL extends Tagger {
     

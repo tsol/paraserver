@@ -10,9 +10,6 @@ class ClientIO {
         this.vm = vm;
     }
  
-    restartAll(runLive) {        
-    }
-
     getAllSymbols() {
         const seq = this.vm.getSequencer();
         if (! seq) { return []; }
@@ -46,29 +43,30 @@ class ClientIO {
         return this.vm.getProcessor().getLastPrice(symbol);
     }
 
-    getOrdersList() {
-        return this.vm.getOrdersManager().getEmulatedOrdersList();
+    getEntriesList() {
+        return this.vm.getOrdersManager().getEntriesList();
     }
 
-    getOrder(orderId) {
-        return this.vm.getOrdersManager().getEmulatedOrder(orderId);
+    getEntry(entryId) {
+        return this.vm.getOrdersManager().getEntry(entryId);
     }
 
     getReport(params) {
-        return this.vm.getOrdersManager().getReport(params);
+        //return this.vm.getOrdersManager().getReport(params);
     }
 
     getOrdersStatistics(fromTimestamp, toTimestamp) {
-        return this.vm.getOrdersManager().getEmulatedStatistics(fromTimestamp, toTimestamp);
+        //return this.vm.getOrdersManager().getEmulatedStatistics(fromTimestamp, toTimestamp);
     }
 
     getTimeframes() {
         return this.vm.getTimeframes();
     }
-
+/*
     async doMakeOrderFromEmulated(emOrderId) {
         return this.vm.getOrdersManager().doMakeOrderFromEmulated(emOrderId);
     }
+*/
 
 }
 

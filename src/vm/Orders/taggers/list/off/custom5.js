@@ -2,7 +2,7 @@
    
 */
 
-const Tagger = require('../types/Tagger'); 
+const Tagger = require('../../types/Tagger'); 
 
 class CUSTOM5 extends Tagger {
 

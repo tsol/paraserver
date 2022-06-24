@@ -6,15 +6,15 @@ function winRatio(win, loose)
     return  ratio;
 }
 
-function orderStats(orders)
+function entryStats(entrys)
 {
-    let res = orders.reduce( (t, order) => { 
-        t.gain += order.gain;
-        if ( order.gain > 0 ) { t.win++ } else { t.lost++ };
+    let res = entrys.reduce( (t, entry) => { 
+        t.gp += entry.gainPercent;
+        if ( entry.gainPercent > 0 ) { t.win++ } else { t.lost++ };
         return t;
-    }, { gain: 0, win: 0, lost: 0 });
+    }, { gp: 0, win: 0, lost: 0 });
 
-    res.num = orders.length;
+    res.num = entrys.length;
     res.ratio = ratio( res.win, res.lost );
     return res;
 }
@@ -36,4 +36,4 @@ function weekNum(dateObject) {
 }
 
 
-module.exports = { winRatio, orderStats, fnum, weekNum };
+module.exports = { winRatio, entryStats, fnum, weekNum };

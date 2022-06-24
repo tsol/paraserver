@@ -3,8 +3,6 @@ const { weekNum } = require('../../../reports/helper.js');
 const MACDF = require('./list/macdf.js');
 const SESSIONS = require('./list/sessions.js');
 const BTC = require('./list/btc.js');
-const MAXPRF = require('./list/maxprf.js');
-const MCORRECT = require('./list/mcorrect.js');
 const RSI = require('./list/rsi.js');
 const HOS = require('./list/hos.js');
 const GD100 = require('./list/gd100.js');
@@ -19,8 +17,6 @@ class OrderTaggers {
         this.params = params;
 
         this.filters = [
-            new MAXPRF(params),
-            new MCORRECT(params),
             new MACDF(params),
             new SESSIONS(params),
             new BTC(params),
