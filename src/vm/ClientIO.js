@@ -48,7 +48,7 @@ class ClientIO {
     }
 
     getEntry(entryId) {
-        return this.vm.getOrdersManager().getEntry(entryId);
+        return this.vm.getOrdersManager().getEntryById(entryId);
     }
 
     getReport(params) {

@@ -107,7 +107,7 @@ class AnalyzersIO {
 
         params.isLimit = isLimit;
 
-        this.ordersManager.queueOrder(params);
+        this.ordersManager.queueEntry(params);
 
     }
 

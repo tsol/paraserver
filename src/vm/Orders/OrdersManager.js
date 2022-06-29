@@ -1,9 +1,10 @@
-const OrdersEmulator = require('./OrdersEmulator');
 const OrdersReal = require('./OrdersReal.js');
 const { TF } = require('../../types/Timeframes.js');
 
+const EntryPlan = require('./EntryPlan');
+const Entry = require('../../types/Entry.js');
+
 const SETTINGS = require('../../../private/private.js');
-//const PeriodTagsCompare = require('../../reports/PeriodTagsCompare.js');
 
 class OrdersManager {
     
@@ -11,12 +12,18 @@ class OrdersManager {
 
     constructor(brokerUser, brokerCandles, clients) {
 
-        this.emulator = new OrdersEmulator(brokerCandles);
         this.clients = clients;
         this.brokerCandles = brokerCandles;
+        this.entryPlan = new EntryPlan(brokerCandles);
         this.real = new OrdersReal(brokerUser, clients);
-        this.ordersQueue = [];
-        
+
+        this.entriesQueue = [];
+        this.entries = [];
+        this.activeEntries = [];
+        this.limitEntries = [];
+
+        this.taggers = new OrderTaggers(this.params);   
+
         this.lastUpdateTime = null;
         this.previousHour = null;
         this.previousMinute = null;
@@ -26,8 +33,8 @@ class OrdersManager {
         this.lastUpdateTime = null;
         this.previousHour = null;
         this.previousMinute = null;
-        this.emulator.reset();
         this.real.reset();
+        // todo entries/entryPlan etc...
     }
     
     /* analyzers IO */
@@ -36,85 +43,212 @@ class OrdersManager {
         return this.brokerCandles.getSymbolInfo(symbol);
     }
 
-    queueOrder(params) {
-        this.ordersQueue.push(params);
+    queueEntry(params) {
+        this.entriesQueue.push(params);
     }
 
-    marketOrder(params) {
-        /*{
-            time,
-            strategy,
-            symbol,
-            timeframe,
-            isLong,
-            entryPrice, 
-            takeProfit, 
-            stopLoss,
-            comment,
-            flags,
-            candle 
-        }*/
+    marketEntry(params) {
 
         params = this.adjustSLTP(params);
         if (! params ) { return null; }
 
-        const isLive = flags.get('is_live');
+        let flagsSnapshot = null;
 
-        const emulatedEntry = this.emulator.marketEntry(params);
-        if (! emulatedEntry ) { return null; }
-
-        if ( isLive ) {
-            /*
-            if (emulatedEntry.tags && emulatedEntry.tags.CU5.value === 'Y') {
-                this.doMakeEntryFromEmulated( emulatedEntry.id );
-            }
-            */
+        if (! SETTINGS.noFlagsSnapshot) {
+            flagsSnapshot = JSON.parse(JSON.stringify(flags.getAll()));
         }
 
-        return emulatedEntry;
+        const entry = new Entry(params);
+
+        entry.setFlags(flagsSnapshot);
+        entry.setTags( this.taggers.getTags(entry, flags, this.entries, entry.tags) );
+        entry.setComment(comment);
+
+        /* filter */
+    
+        CDB.setSource(strategy);
+        CDB.labelTop(candle,'EN');
+        CDB.circleMiddle(candle,{ color: 'blue', radius: 5, alpha: 0.1 });
+        CDB.entry(candle,entryPrice,takeProfit,stopLoss);
+
+        this.entries.push(entry);
+        this.activeEntries.push(entry);
+
+        return entry;
     }
 
 
-    limitOrder( params ) {
+    limitEntry( params ) {
 
         params = this.adjustSLTP(params);
         if (! params ) { return null; }
-        
+
         const expire = params.time + OrdersManager.LIMIT_ORDER_TIMEOUT_CANDLES *
              TF.getTimeframeLength(params.timeframe);
 
         params.expire = expire;
 
-        this.emulator.limitEntry( params );
+        console.log('OEMU: new limit entry: '+params.symbol+'-'+params.timeframe+' '
+        + TH.ls(params.time) +'('+params.time+') -> '+TH.ls(params.expire)+' ('+params.expire+')');
 
-        const isLive = params.flags.get('is_live');
-
-        if ( isLive ) {
-            // todo: limit real order
-        }
-
+        this.limitEntries.push(params);
     }
 
 
+    approveLiveEntries(entries, isLimit) {
+        if (SETTINGS.dev ) {
+            return;
+        }
+  
+        let entriesApproved = this.entryPlan.addEntries(entries);
 
+        // to REAL if not Limit. 
+    }
 
     /* candleProcessor io */
 
-    processOrdersQueue() {
-        this.ordersQueue.forEach( p => {
-            if (p.isLimit) { this.limitOrder(p); }
-            else { this.marketOrder(p); }
+    // this is called at the end of each candle sequencer phase
+    // to process all Entries accumulated in buffer
+    processEntriesQueue() {
+        let addedEntries = [];
+        this.entriesQueue.forEach( p => {
+            if (p.isLimit) { this.limitEntry(p); }
+            else { 
+                let entry = this.marketEntry(p);
+                if (entry) { addedEntries.push(entry); }
+             }
         });
-        this.ordersQueue = [];
+        this.entriesQueue = [];
+        this.approveLiveEntries(addedEntries, false);
     }
 
     priceUpdate(symbol,eventTime,lowPrice,highPrice,currentPrice) {
 
         if ( this.isClockUpdated(eventTime)) { this.runSchedule(); }
 
-        this.emulator.priceUpdate(symbol,eventTime,lowPrice,highPrice,currentPrice);
+        const entries = this.activeEntries.filter( o => (o.symbol === symbol) );
+        let long  = entries.filter( o => o.isLong() );
+        let short = entries.fapproveLiveilter( o => o.isShort() );
+        
+        // 1. MARGIN CALLS + STOP LOSSES first
+
+        short.forEach( (o) => {            
+            if ( highPrice >= o.stopLoss ) {
+                o.updateCurrentPrice(o.stopLoss);
+                this.closeEntry(o, false);
+            } 
+        });
+
+        long.forEach( (o) => {
+            if (lowPrice <= o.stopLoss) {
+                o.updateCurrentPrice(o.stopLoss);
+                this.closeEntry(o, false);
+            } 
+        });
+
+        short = short.filter( o => o.isActive() );
+        long = long.filter( o => o.isActive() );
+
+        // 2. take profits
+
+        short.forEach( (o) => {
+            if (lowPrice <= o.takeProfit) {
+                o.updateCurrentPrice(o.takeProfit);
+                this.closeEntry(o, true);
+            } 
+        });
+
+        long.forEach( (o) => {
+            if (highPrice >= o.takeProfit) {
+                o.updateCurrentPrice(o.takeProfit);
+                this.closeEntry(o, true);
+            } 
+        });
+
+
+        this.limitEntriesPriceUpdate(symbol,eventTime,lowPrice,highPrice,currentPrice);
+
+        return;
+
+
     }
 
+
+    /* emulator */
+
+    limitEntriesPriceUpdate (symbol,eventTime,lowPrice,highPrice,currentPrice)
+    {
+        let entries = this.limitEntries.filter( o => (o.symbol === symbol) );
+        let addedEntries = [];
+
+        entries.forEach( (o) => {
+            if (o.isLong) {
+                if (highPrice >= o.entryPrice) {
+                    console.log('OEMU: limit BUY entry TRIGGERED '+o.symbol+'-'+o.timeframe
+                    +' '+TH.ls(eventTime)+' ('+eventTime+')');
+                    this.killLimitEntry(o);
+                    let entry = this.marketEntry(o);
+                    if (entry) { addedEntries.push(entry); }
+                }
+            }
+            else {
+                if (lowPrice <= o.entryPrice) {
+                    console.log('OEMU: limit SELL entry TRIGGERED '+o.symbol+'-'+o.timeframe
+                    +' '+TH.ls(eventTime)+' ('+eventTime+')');
+                    this.killLimitEntry(o);
+                    let entry = this.marketEntry(o);
+                    if (entry) { addedEntries.push(entry); }
+                }                
+            } 
+        });
+
+        entries = this.limitEntries.filter( o => (o.symbol === symbol) );
+
+        entries.forEach( o => {
+            if (eventTime >= o.expire) {
+                this.killLimitEntry(o);
+                console.log('OEMU: limit entry timeout '+o.symbol+'-'+o.timeframe
+                +' '+TH.ls(eventTime)+' ('+eventTime+')');
+            }
+        });
+
+        this.approveLiveEntries(addedEntries, true);
+
+    }
+
+
+
+    killLimitEntry(entry) {
+        this.limitEntries = this.limitEntries.filter( o => o !== entry );
+    }
+
+ 
+    getEntries() {
+        return this.entries;
+    }
+
+    closeAll(entriesArray) {
+        let entries = (entriesArray || this.activeEntries);
+        console.log('OEMU: closing all');
+        console.log(entries);
+        entries.forEach( o => this.closeEntry(o, o.gainPercent > 0) && o.setTag('SHTDN','Y') );
+    }
+ 
+    closeEntry(entry,isWin) {
+        entry.doClose(isWin,this.lastUpdateTime);
+        this.activeEntries = this.activeEntries.filter( o => o !== entry );
+    }
+
+    toGUI() {
+        return this.entries.map( (v) => {
+            return v.toGUI();
+        });
+    }
+
+    getEntryById(entryId) {
+        if (! this.entries || this.entries.length === 0) { return null; }
+        return this.entries.find( v => v.id == entryId );
+    }
 
     /* schedule */
 
@@ -154,12 +288,11 @@ class OrdersManager {
     scheduleHourly() {};
     scheduleMinutely() {}
 
-
     /* user interface io */
    
     getEntriesList()
     {
-        return this.emulator.toGUI();
+        return this.toGUI();
     }
 
     /*
@@ -181,10 +314,6 @@ class OrdersManager {
         );
     }
 */
-
-    getEntry(entryId) {
-        return this.emulator.getEntryById(entryId);
-    }
 
 /*
 
