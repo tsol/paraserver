@@ -35,22 +35,32 @@ class OrdersManager {
         return this.brokerCandles.getSymbolInfo(symbol);
     }
 
-    marketOrder({
-        time,
-        strategy,
-        symbol,
-        timeframe,
-        isLong,
-        entryPrice, 
-        takeProfit, 
-        stopLoss,
-        comment,
-        flags,
-        candle 
-    }) {
-        const isLive = flags.get('is_live');
 
-        const emulatedEntry = this.emulator.marketEntry({
+    adjustSLTP(params)
+    {
+        try {        
+            const aligned = this.brokerCandles.getAlignedEntryDetails(
+                params.symbol,
+                params.entryPrice,
+                1000,
+                params.stopLoss,
+                params.takeProfit
+            );
+
+            params.stopLoss = aligned.stopLoss;
+            params.takeProfit = aligned.takeProfit;
+            //quantity = aligned.quantity;
+
+            return params;
+
+        } catch (e) {
+            console.log("BAD ORDER PARAMS: "+e.message);
+            return null;
+        }
+    }
+
+    marketOrder(params) {
+        /*{
             time,
             strategy,
             symbol,
@@ -61,9 +71,15 @@ class OrdersManager {
             stopLoss,
             comment,
             flags,
-            candle
-        });
+            candle 
+        }*/
 
+        params = this.adjustSLTP(params);
+        if (! params ) { return null; }
+
+        const isLive = flags.get('is_live');
+
+        const emulatedEntry = this.emulator.marketEntry(params);
         if (! emulatedEntry ) { return null; }
 
         if ( isLive ) {
@@ -80,6 +96,9 @@ class OrdersManager {
 
     limitOrder( params ) {
 
+        params = this.adjustSLTP(params);
+        if (! params ) { return null; }
+        
         const expire = params.time + OrdersManager.LIMIT_ORDER_TIMEOUT_CANDLES *
              TF.getTimeframeLength(params.timeframe);
 
@@ -142,10 +161,7 @@ class OrdersManager {
     }
 
     scheduleHourly() {};
-    scheduleMinutely() {
-        this.emulator.scheduleMinutely();
-    }
-
+    scheduleMinutely() {}
 
 
     /* user interface io */

@@ -15,7 +15,7 @@ function entryStats(entrys)
     }, { gp: 0, win: 0, lost: 0 });
 
     res.num = entrys.length;
-    res.ratio = ratio( res.win, res.lost );
+    res.ratio = winRatio( res.win, res.lost );
     return res;
 }
 

@@ -6,6 +6,7 @@ class Order {
     {
         this.entry = entryObj;  
         this.quantity = quantity;
+        this.gain = 0;
         this.tags = {};
 
         // RealOrder
@@ -27,7 +28,7 @@ class Order {
     setTag(tagName,tagValue) { this.tags[tagName] = { value: tagValue } };
     setTags(tags) { this.tags = tags; }
     setQuantity(q) { this.quantity = q; }
-
+    setGain(g) {this.gain = g;}
     /* export/import IO */
 
     toGUI() {

@@ -1,5 +1,5 @@
 /*
-** Bitcoin trend, replies on analyzer BTCTREND, transforms flags into order tags
+** HOFFMAN TREND
 */
 
 const { TF } = require('../../../../types/Timeframes.js');

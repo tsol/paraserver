@@ -6,6 +6,7 @@ const BTC = require('./list/btc.js');
 const RSI = require('./list/rsi.js');
 const HOS = require('./list/hos.js');
 const GD100 = require('./list/gd100.js');
+const MAXPRF = require('./list/maxprf.js');
 
 class OrderTaggers {
 
@@ -22,7 +23,8 @@ class OrderTaggers {
             new BTC(params),
             new RSI(params),
             new HOS(params),
-            new GD100(params)
+            new GD100(params),
+            new MAXPRF(params)
         ];
 
     }

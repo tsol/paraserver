@@ -8,34 +8,13 @@ const Entry = require('../../types/Entry.js');
 
 const SETTINGS = require('../../../private/private.js');
 const { winRatio, fnum } = require('../../reports/helper.js');
+const EntryPlan = require('./EntryPlan');
 
 class OrdersEmulator {
 
-/*
-    static SHTDN_MAX_RISK_USD = -40;
-    static SHTDN_REQ_SAME_TYPE = 66.6;
-    static SHTDN_REQ_BELOW_TAKE_REACHED = 5;
-    static SHTDN_REQ_BELOW_LOSS_REACHED = 60;
-
-    static RISK_REAL_USD = 250;
-
-    static TRAILING_STOP_TRIGGER = 50; 
-    static TRAILING_LOSSLESS = (this.params.COST_BUY_PERCENT+this.params.COST_SELL_PERCENT) * 2;
-*/
-
     constructor(brokerCandles) {        
 
-        this.params = {};
-
-        // todo: params from private.js, later from users prefs in db
-
-        this.params.STAKE_USD = 100; /* stake using leverage */
-        this.params.LEVERAGE = 20;
-        this.params.MARGINCALL_GAIN = -1*(this.params.STAKE_USD / this.params.LEVERAGE);
-        this.params.COST_BUY_PERCENT = 0.0004;  // 4 cents from every 100 dollars
-        this.params.COST_SELL_PERCENT = 0.0004; // 0.04 % taker comission
-    
-        this.brokerCandles = brokerCandles;
+        this.entryPlan = new EntryPlan(brokerCandles);
 
         this.entries = [];
         this.activeEntries = [];
@@ -165,42 +144,11 @@ class OrdersEmulator {
         candle
     }) {
 
-        /*
-        
-        // TODO: move to tagger (dynamic tagger)
-
-        const totalRisk = this.calcActiveEntriesMaxLoss(); 
-
-        console.log('OEMU: new entry '+symbol+'/'+strategy+' total_risk='+totalRisk+
-            ' entries='+this.activeEntries.length);
-
-        if (Math.abs(totalRisk) > this.params.RISK_REAL_USD ) {
-            //console.log('OEMU: ABOVE RISK ')
-            return null;
-        }
-        */
-
         let flagsSnapshot = null;
 
         if (! SETTINGS.noFlagsSnapshot) {
             flagsSnapshot = JSON.parse(JSON.stringify(flags.getAll()));
         }
-
-/*
-        let quantity = 0;
-        let aligned = null;
-        try {        
-            aligned = this.brokerCandles.getAlignedEntryDetails(symbol,entryPrice,
-                this.params.STAKE_USD,stopLoss,takeProfit);
-            stopLoss = aligned.stopLoss;
-            takeProfit = aligned.takeProfit;
-            quantity = aligned.quantity;
-
-        } catch (e) {
-            console.log("BAD ORDER PARAMS: "+e.message);
-            return null;
-        }
-*/
 
         const entry = new Entry({
             time: time,
@@ -227,60 +175,17 @@ class OrdersEmulator {
 
         this.entries.push(entry);
         this.activeEntries.push(entry);
-        return entry;
 
+        return entry;
     }
-/*
-    calcActiveEntriesMaxLoss()
-    {
-        const ml = this.activeEntries.reduce( (sum, o) => sum+o.getTagValue('MAXLSS'), 0 );
-        return ml;
-    }
-*/
+
 
     getEntries() {
         return this.entries;
     }
 
     scheduleMinutely() {
-/*        return;
-
-    static SHTDN_MAX_RISK_USD = -40;
-    static SHTDN_REQ_SAME_TYPE = 66.6;
-    static SHTDN_REQ_BELOW_TAKE_REACHED = 5;
-    static SHTDN_REQ_BELOW_LOSS_REACHED = 60;
-
-        if (this.activeEntries.length < 30) { return; }
-        
-        let byTime = {};
-
-        let entries = this.activeEntries.filter( o => {
-            return (o.lossPercentReached > o.takePercentReached);
-        });
-
-        for ( var o of entries ) {
-            if (! byTime[ o.time ]) { byTime[ o.time ] = []; }
-            byTime[ o.time ].push(o);
-        }
-
-        for ( var tm in byTime ) {
-            let arr = byTime[tm];
-            if (! arr || arr.length <= 20 ) { continue; }
-    
-            let cnt = arr.length;
-            let gain = arr.reduce( (sum, entry) => sum + entry.gain, 0 );
-    
-            console.log('OEMU: many_entries '+TH.ls(this.lastUpdateTime)
-                +' start='+tm+' cnt='+cnt+' gain='+gain);
-            
-            if ( (gain / cnt > 3.5) || (gain / cnt < -2.5) ) {
-                this.closeAll(arr);
-            }
-
-        }
-*/
     }
-
 
     closeAll(entriesArray) {
         let entries = (entriesArray || this.activeEntries);
@@ -305,6 +210,7 @@ class OrdersEmulator {
         return this.entries.find( v => v.id == entryId );
     }
 
+    /*
     getOpenEntry(symbol, timeframe, strategy)
     {
         if (! this.activeEntries || this.activeEntries.length === 0) { return false; }
@@ -321,7 +227,7 @@ class OrdersEmulator {
     }
 
     // todo: move to separate reports module
-/*
+
     genStatistics(fromTimestamp, toTimestamp) {
 
         if (! this.entries || this.entries.length === 0) { return []; }
@@ -417,24 +323,27 @@ class OrdersEmulator {
         return res;
     }
 */
- 
-    /* helpers */
-
-    recalcEntryGain(entry,currentPrice)
+ /*
+    calcActiveEntriesMaxLoss()
     {
-        entry.setPrice(currentPrice);
-        entry.recalcGainPercent();
-    }
-/*
-    isMarginCallReached(entry) {
-        if (entry.gain <= this.params.MARGINCALL_GAIN) {
-            entry.setGain(this.params.MARGINCALL_GAIN);
-            entry.setTag('MC','Y');
-            return true;
-        }
-        return false;
+        const ml = this.activeEntries.reduce( (sum, o) => sum+o.getTagValue('MAXLSS'), 0 );
+        return ml;
     }
 */
+        /*
+        
+        // TODO: move to tagger (dynamic tagger)
+
+        const totalRisk = this.calcActiveEntriesMaxLoss(); 
+
+        console.log('OEMU: new entry '+symbol+'/'+strategy+' total_risk='+totalRisk+
+            ' entries='+this.activeEntries.length);
+
+        if (Math.abs(totalRisk) > this.params.RISK_REAL_USD ) {
+            //console.log('OEMU: ABOVE RISK ')
+            return null;
+        }
+        */
 }
 
 module.exports = OrdersEmulator;
