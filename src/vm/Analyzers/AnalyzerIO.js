@@ -105,11 +105,9 @@ class AnalyzersIO {
             candle: this.candle
         };
 
+        params.isLimit = isLimit;
 
-        return (isLimit ? 
-            this.ordersManager.limitOrder( params ) : 
-            this.ordersManager.marketOrder( params )
-        );
+        this.ordersManager.queueOrder(params);
 
     }
 

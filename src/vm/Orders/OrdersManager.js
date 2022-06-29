@@ -15,6 +15,7 @@ class OrdersManager {
         this.clients = clients;
         this.brokerCandles = brokerCandles;
         this.real = new OrdersReal(brokerUser, clients);
+        this.ordersQueue = [];
         
         this.lastUpdateTime = null;
         this.previousHour = null;
@@ -35,28 +36,8 @@ class OrdersManager {
         return this.brokerCandles.getSymbolInfo(symbol);
     }
 
-
-    adjustSLTP(params)
-    {
-        try {        
-            const aligned = this.brokerCandles.getAlignedEntryDetails(
-                params.symbol,
-                params.entryPrice,
-                1000,
-                params.stopLoss,
-                params.takeProfit
-            );
-
-            params.stopLoss = aligned.stopLoss;
-            params.takeProfit = aligned.takeProfit;
-            //quantity = aligned.quantity;
-
-            return params;
-
-        } catch (e) {
-            console.log("BAD ORDER PARAMS: "+e.message);
-            return null;
-        }
+    queueOrder(params) {
+        this.ordersQueue.push(params);
     }
 
     marketOrder(params) {
@@ -115,7 +96,17 @@ class OrdersManager {
     }
 
 
+
+
     /* candleProcessor io */
+
+    processOrdersQueue() {
+        this.ordersQueue.forEach( p => {
+            if (p.isLimit) { this.limitOrder(p); }
+            else { this.marketOrder(p); }
+        });
+        this.ordersQueue = [];
+    }
 
     priceUpdate(symbol,eventTime,lowPrice,highPrice,currentPrice) {
 
@@ -229,7 +220,28 @@ class OrdersManager {
     }
 */
 
+    adjustSLTP(params)
+    {
+        try {        
+            const aligned = this.brokerCandles.getAlignedEntryDetails(
+                params.symbol,
+                params.entryPrice,
+                1000,
+                params.stopLoss,
+                params.takeProfit
+            );
 
+            params.stopLoss = aligned.stopLoss;
+            params.takeProfit = aligned.takeProfit;
+            //quantity = aligned.quantity;
+
+            return params;
+
+        } catch (e) {
+            console.log("BAD ORDER PARAMS: "+e.message);
+            return null;
+        }
+    }
 
 }
 
