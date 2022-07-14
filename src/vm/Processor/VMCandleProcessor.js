@@ -90,7 +90,7 @@ class VMCandleProcessor extends CandleProcessor {
 
     processPhaseEnd() {
 
-        this.ordersManager.processOrdersQueue();
+        this.ordersManager.processEntriesQueue();
         
         // process orders queue, arbitration
         //console.log('CPRO: phase end');

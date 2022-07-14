@@ -19,7 +19,7 @@ class BrokerCandlesInterface {
     ** return correct prescision prices and quantity:
     **    { quantity: 2.0, stopLoss: 1.254, takeProfit: 1.384 }
     */
-    getAlignedOrderDetails(symbol,entryPrice,usdAmount,stopLoss,takeProfit){};
+    getAlignedEntryDetails(symbol,entryPrice,usdAmount,stopLoss,takeProfit){};
     getSymbolInfo(symbol){};  // { qtyPrecision, pricePrecision, minQty, tickSize };
 
     /* subscriber must implement BrokerEventsCandles interface */

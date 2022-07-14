@@ -378,7 +378,7 @@ class BinanceUSDMCandles extends BrokerCandlesInterface {
     }
 
 
-    getAlignedOrderDetails(symbol,entryPrice,usdAmount,stopLoss,takeProfit)
+    getAlignedEntryDetails(symbol,entryPrice,usdAmount,stopLoss,takeProfit)
     {
         const result = {
             quantity: 0,

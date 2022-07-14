@@ -1,13 +1,16 @@
 const { TF } = require('./Timeframes');
+const { fnum } = require('../reports/helper.js');
 
 class Order {
 
-    constructor({ entryObj, quantity })
+    constructor( entryObj, quantity )
     {
         this.entry = entryObj;  
         this.quantity = quantity;
         this.gain = 0;
         this.tags = {};
+        this.wallet = 0;
+        this.stake = 0;
 
         // RealOrder
 
@@ -29,13 +32,17 @@ class Order {
     setTags(tags) { this.tags = tags; }
     setQuantity(q) { this.quantity = q; }
     setGain(g) {this.gain = g;}
+    setWallet(w) { this.wallet = w; }
+    setStake(s) { this.stake = s; }
     /* export/import IO */
 
     toGUI() {
         return {
-            id: this.entry.id,
-            entry: this.entry.toGUI(),
-            quantity: this.quantity
+            ... this.entry,
+            quantity: this.quantity,
+            gain: fnum(this.gain,3),
+            wallet: fnum(this.wallet,3),
+            stake: fnum(this.stake,3)
         }
     }
     

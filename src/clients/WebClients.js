@@ -61,7 +61,11 @@ class WebClients {
                 let data = clientIO.getEntriesList();
                 socket.emit("entries", data);
             });
-        
+
+            socket.on("list_orders", (arg) => {
+                let data = clientIO.getOrdersList(arg);
+                socket.emit("orders", data);
+            });
         
             socket.on("get_entry", (arg) => {
                 let data = clientIO.getEntry(arg.entryId);

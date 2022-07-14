@@ -1,3 +1,11 @@
+
+WHY?
+fixed: 	symbols: 142 , gain: 138.12,    win/loose: 2251 / 3006 = 42.82%
+percent:	symbols: 141 , gain: -31390.27, win/loose: 1835 / 2029 = 47.49%
+
+ANSWER: probably because of quantity minimum filter when stake reaches minimum orders get rejected
+
+
 Задачи:
 
 

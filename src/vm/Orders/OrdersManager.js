@@ -1,8 +1,12 @@
+const CDB = require('../../types/CandleDebug');
+
 const OrdersReal = require('./OrdersReal.js');
 const { TF } = require('../../types/Timeframes.js');
 
 const EntryPlan = require('./EntryPlan');
 const Entry = require('../../types/Entry.js');
+
+const OrderTaggers = require('./taggers/OrderTaggers.js');
 
 const SETTINGS = require('../../../private/private.js');
 
@@ -55,21 +59,21 @@ class OrdersManager {
         let flagsSnapshot = null;
 
         if (! SETTINGS.noFlagsSnapshot) {
-            flagsSnapshot = JSON.parse(JSON.stringify(flags.getAll()));
+            flagsSnapshot = JSON.parse(JSON.stringify(params.flags.getAll()));
         }
 
         const entry = new Entry(params);
 
         entry.setFlags(flagsSnapshot);
-        entry.setTags( this.taggers.getTags(entry, flags, this.entries, entry.tags) );
-        entry.setComment(comment);
+        entry.setTags( this.taggers.getTags(entry, params.flags, this.entries, entry.tags) );
+        entry.setComment(params.comment);
 
         /* filter */
     
-        CDB.setSource(strategy);
-        CDB.labelTop(candle,'EN');
-        CDB.circleMiddle(candle,{ color: 'blue', radius: 5, alpha: 0.1 });
-        CDB.entry(candle,entryPrice,takeProfit,stopLoss);
+        CDB.setSource(params.strategy);
+        CDB.labelTop(params.candle,'EN');
+        CDB.circleMiddle(params.candle,{ color: 'blue', radius: 5, alpha: 0.1 });
+        CDB.entry(params.candle,params.entryPrice,params.takeProfit,params.stopLoss);
 
         this.entries.push(entry);
         this.activeEntries.push(entry);
@@ -96,16 +100,23 @@ class OrdersManager {
 
 
     approveLiveEntries(entries, isLimit) {
-        if (SETTINGS.dev ) {
-            return;
-        }
-  
+
+        if ( entries.length == 0 ) { return; }
+
         let entriesApproved = this.entryPlan.addEntries(entries);
 
-        // to REAL if not Limit. 
+        if (SETTINGS.dev ) {
+            // to REAL if not Limit. 
+
+            return;
+        }
+
+        return entriesApproved;
     }
 
     /* candleProcessor io */
+
+    // todo: limit orders should be approved the same way as market orders here:
 
     // this is called at the end of each candle sequencer phase
     // to process all Entries accumulated in buffer
@@ -119,7 +130,9 @@ class OrdersManager {
              }
         });
         this.entriesQueue = [];
+      
         this.approveLiveEntries(addedEntries, false);
+        
     }
 
     priceUpdate(symbol,eventTime,lowPrice,highPrice,currentPrice) {
@@ -128,7 +141,7 @@ class OrdersManager {
 
         const entries = this.activeEntries.filter( o => (o.symbol === symbol) );
         let long  = entries.filter( o => o.isLong() );
-        let short = entries.fapproveLiveilter( o => o.isShort() );
+        let short = entries.filter( o => o.isShort() );
         
         // 1. MARGIN CALLS + STOP LOSSES first
 
@@ -237,6 +250,7 @@ class OrdersManager {
     closeEntry(entry,isWin) {
         entry.doClose(isWin,this.lastUpdateTime);
         this.activeEntries = this.activeEntries.filter( o => o !== entry );
+        this.entryPlan.closeEntry(entry);
     }
 
     toGUI() {
@@ -294,6 +308,11 @@ class OrdersManager {
     {
         return this.toGUI();
     }
+
+    getOrdersList(args) {
+        return this.entryPlan.getOrdersList(args);
+    }
+
 
     /*
     getEmulatedStatistics(fromTimestamp, toTimestamp) {

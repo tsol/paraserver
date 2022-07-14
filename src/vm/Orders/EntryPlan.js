@@ -13,11 +13,11 @@ class EntryPlan {
         COST_BUY_PERCENT:       { def: 0.0004 },     // 4 cents from every 100 dollars
         COST_SELL_PERCENT:      { def: 0.0004 },      // 0.04 % taker comission
 
-        TAGS:                   { NYC: 'P', WRK: 'P', MCORR: 'N' },
-        SYMBOLS:                null,
-        STRATEGIES:             ['macwfma'],
-        TIMEFRAMES:             ['1h'],
-        JSCODE:                 null
+        TAGS:                   { def: null },
+        SYMBOLS:                { def: null },
+        STRATEGIES:             { def: null },
+        TIMEFRAMES:             { def: null },
+        JSCODE:                 { def: null }
     };
 
     constructor(brokerCandles) {
@@ -30,7 +30,7 @@ class EntryPlan {
         this.params = {};
 
         for (var p in EntryPlan.PARAMS) {
-            this.params[p] = ( params.hasOwnProperty(p) ? params[p] : EntryPlan.PARAMS[p] );
+            this.params[p] = ( params.hasOwnProperty(p) ? params[p] : EntryPlan.PARAMS[p].def );
         }
 
         this.filterFunction = this.genFilterFunction(this.params);
@@ -50,22 +50,26 @@ class EntryPlan {
         const p = params;
         let jsf = [];
 
-        if (p.SYMBOLS)       { jsf.push('(['+p.SYMBOLS.join(',')+'].includes(o.symbol))'); }
-        if (p.TIMEFRAMES)    { jsf.push('(['+p.TIMEFRAMES.join(',')+'].includes(o.timeframe))'); }
-        if (p.STRATEGIES)    { jsf.push('(['+p.STRATEGIES.join(',')+'].includes(o.strategy))'); }
+        if (p.SYMBOLS)       { jsf.push('([\''+p.SYMBOLS.join('\',\'')+'\'].includes(o.symbol))'); }
+        if (p.TIMEFRAMES)    { jsf.push('([\''+p.TIMEFRAMES.join('\',\'')+'\'].includes(o.timeframe))'); }
+        if (p.STRATEGIES)    { jsf.push('([\''+p.STRATEGIES.join('\',\'')+'\'].includes(o.strategy))'); }
         if (p.TAGS)         {
             for (var t in p.TAGS) {
                 jsf.push(`(o.getTagValue('${t}')=='${p.TAGS[t]}')`);
             }
         }
-        if (p.JSCODE)           { jsf.push('('+p.JSCODE+')'); }        
-        return new Function('o', 'return '+jsf.join('&&')+';');
+        if (p.JSCODE)           { jsf.push('('+p.JSCODE+')'); }
+        const code = 'return '+jsf.join('&&')+';';
+
+        return new Function('o', code);   
     }
 
     createOrder(entry) {
-        let quantity = this.calcQuantity(entry);
-        if (quantity > 0) {
-            return new Order(entry, quantity);
+        let q = this.calcQuantity(entry);
+        if (q && (q.quantity > 0)) {
+            const order = new Order(entry, q.quantity);
+            order.setStake(q.usd);
+            return order;
         }
         return null;
     }
@@ -95,7 +99,7 @@ class EntryPlan {
                 entry.takeProfit
             );
     
-            return aligned.quantity;
+            return { quantity: aligned.quantity, usd: usdSum }
 
         } catch (e) {
                 console.log("BAD ORDER PARAMS: "+e.message);
@@ -111,7 +115,7 @@ class EntryPlan {
         const commissionInUSD = soldInUSD * this.params.COST_SELL_PERCENT +
                                 boughtInUSD * this.params.COST_BUY_PERCENT;
 
-        if (this.isLong()) {
+        if (order.entry.isLong()) {
             return soldInUSD - boughtInUSD - commissionInUSD;
         }
         
@@ -131,7 +135,7 @@ class EntryPlan {
         entriesArray.forEach( e => {
             var order = this.createOrder(e);
             // todo: here dynamic tags added
-            if (order && this.filterFunction(order)) {
+            if (order && this.filterFunction(order.entry)) {
                 newOrders.push(order);
             }
         });
@@ -140,6 +144,7 @@ class EntryPlan {
         // should be applied (if required) and newOrders reduced to winners
 
         newOrders.forEach( order => {
+            order.setWallet(this.deposit);
             this.orders.push(order);
             this.activeOrders.push(order);
         });
@@ -172,6 +177,9 @@ class EntryPlan {
 
     getPeriod(fromDate,toDate) {}
 
+    getOrdersList(args) {
+        return this.orders.map( o => o.toGUI() );
+    }
 
     // this is called by GUI
     processEntriesHistory(params,entries) {

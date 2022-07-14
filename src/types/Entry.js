@@ -1,4 +1,3 @@
-const { TF } = require('./Timeframes');
 const { fnum } = require('../reports/helper.js');
 
 class Entry {
