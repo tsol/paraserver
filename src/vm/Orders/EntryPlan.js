@@ -43,6 +43,8 @@ class EntryPlan {
 
         this.deposit = this.params.START_SUM;
 
+        return this.params;
+
     }
 
     genFilterFunction(params)
@@ -169,13 +171,12 @@ class EntryPlan {
         this.activeEntries = this.activeEntries.filter( e => e !== entry );
     }
 
+    // GUI interface:
 
     getParams() {
         // todo: return merged EntryPlan.PARAMS + this.params 
         return this.params;
     }
-
-    getPeriod(fromDate,toDate) {}
 
     getOrdersList(args) {
         return this.orders.map( o => o.toGUI() );
@@ -214,7 +215,7 @@ class EntryPlan {
         let seq = [ ... seqo, ... seqc ].sort( (a,b) => a.t - b.t );
 
         while (seq.length > 0)  {
-
+        
             let s = seq.shift();
             let o = s.o;
             let c = s.c;
@@ -230,6 +231,7 @@ class EntryPlan {
 
         }
 
+        return this.params;
 
     }
 

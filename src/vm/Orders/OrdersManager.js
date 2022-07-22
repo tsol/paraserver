@@ -81,7 +81,6 @@ class OrdersManager {
         return entry;
     }
 
-
     limitEntry( params ) {
 
         params = this.adjustSLTP(params);
@@ -96,6 +95,30 @@ class OrdersManager {
         + TH.ls(params.time) +'('+params.time+') -> '+TH.ls(params.expire)+' ('+params.expire+')');
 
         this.limitEntries.push(params);
+    }
+
+    // adjust takeProfit and stopLoss en entry according to broker rules (precision)
+    adjustSLTP(params)
+    {
+        try {        
+            const aligned = this.brokerCandles.getAlignedEntryDetails(
+                params.symbol,
+                params.entryPrice,
+                1000,
+                params.stopLoss,
+                params.takeProfit
+            );
+
+            params.stopLoss = aligned.stopLoss;
+            params.takeProfit = aligned.takeProfit;
+            //quantity = aligned.quantity;
+
+            return params;
+
+        } catch (e) {
+            console.log("BAD ORDER PARAMS: "+e.message);
+            return null;
+        }
     }
 
 
@@ -188,6 +211,7 @@ class OrdersManager {
 
 
     /* emulator */
+
 
     limitEntriesPriceUpdate (symbol,eventTime,lowPrice,highPrice,currentPrice)
     {
@@ -313,6 +337,15 @@ class OrdersManager {
         return this.entryPlan.getOrdersList(args);
     }
 
+    getEntryPlanParams() {
+        return this.entryPlan.getParams();
+    }
+
+    setEntryPlanParams(params) {
+        // todo: processEntriesHistory here...
+        return this.entryPlan.processEntriesHistory(params,this.entries);
+        //return this.entryPlan.reset(params);
+    }
 
     /*
     getEmulatedStatistics(fromTimestamp, toTimestamp) {
@@ -368,28 +401,6 @@ class OrdersManager {
     }
 */
 
-    adjustSLTP(params)
-    {
-        try {        
-            const aligned = this.brokerCandles.getAlignedEntryDetails(
-                params.symbol,
-                params.entryPrice,
-                1000,
-                params.stopLoss,
-                params.takeProfit
-            );
-
-            params.stopLoss = aligned.stopLoss;
-            params.takeProfit = aligned.takeProfit;
-            //quantity = aligned.quantity;
-
-            return params;
-
-        } catch (e) {
-            console.log("BAD ORDER PARAMS: "+e.message);
-            return null;
-        }
-    }
 
 }
 

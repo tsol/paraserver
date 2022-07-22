@@ -51,6 +51,15 @@ class ClientIO {
         return this.vm.getOrdersManager().getOrdersList(args);
     }
 
+    getEntryPlanParams() {
+        return this.vm.getOrdersManager().getEntryPlanParams();
+    }
+
+    setEntryPlanParams(params) {
+        return this.vm.getOrdersManager().setEntryPlanParams(params);
+    }
+
+
 
     getEntry(entryId) {
         return this.vm.getOrdersManager().getEntryById(entryId);

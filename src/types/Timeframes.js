@@ -21,7 +21,7 @@ class Timeframes
         this.TFRAMES.forEach( (tf) => {
             tf.limit = Math.floor( (tf.days * this.DAY_LENGTH) / tf.length );
             tf.levelsLimitTime = tf.levelDays * this.DAY_LENGTH;
-            console.log('TF: tf limit set '+tf.name+' = '+tf.limit+' candles');
+            //console.log('TF: tf limit set '+tf.name+' = '+tf.limit+' candles');
         });
     }
 
@@ -47,7 +47,7 @@ class Timeframes
     }
 
 
-    /* REST of functions probably should be somewhere else :) */
+    /* TODO: remove date functions from here, change all calls to helpers/time.js */
 
     mysqlFormat(dateObject) {
         const now     = dateObject;

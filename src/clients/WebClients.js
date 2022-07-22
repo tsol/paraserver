@@ -71,7 +71,17 @@ class WebClients {
                 let data = clientIO.getEntry(arg.entryId);
                 socket.emit("entry", data);
             });
-        
+
+            socket.on("get_ep_params", (arg) => {
+                let data = clientIO.getEntryPlanParams();
+                socket.emit("ep_params", data);
+            });
+
+            socket.on("set_ep_params", (arg) => {
+                let reply = clientIO.setEntryPlanParams(arg);
+                socket.emit("ep_params_set", reply);
+            });
+
         /*
             socket.on("make_real_order", (arg) => {
                 socket.emit("new_real_order", 
