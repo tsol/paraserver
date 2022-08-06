@@ -1,6 +1,6 @@
 
 const { TF } = require('../types/Timeframes.js');
-const { winRatio, fnum } = require('../reports/helper.js');
+const { winRatio, fnum } = require('./helper.js');
 //const Order = require('../types/Order.js');
 
 class IntervalHour {
@@ -85,7 +85,7 @@ class IntervalMonth extends IntervalHour {
 
 }
 
-class PeriodTagsCompare {
+class ReportIntervals {
 
     static INTERVALS = Object.freeze({
         'h': new IntervalHour(),
@@ -97,25 +97,17 @@ class PeriodTagsCompare {
     {
     }
 
-    getReport(fromOrders, dateFrom, dateTo, interval, tag, tagValue, doEval)
+    getReport(fromOrders, dateFrom, dateTo, interval)
     {
-        const i = PeriodTagsCompare.INTERVALS[interval];
+        const i = ReportIntervals.INTERVALS[interval];
         if (! i) { throw new Error('unknown interval'); };
 
-        let orders = fromOrders.sort( (a, b) => a.time - b.time );
+        let orders = fromOrders.sort( (a, b) => a.entry.time - b.entry.time );
 
-        let startTime = i.toStart( dateFrom || orders[0].time );
-        const endTime = i.toEnd( dateTo || (orders[ orders.length-1 ].time + 1) );
+        let startTime = i.toStart( dateFrom || orders[0].entry.time );
+        const endTime = i.toEnd( dateTo || (orders[ orders.length-1 ].entry.time + 1) );
         
-        orders = orders.filter( o => (o.time >= startTime) && (o.time <= endTime) );
-
-        if (tag && tagValue) {
-                orders = orders.filter( o => o.tags[tag] && (o.tags[tag].value == tagValue) );
-        }
-        else if  ( doEval ) {
-            let func = new Function('o', 'return '+doEval+';');
-            orders = orders.filter( o => func(o) );
-        }
+        orders = orders.filter( o => (o.entry.time >= startTime) && (o.entry.time <= endTime) );
 
         if (orders.length <= 0) { return [ { periodName: 'No data' } ]; }            
 
@@ -123,17 +115,16 @@ class PeriodTagsCompare {
 
         while (startTime < endTime) {
             let intervalEnd = i.toEnd(startTime);          
-            let periodOrders = orders.filter( o => (o.time >= startTime) && (o.time <= intervalEnd ) );
+            let periodOrders = orders.filter( o => (o.entry.time >= startTime) 
+                                                && (o.entry.time <= intervalEnd ) );
             let res = this.calc ( periodOrders );
             res.periodName = i.display( startTime );
-            res.src = tag+'='+tagValue+', '+interval;
             rows.push(res);
             startTime = i.next(startTime);
         }
 
         let res = this.calc( orders );
         res.periodName = 'TOTAL';
-        res.src = tag+'='+tagValue+', '+interval;
         rows.push(res);
 
         return rows;
@@ -155,9 +146,9 @@ class PeriodTagsCompare {
 
         while ( i < orders.length ) {
             let o = orders[i];
-            let currentTime = o.time;
+            let currentTime = o.entry.time;
 
-            openOrders = openOrders.filter( o => o.closeTime > currentTime );
+            openOrders = openOrders.filter( o => o.entry.closeTime > currentTime );
 
             openOrders.push(o);
             if (openOrders.length > maxOpenOrders)
@@ -193,10 +184,4 @@ class PeriodTagsCompare {
 }
 
 
-
-
-
-
-
-
-module.exports = PeriodTagsCompare;
+module.exports = ReportIntervals;

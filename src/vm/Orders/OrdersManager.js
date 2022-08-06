@@ -9,6 +9,7 @@ const Entry = require('../../types/Entry.js');
 const OrderTaggers = require('./taggers/OrderTaggers.js');
 
 const SETTINGS = require('../../../private/private.js');
+const ReportIntervals = require('../../reports/ReportIntervals');
 
 class OrdersManager {
     
@@ -20,6 +21,7 @@ class OrdersManager {
         this.brokerCandles = brokerCandles;
         this.entryPlan = new EntryPlan(brokerCandles);
         this.real = new OrdersReal(brokerUser, clients);
+        this.report = new ReportIntervals();
 
         this.entriesQueue = [];
         this.entries = [];
@@ -334,7 +336,7 @@ class OrdersManager {
     }
 
     getOrdersList(args) {
-        return this.entryPlan.getOrdersList(args);
+        return this.entryPlan.getOrdersGUI(args);
     }
 
     getEntryPlanParams() {
@@ -347,24 +349,23 @@ class OrdersManager {
         //return this.entryPlan.reset(params);
     }
 
+    getReport(params)
+    {
+
+        return this.report.getReport(
+                this.entryPlan.getOrders(),
+                params.dateFrom,
+                params.dateTo,
+                params.interval
+        );
+        
+    }
+
     /*
     getEmulatedStatistics(fromTimestamp, toTimestamp) {
         return this.emulator.genStatistics(fromTimestamp, toTimestamp);
     }
 
-    getReport(params)
-    {
-
-        return this.report.getReport(
-                this.emulator.getOrders(),
-                params.dateFrom,
-                params.dateTo,
-                params.interval,
-                params.tag,
-                params.tagValue,
-                params.eval 
-        );
-    }
 */
 
 /*

@@ -82,19 +82,6 @@ class WebClients {
                 socket.emit("ep_params_set", reply);
             });
 
-        /*
-            socket.on("make_real_order", (arg) => {
-                socket.emit("new_real_order", 
-                    clientIO.doMakeOrderFromEmulated(arg.orderId)
-                );
-            });
-        
-            socket.on("get_orders_stats", (arg) => {
-                let orderStats = clientIO.getOrdersStatistics(arg.fromTimestamp, arg.toTimestamp);
-                let timeframes = clientIO.getTimeframes();
-                socket.emit("orders_stats", { timeframes: timeframes, stats: orderStats });
-            });
-        
             socket.on("get_orders_report", (arg) => {
                 try {
                     console.log('generating report...');
@@ -110,6 +97,33 @@ class WebClients {
                     socket.emit("orders_report", [{ periodName: err.message }] )
                 }
             });   
+
+            socket.on("get_timeframes", () => {
+                socket.emit("timeframes", clientIO.getTimeframes());
+            });
+
+            socket.on("get_symbols", () => {
+                socket.emit("symbols", clientIO.getAllSymbols());
+            });
+
+            socket.on("get_strategies", () => {
+                socket.emit("strategies", clientIO.getStrategies());
+            });
+
+
+        /*
+            socket.on("make_real_order", (arg) => {
+                socket.emit("new_real_order", 
+                    clientIO.doMakeOrderFromEmulated(arg.orderId)
+                );
+            });
+        
+            socket.on("get_orders_stats", (arg) => {
+                let orderStats = clientIO.getOrdersStatistics(arg.fromTimestamp, arg.toTimestamp);
+                let timeframes = clientIO.getTimeframes();
+                socket.emit("orders_stats", { timeframes: timeframes, stats: orderStats });
+            });
+        
 
         */
         

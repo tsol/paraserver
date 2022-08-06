@@ -59,14 +59,12 @@ class ClientIO {
         return this.vm.getOrdersManager().setEntryPlanParams(params);
     }
 
-
-
     getEntry(entryId) {
         return this.vm.getOrdersManager().getEntryById(entryId);
     }
 
     getReport(params) {
-        //return this.vm.getOrdersManager().getReport(params);
+        return this.vm.getOrdersManager().getReport(params);
     }
 
     getOrdersStatistics(fromTimestamp, toTimestamp) {
@@ -76,6 +74,12 @@ class ClientIO {
     getTimeframes() {
         return this.vm.getTimeframes();
     }
+
+    getStrategies() {
+        return this.vm.getStrategies();
+    }
+
+
 /*
     async doMakeOrderFromEmulated(emOrderId) {
         return this.vm.getOrdersManager().doMakeOrderFromEmulated(emOrderId);

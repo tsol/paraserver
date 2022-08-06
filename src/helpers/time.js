@@ -52,6 +52,10 @@ class TH
         return this.mysqlFormat(new Date());
     }
 
+    static now() {
+        return this.currentTimestamp();
+    }
+    
     static currentTimestamp()
     {
         const date = new Date();

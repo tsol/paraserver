@@ -1,4 +1,5 @@
 const SETTINGS = require('../../../private/private.js');
+const TH = require('../../helpers/time.js');
 const Order = require('../../types/Order.js');
 
 class EntryPlan {
@@ -171,6 +172,10 @@ class EntryPlan {
         this.activeEntries = this.activeEntries.filter( e => e !== entry );
     }
 
+    // properties access
+
+    getOrders() { return this.orders; }
+
     // GUI interface:
 
     getParams() {
@@ -178,13 +183,14 @@ class EntryPlan {
         return this.params;
     }
 
-    getOrdersList(args) {
+    getOrdersGUI(args) {
         return this.orders.map( o => o.toGUI() );
     }
 
     // this is called by GUI
     processEntriesHistory(params,entries) {
 
+        console.log('EP: recalc: processing history entries -> orders '+TH.ls(TH.now()))
         this.reset(params);
 
         // todo: process in historycal manner all opens and closes
@@ -209,7 +215,7 @@ class EntryPlan {
                 lastCloseEntry = { t: e.closeTime, c: [], o: [] };
                 seqc.push(lastCloseEntry);
             }
-            lastCloseEntry.o.push(e);
+            lastCloseEntry.c.push(e);
         });
 
         let seq = [ ... seqo, ... seqc ].sort( (a,b) => a.t - b.t );
@@ -230,6 +236,9 @@ class EntryPlan {
             this.addEntries(o);
 
         }
+
+
+        console.log('EP: recalc: done '+TH.ls(TH.now()))
 
         return this.params;
 

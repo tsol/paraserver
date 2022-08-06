@@ -34,6 +34,8 @@ class VM {
     getProcessor() { return this.processor; }
     getOrdersManager() { return this.ordersManager; }
     getTimeframes() { return this.timeframes; }
+    getSymbols() { return this.symbols; }
+    getStrategies() { return this.strategies; }
 
     async init(symbols,timeframes,strategies,fromTime,toTime,options)
     {
@@ -52,6 +54,7 @@ class VM {
         return await this.sequencer.init(fromTime, toTime);
     }
  
+
     //todo: add/remove symbol, timeframe, strategy, moveFrom, moveTo, switchLive
 
 }
