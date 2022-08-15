@@ -7,17 +7,33 @@ class Tagger {
     constructor(params) {
         this.reset();
         this.params = params;
+
+        this.name = 'TAG';
+        this.vals = ['P','F'];
+        this.desc = 'General tag';
     }
 
-    reset() {
+    getTagsDescription() { return [{
+        name: this.name,
+        vals: this.vals,
+        desc: this.desc
+    }]}
+
+    reset() {}
+
+    staticHourly(entry,flags,entries,hour) {}    
+    staticDaily(entry,flags,entries,day) {}
+    staticWeekly(entry,flags,entries,week) {}
+    staticMonthly(entry,flags,entries,month) {} 
+
+    getStaticTags(entry, flags, entries, tags) 
+    {
+        return {
+            TAGNAME: { value: 'TAGVALUE' },
+        }
     }
 
-    hourlyTick(order,flags,orders,hour) {}    
-    dailyTick(order,flags,orders,day) {}
-    weeklyTick(order,flags,orders,week) {}
-    monthlyTick(order,flags,orders,month) {} 
-
-    getTags(order, flags, orders, tags) 
+    getDynamicTags(order, orders, activeOrders, entries, activeEntries, params, tags) 
     {
         return {
             TAGNAME: { value: 'TAGVALUE' },
@@ -25,6 +41,10 @@ class Tagger {
 
     }
 
+    dynamicHourly(order, orders, activeOrders, entries, activeEntries, params, hour) {}    
+    dynamicDaily(order, orders, activeOrders, entries, activeEntries, params, day) {}
+    dynamicWeekly(order, orders, activeOrders, entries, activeEntries, params, week) {}
+    dynamicMonthly(order, orders, activeOrders, entries, activeEntries, params, month) {} 
 
 }
 

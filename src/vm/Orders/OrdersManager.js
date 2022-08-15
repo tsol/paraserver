@@ -19,7 +19,6 @@ class OrdersManager {
 
         this.clients = clients;
         this.brokerCandles = brokerCandles;
-        this.entryPlan = new EntryPlan(brokerCandles);
         this.real = new OrdersReal(brokerUser, clients);
         this.report = new ReportIntervals();
 
@@ -29,7 +28,8 @@ class OrdersManager {
         this.limitEntries = [];
 
         this.taggers = new OrderTaggers(this.params);   
-
+        this.entryPlan = new EntryPlan(brokerCandles,this.taggers);
+  
         this.lastUpdateTime = null;
         this.previousHour = null;
         this.previousMinute = null;
@@ -67,7 +67,7 @@ class OrdersManager {
         const entry = new Entry(params);
 
         entry.setFlags(flagsSnapshot);
-        entry.setTags( this.taggers.getTags(entry, params.flags, this.entries, entry.tags) );
+        entry.setTags( this.taggers.getStaticTags(entry, params.flags, this.entries, entry.tags) );
         entry.setComment(params.comment);
 
         /* filter */
@@ -345,7 +345,7 @@ class OrdersManager {
 
     setEntryPlanParams(params) {
         // todo: processEntriesHistory here...
-        return this.entryPlan.processEntriesHistory(params,this.entries);
+        return this.entryPlan.processEntriesHistory(params,this.entries,this.taggers);
         //return this.entryPlan.reset(params);
     }
 
@@ -358,7 +358,11 @@ class OrdersManager {
                 params.dateTo,
                 params.interval
         );
-        
+
+    }
+
+    getTagDescriptions() {
+        return this.taggers.getTagDescriptions();
     }
 
     /*

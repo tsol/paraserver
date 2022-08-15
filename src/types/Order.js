@@ -20,7 +20,6 @@ class Order {
 
     }
 
-
     getTagValue(tagName) { 
         if ( this.tags[tagName] ) {
             return this.tags[tagName].value;

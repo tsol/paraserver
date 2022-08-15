@@ -79,6 +79,9 @@ class ClientIO {
         return this.vm.getStrategies();
     }
 
+    getTagDescriptions() {
+        return this.vm.getOrdersManager().getTagDescriptions();
+    }
 
 /*
     async doMakeOrderFromEmulated(emOrderId) {

@@ -8,7 +8,17 @@ const Tagger = require('../types/Tagger');
 
 class MACDF extends Tagger {
     
-    getTags(order, flags, orders, tags) // return if order should pass
+
+    getTagsDescription() { return [
+        {
+            name: 'MACDF',
+            vals: ['P','F'],
+            desc: 'Filters (F) buy entries when MACD histogram line switched below ZERO, less '+
+                  'than 3 candles ago. And vice-versa for sell entries.'
+        },
+    ]}
+
+    getStaticTags(entry, flags, entries, tags) // return if entry should pass
     {
         const macdf = flags.get('macdf');
         if (! macdf ) { return; }
@@ -16,11 +26,11 @@ class MACDF extends Tagger {
         let filterResult = 'P';
 
         if (macdf.r == 'db') {
-            if (order.type == 'buy')
+            if (entry.type == 'buy')
                 { filterResult = 'F'; }
         }
         else if (macdf.r == 'ds') {
-            if (order.type == 'sell')
+            if (entry.type == 'sell')
                 { filterResult = 'F'; }
         }
  

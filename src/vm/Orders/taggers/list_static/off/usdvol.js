@@ -9,11 +9,11 @@ const { fnum } = require('../../../../../reports/helper');
 
 class USDVOL extends Tagger {
     
-    getTags(order, flags, orders, tags) // return if order should pass
+    getStaticTags(entry, flags, entries, tags) // return if entry should pass
     {
         let res = {};
 
-        const c = order.candle;
+        const c = entry.candle;
         const u = c.volume * c.close;
         const l = TF.getTimeframeLength(c.timeframe);
         const h = 3600000;

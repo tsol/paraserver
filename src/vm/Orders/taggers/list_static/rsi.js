@@ -8,7 +8,15 @@ const Tagger = require('../types/Tagger');
 
 class RSI extends Tagger {
     
-    getTags(order, flags, orders, tags) // return if order should pass
+    getTagsDescription() { return [
+        {
+            name: 'MAXPRF',
+            vals: [],
+            desc: 'Pass (P) buy entries when RSI>50, pass sell when RSI<50. Otherwise filters (F).'
+        }
+    ]}
+
+    getStaticTags(entry, flags, entries, tags) // return if entry should pass
     {
         const rsi = flags.get('rsi14');
         if (! rsi ) { return; }
@@ -16,11 +24,11 @@ class RSI extends Tagger {
         let filterResult = 'P';
 
         if (rsi < 50) {
-            if (order.type == 'buy')
+            if (entry.type == 'buy')
                 { filterResult = 'F'; }
         }
         else if (rsi > 50) {
-            if (order.type == 'sell')
+            if (entry.type == 'sell')
                 { filterResult = 'F'; }
         }
  

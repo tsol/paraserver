@@ -110,6 +110,10 @@ class WebClients {
                 socket.emit("strategies", clientIO.getStrategies());
             });
 
+            socket.on("get_tags", () => {
+                socket.emit("tags", clientIO.getTagDescriptions());
+            });
+
 
         /*
             socket.on("make_real_order", (arg) => {

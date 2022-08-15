@@ -21,8 +21,9 @@ class EntryPlan {
         JSCODE:                 { def: null }
     };
 
-    constructor(brokerCandles) {
-        this.brokerCandles = brokerCandles;        
+    constructor(brokerCandles,taggers) {
+        this.brokerCandles = brokerCandles; 
+        this.taggers = taggers;       
         this.reset(SETTINGS.entryParams);
     }
 
@@ -43,6 +44,8 @@ class EntryPlan {
         this.activeOrders = [];
 
         this.deposit = this.params.START_SUM;
+
+        this.taggers.resetDynamic();
 
         return this.params;
 
@@ -72,6 +75,19 @@ class EntryPlan {
         if (q && (q.quantity > 0)) {
             const order = new Order(entry, q.quantity);
             order.setStake(q.usd);
+
+            order.setTags( 
+                this.taggers.getDynamicTags(
+                    order, 
+                    this.orders,
+                    this.activeOrders,
+                    this.entries,
+                    this.activeEntries,
+                    this.params,
+                    order.tags  
+                )
+            );
+
             return order;
         }
         return null;
@@ -193,7 +209,8 @@ class EntryPlan {
         console.log('EP: recalc: processing history entries -> orders '+TH.ls(TH.now()))
         this.reset(params);
 
-        // todo: process in historycal manner all opens and closes
+  
+        // process in historical manner all opens and closes
 
         let seqo = [];
         let lastOpenEntry = { t: null };

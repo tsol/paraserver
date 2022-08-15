@@ -1,86 +1,140 @@
-const { weekNum } = require('../../../reports/helper.js');
+const PeriodDetector = require('./helpers/PeriodDetector.js')
 
-const MACDF = require('./list/macdf.js');
-const SESSIONS = require('./list/sessions.js');
-const BTC = require('./list/btc.js');
-const RSI = require('./list/rsi.js');
-const HOS = require('./list/hos.js');
-const GD100 = require('./list/gd100.js');
-const MAXPRF = require('./list/maxprf.js');
+/* Static Tags applied to calculated entries and dont depend on user's filter */
+const MACDF = require('./list_static/macdf.js');
+const SESSIONS = require('./list_static/sessions.js');
+const BTC = require('./list_static/btc.js');
+const RSI = require('./list_static/rsi.js');
+const HOS = require('./list_static/hos.js');
+const GD100 = require('./list_static/gd100.js');
+const MAXPRF = require('./list_static/maxprf.js');
+
+/* Static Tags calculated and applied to orders and depend on user's filter */
+const MCORRECT = require('./list_dynamic/mcorrect.js');
 
 class OrderTaggers {
 
     constructor(params) {
-        this.previousHour = null;
-        this.previousDay = null;
-        this.previousMonth = null;
-        this.previousWeek = null;
+
+        this.staticPeriodDetector = new PeriodDetector();
+        this.dynamicPeriodDetector = new PeriodDetector();
+
         this.params = params;
 
-        this.filters = [
-            new MACDF(params),
-            new SESSIONS(params),
-            new BTC(params),
-            new RSI(params),
-            new HOS(params),
-            new GD100(params),
-            new MAXPRF(params)
+        this.dyanamicTaggers = [
+            new MCORRECT(params),
         ];
 
+        this.staticTaggers = [
+            new MACDF(params),
+            new SESSIONS(params),
+            new RSI(params),
+            new GD100(params),
+            new MAXPRF(params),
+            new HOS(params),
+            new BTC(params)
+        ];
+
+        this.allTaggers = [ ... this.dyanamicTaggers, ... this.staticTaggers];
+
     }
 
-    reset() {
-        this.filters.forEach( f => f.reset() );
+    getTagDescriptions() {
+        let res = [];
+        this.allTaggers.forEach( t => res = [... res,  ... t.getTagsDescription()] );
+        return res;
+    }
+
+    resetStatic() {
+        this.staticPeriodDetector.reset();
+        this.staticTaggers.forEach( f => f.reset() );
     }
  
-    getTags(order, flags, orders, tags)
+    resetDynamic() {
+        this.dynamicPeriodDetector.reset();
+        this.dynamicTaggers.forEach( f => f.reset() );
+    }
+
+    getStaticTags(entry, flags, entries, tags)
     {
 
-        const now = new Date(order.time);
-        const hour = now.getHours();
-        const day = now.getDate();
-        const month = now.getMonth();
-        const week = weekNum(now);
+        const pd = this.staticPeriodDetector.detect(entry.time);
 
-        if (this.previousHour !== hour) {
-            this.previousHour = hour;
-            this.filters.forEach( f => {
-                f.hourlyTick(order,flags,orders,hour);
+        if (pd.hour) {
+            this.staticTaggers.forEach( f => {
+                f.staticHourly(entry,flags,entries,pd.hour);
             });
         }
 
-        if (this.previousDay !== day) {
-            this.previousDay = day;
-            this.filters.forEach( f => {
-                f.dailyTick(order,flags,orders,day);
+        if (pd.day) {
+            this.staticTaggers.forEach( f => {
+                f.staticDaily(entry,flags,entries,pd.day);
             });
         }
 
-        if (this.previousMonth !== month) {
-            this.previousMonth = month;
-            console.log('OSF: new month '+month+' at '+now.toLocaleDateString('ru-RU'));
-
-            this.filters.forEach( f => {
-                f.monthlyTick(order,flags,orders,month);
+        if (pd.month) {
+            this.staticTaggers.forEach( f => {
+                f.staticMonthly(entry,flags,entries,pd.month);
             });
         }
 
-        if (this.previousWeek !== week) {
-            this.previousWeek = week;
-            
-            console.log('OSF: new week '+week+' at '+now.toLocaleDateString('ru-RU'));
-
-            this.filters.forEach( f => {
-                f.weeklyTick(order,flags,orders,week);
+        if (pd.week) {
+            this.staticTaggers.forEach( f => {
+                f.staticWeekly(entry,flags,entries,pd.week);
             });
         }
 
-        this.filters.forEach( f => {
-            tags = { ... tags, ... f.getTags(order,flags,orders,tags) };
+        this.staticTaggers.forEach( f => {
+            tags = { ... tags, ... f.getStaticTags(entry,flags,entries,tags) };
         });
 
         return tags;
     }
+
+
+    getDynamicTags(order, orders, activeOrders, entries, activeEntries, tags)
+    {
+        const pd = this.dynamicPeriodDetector.detect(order.entry.time);
+
+        if (pd.hour) {
+            this.dynamicTaggers.forEach( f => {
+                f.dynamicHourly(order, orders, activeOrders, entries, activeEntries,
+                     this.params, pd.hour);
+            });
+        }
+
+        if (pd.day) {
+            this.dynamicTaggers.forEach( f => {
+                f.dynamicDaily(order, orders, activeOrders, entries, activeEntries,
+                     this.params, pd.day);
+            });
+        }
+
+        if (pd.month) {
+            this.dynamicTaggers.forEach( f => {
+                f.dynamicMonthly(order, orders, activeOrders, entries, activeEntries,
+                     this.params, pd.month);
+            });
+        }
+
+        if (pd.week) {
+            this.dynamicTaggers.forEach( f => {
+                f.dynamicWeekly(order, orders, activeOrders, entries, activeEntries,
+                     this.params, pd.week);
+            });
+        }
+
+        this.dynamicTaggers.forEach( f => {
+            tags = {
+                ... tags, 
+                ... f.getDynamicTags(order, orders, activeOrders, entries, activeEntries,
+                     this.params, tags)
+            };
+        });
+
+        return tags;
+    }
+
 
 
 }

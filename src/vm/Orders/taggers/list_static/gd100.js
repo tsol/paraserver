@@ -13,10 +13,25 @@ class GD100 extends Tagger {
         this.disallow = [];
     }
     
-    weeklyTick(order,flags,orders,month) {
+    getTagsDescription() { return [
+        {
+            name: 'GD',
+            vals: ['Y','N'],
+            desc: 'Good (Y) if last '+GD100.NUM_ORDERS+' ordes with same symbol-timeframe-strategy '+
+                'had above '+GD100.MIN_RATIO+'% win rate.'
+        },
+        {
+            name: 'BD',
+            vals: ['P','F'],
+            desc: 'Bad (Y) if last '+GD100.NUM_ORDERS+' ordes with same symbol-timeframe-strategy '+
+            'had win rate below '+GD100.MIN_RATIO+' percent.'
+        },      
+    ]}
+
+    staticWeekly(entry,flags,entries,month) {
  
         const spl = {};
-        const bo = orders.sort( (a,b) => b.time > a.time );
+        const bo = entries.sort( (a,b) => b.time > a.time );
    
         bo.forEach( (o) => {
             let key = this.key(o);
@@ -43,32 +58,32 @@ class GD100 extends Tagger {
             }
         });
 
-        console.log('GD100: TICK '+TH.ls(order.time));
-        console.log(this.allow);
-        console.log(this.disallow);
+        //console.log('GD100: TICK '+TH.ls(entry.time));
+        //console.log(this.allow);
+        //console.log(this.disallow);
 
     }
  
-    getTags(order, flags, orders, tags) 
+    getStaticTags(entry, flags, entries, tags) 
     {
         return {
-            GD: { value: ( this.isAllowed(order) ? 'Y' : 'N') },
-            BD: { value: ( this.isDisallowed(order) ? 'Y' : 'N') }
+            GD: { value: ( this.isAllowed(entry) ? 'Y' : 'N') },
+            BD: { value: ( this.isDisallowed(entry) ? 'Y' : 'N') }
         }
     }
 
-    key(order) {
-        return order.symbol+'-'+order.timeframe+'-'+order.strategy;
+    key(entry) {
+        return entry.symbol+'-'+entry.timeframe+'-'+entry.strategy;
     }
 
-    isAllowed(order)
+    isAllowed(entry)
     {
-        return this.allow.includes(this.key(order));
+        return this.allow.includes(this.key(entry));
     }
     
-    isDisallowed(order)
+    isDisallowed(entry)
     {
-        return this.disallow.includes(this.key(order));
+        return this.disallow.includes(this.key(entry));
     }
 
 }
