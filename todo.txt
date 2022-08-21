@@ -1,6 +1,6 @@
 
 
-  - Динамическтий тэг SIMULT ENTRY (symbol, +timeframe, +strategy)
+  - Добавить динамический таг - одновременный вход в символ SIM (addedEntries)
   - Добавить RISK MANAGEMENT, добавить АРБИТРАЖ
 
 

@@ -12,14 +12,16 @@
 
 const PeriodDetector = require('./helpers/PeriodDetector.js')
 
-const MCORRECT = require('./list_dynamic/mcorrect.js');
+const MARGIN = require('./list_dynamic/margin.js');
+const SAME = require('./list_dynamic/same.js');
 
 class TaggersDynamic {
 
     constructor() {
         this.dynamicPeriodDetector = new PeriodDetector();
         this.dynamicTaggers = [
-            new MCORRECT(),
+            new MARGIN(),
+            new SAME(),
         ];
     }
 

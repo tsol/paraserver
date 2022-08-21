@@ -193,6 +193,7 @@ class EntryPlan {
 
         // todo: here simultaneous risk conditions with arbitrage
         // should be applied (if required) and newOrders reduced to winners
+        // OR BETTER YET - arbitrage must be done by a dynamic tagger
 
         newOrders.forEach( order => {
             order.setWallet(this.deposit);

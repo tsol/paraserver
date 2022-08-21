@@ -4,11 +4,11 @@
 
 const Tagger = require('../types/Tagger'); 
 
-class MCORRECT extends Tagger {
+class MARGIN extends Tagger {
     
     getTagsDescription() { return [
         {
-            name: 'MCO',
+            name: 'MRG',
             vals: ['P','F'],
             desc: 'Pass (P) if possible loss at stopLoss is less than margincall.'
         }    
@@ -19,25 +19,25 @@ class MCORRECT extends Tagger {
         let res = {};
 
         if (!(params.LEVERAGE>0)) {
-            return { MCO: { value: 'P'} };
+            return { MRG: { value: 'P'} };
         } 
 
         const STOPLOSS_PERCENT = order.getTagValue("MAXLSS");
 
         if ( ! STOPLOSS_PERCENT ) {
-            throw new Error('MAXPRF tagger required for MCORRECT');
+            throw new Error('MAXPRF tagger required for MRGRRECT');
         }
 
-        res.MCO = { value: 'F' };
+        res.MRG = { value: 'F' };
 
         const USD_IN_GAME = (order.quantity * order.entry.entryPrice);
         const REAL_USD_AT_STAKE = USD_IN_GAME / params.LEVERAGE;
         const USD_MAX_LOSS_AT_STOPLOSS = Math.abs(STOPLOSS_PERCENT / 100 * USD_IN_GAME); 
 
-        //res.MCO.comment = 'uas='+REAL_USD_AT_STAKE+', uml='+USD_MAX_LOSS_AT_STOPLOSS;
+        //res.MRG.comment = 'uas='+REAL_USD_AT_STAKE+', uml='+USD_MAX_LOSS_AT_STOPLOSS;
 
         if (USD_MAX_LOSS_AT_STOPLOSS <= REAL_USD_AT_STAKE) {
-            res.MCO.value = 'P';
+            res.MRG.value = 'P';
             return res;
         } 
 
@@ -62,7 +62,7 @@ class MCORRECT extends Tagger {
             return null;
         }
 
-        res.MCO_SL = { value: entry.stopLoss+' => '+newStopLoss };
+        res.MRG_SL = { value: entry.stopLoss+' => '+newStopLoss };
 
         */
 
@@ -98,5 +98,5 @@ class MCORRECT extends Tagger {
 }
 
 
-module.exports = MCORRECT;
+module.exports = MARGIN;
 

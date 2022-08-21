@@ -20,14 +20,14 @@ class HOS extends Tagger {
             tags.push({
                 name: 'HT-'+tf,
                 vals: ['P','F','N'],
-                desc: 'Pass (P) if '+HOS.BTCSYMBOL+' is in uptrend (buy entries) or downtrend (sell entries) '+
+                desc: 'Pass (P) if entries symbol is in uptrend (buy entries) or downtrend (sell entries) '+
                 ' determined by Hoffman MA method on '+tf+' timeframe, fail (F) otherwise. When not enough data returns (N).'
             })
 
             tags.push({
                 name: 'HTB-'+tf,
                 vals: ['P','F','N'],
-                desc: 'Pass (P) if entries symbol is in uptrend (buy entries) or downtrend (sell entries) '+
+                desc: 'Pass (P) if '+HOS.BTCSYMBOL+' is in uptrend (buy entries) or downtrend (sell entries) '+
                 ' determined by Hoffman MA method on '+tf+' timeframe, fail (F) otherwise. When not enough data returns (N).'
             })
 

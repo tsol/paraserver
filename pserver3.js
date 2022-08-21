@@ -57,7 +57,7 @@ mysqlCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
                 symbols = symbols.filter( c => c !== 'BTCUSDT' ); symbols.unshift('BTCUSDT');
 
                 vm.init(symbols,timeframes,strategies,fromTime,toTime,{})
-                .then( () => { console.log('VM initialized'); });
+                    .then( () => { console.log('VM initialized'); });
 
             });
 

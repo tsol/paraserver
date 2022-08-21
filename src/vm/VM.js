@@ -1,6 +1,17 @@
 /* 
 ** VM object, containing one virtual trading system.
 **
+** It is configured with its own set of symbols, timeframes, strategies, options and a
+** period upon which emulator is run.
+**
+** VM loads all up, processes history candles and then processes online candle updates.
+**
+** After initialization (and also during) it gives user list of candles, entries, orders.
+** allows user to re-run entries -> orders simulation with different filters and settings
+**  
+** VM is like a users working desktop. Server can support multiple simultanious VMs
+** (for every user for example)
+**
 */
 
 const OrdersManager = require("./Orders/OrdersManager");
