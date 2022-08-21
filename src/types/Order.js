@@ -33,15 +33,48 @@ class Order {
     setGain(g) {this.gain = g;}
     setWallet(w) { this.wallet = w; }
     setStake(s) { this.stake = s; }
+
+
     /* export/import IO */
+
+    tagsStringify()
+    {
+        let res = '';
+        for (const tag in this.tags) {
+            res += ' '+tag+':'+this.tags[tag].value+
+                ( this.tags[tag].comment ? ' ['+this.tags[tag].comment+']' : '');
+        }
+        return res;         
+    }
 
     toGUI() {
         return {
-            ... this.entry,
+
+            id: this.entry.id,
+            time: this.entry.time,
+            type:  this.entry.type,
+            symbol: this.entry.symbol,
+            timeframe: this.entry.timeframe,
+            strategy: this.entry.strategy,
+            entryPrice: this.entry.entryPrice,
+            takeProfit: this.entry.takeProfit,
+            stopLoss: this.entry.stopLoss,
+            active: ( this.entry.active ? 'Y' : 'N'),
+            result: this.entry.result,
+            closeTime: this.entry.closeTime,
+            closePrice: this.entry.closePrice,
+            gainPercent: this.entry.gainPercent,
+            takePriceReached: this.entry.takePriceReached,
+            takePercentReached: this.entry.takePercentReached,
+            lossPriceReached: this.entry.lossPriceReached,
+            lossPercentReached: this.entry.lossPercentReached,
+
             quantity: this.quantity,
             gain: fnum(this.gain,3),
             wallet: fnum(this.wallet,3),
-            stake: fnum(this.stake,3)
+            stake: fnum(this.stake,3),
+            
+            comment:  [this.entry.tagsStringify(), this.tagsStringify()].join(', ')
         }
     }
     

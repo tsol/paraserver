@@ -9,46 +9,40 @@ class MCORRECT extends Tagger {
     getTagsDescription() { return [
         {
             name: 'MCO',
-            vals: ['Y','N'],
-            desc: 'True (Y) if maximum possible loss is more than stopLoss (margin call happens before stopLoss)'
+            vals: ['P','F'],
+            desc: 'Pass (P) if possible loss at stopLoss is less than margincall.'
         }    
     ]}
 
-    getDynamicTags(order, orders, activeOrders, entries, activeEntries, params, tags) 
+    getDynamicTags(order, orders, activeOrders, entries, activeEntries, addedEntries, params, tags) 
     {
         let res = {};
+
+        if (!(params.LEVERAGE>0)) {
+            return { MCO: { value: 'P'} };
+        } 
 
         const STOPLOSS_PERCENT = order.getTagValue("MAXLSS");
 
         if ( ! STOPLOSS_PERCENT ) {
             throw new Error('MAXPRF tagger required for MCORRECT');
         }
-/*
-        static PARAMS = {
-            START_SUM:              { def: 1000 },       // usd
-            STAKE_MODE:             { def: 'fixed' },    // fixed, percent
-            STAKE_PERCENT:          { def: 0.05 },       // stake = DEPOSIT * STAKE_PERCENT      
-            SIMULT_RISK_PERCENT:    { def: 0.1 },        // DEPOSIT * SIMULT_RISK = how many USD in risk in a moment
-            STAKE_FIXED:            { def: 5 },          // in USD
-            LEVERAGE:               { def: 20 },         // x Leverage
-            COST_BUY_PERCENT:       { def: 0.0004 },     // 4 cents from every 100 dollars
-            COST_SELL_PERCENT:      { def: 0.0004 },      // 0.04 % taker comission
-    
-            TAGS:                   { def: null },
-            SYMBOLS:                { def: null },
-            STRATEGIES:             { def: null },
-            TIMEFRAMES:             { def: null },
-            JSCODE:                 { def: null }
-        };
-*/
- 
-        const REAL_USD_AT_STAKE = params.STAKE_FIXED;
-        const USD_IN_GAME = params.STAKE_FIXED * params.LEVERAGE;
-        const USD_MAX_LOSS = Math.abs(STOPLOSS_PERCENT / 100 * USD_IN_GAME); 
 
-        if (REAL_USD_AT_STAKE < USD_MAX_LOSS) {
-            return { MCO: { value: 'N'} };
+        res.MCO = { value: 'F' };
+
+        const USD_IN_GAME = (order.quantity * order.entry.entryPrice);
+        const REAL_USD_AT_STAKE = USD_IN_GAME / params.LEVERAGE;
+        const USD_MAX_LOSS_AT_STOPLOSS = Math.abs(STOPLOSS_PERCENT / 100 * USD_IN_GAME); 
+
+        //res.MCO.comment = 'uas='+REAL_USD_AT_STAKE+', uml='+USD_MAX_LOSS_AT_STOPLOSS;
+
+        if (USD_MAX_LOSS_AT_STOPLOSS <= REAL_USD_AT_STAKE) {
+            res.MCO.value = 'P';
+            return res;
         } 
+
+        return res;
+
         /* adjust precision
 
         let newStopLoss, newTakeProfit;
@@ -72,9 +66,6 @@ class MCORRECT extends Tagger {
 
         */
 
-        res.MCO = { value: 'Y' };
-
-        return res;
     }
 
 /*

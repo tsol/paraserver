@@ -1,6 +1,7 @@
 /*
     Orders Tagger - sets tags on orders 
 */
+// TODO: separate this also
 
 class Tagger {
 
@@ -33,7 +34,7 @@ class Tagger {
         }
     }
 
-    getDynamicTags(order, orders, activeOrders, entries, activeEntries, params, tags) 
+    getDynamicTags(order, orders, activeOrders, entries, activeEntries, addedEntries, params, tags) 
     {
         return {
             TAGNAME: { value: 'TAGVALUE' },

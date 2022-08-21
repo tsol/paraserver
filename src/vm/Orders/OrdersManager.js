@@ -6,7 +6,7 @@ const { TF } = require('../../types/Timeframes.js');
 const EntryPlan = require('./EntryPlan');
 const Entry = require('../../types/Entry.js');
 
-const OrderTaggers = require('./taggers/OrderTaggers.js');
+const TaggersStatic = require('./taggers/TaggersStatic.js');
 
 const SETTINGS = require('../../../private/private.js');
 const ReportIntervals = require('../../reports/ReportIntervals');
@@ -14,6 +14,8 @@ const ReportIntervals = require('../../reports/ReportIntervals');
 class OrdersManager {
     
     static LIMIT_ORDER_TIMEOUT_CANDLES = 1;
+
+
 
     constructor(brokerUser, brokerCandles, clients) {
 
@@ -27,8 +29,8 @@ class OrdersManager {
         this.activeEntries = [];
         this.limitEntries = [];
 
-        this.taggers = new OrderTaggers(this.params);   
-        this.entryPlan = new EntryPlan(brokerCandles,this.taggers);
+        this.staticTaggers = new TaggersStatic();
+        this.entryPlan = new EntryPlan(brokerCandles);
   
         this.lastUpdateTime = null;
         this.previousHour = null;
@@ -67,7 +69,7 @@ class OrdersManager {
         const entry = new Entry(params);
 
         entry.setFlags(flagsSnapshot);
-        entry.setTags( this.taggers.getStaticTags(entry, params.flags, this.entries, entry.tags) );
+        entry.setTags( this.staticTaggers.getStaticTags(entry, params.flags, this.entries, entry.tags) );
         entry.setComment(params.comment);
 
         /* filter */
@@ -344,9 +346,7 @@ class OrdersManager {
     }
 
     setEntryPlanParams(params) {
-        // todo: processEntriesHistory here...
-        return this.entryPlan.processEntriesHistory(params,this.entries,this.taggers);
-        //return this.entryPlan.reset(params);
+        return this.entryPlan.processEntriesHistory(params,this.entries); 
     }
 
     getReport(params)
@@ -362,7 +362,8 @@ class OrdersManager {
     }
 
     getTagDescriptions() {
-        return this.taggers.getTagDescriptions();
+        return [ ... this.staticTaggers.getTagDescriptions(), 
+            ... this.entryPlan.getDynamicTaggers().getTagDescriptions() ];
     }
 
     /*

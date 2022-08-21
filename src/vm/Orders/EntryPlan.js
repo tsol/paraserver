@@ -1,10 +1,12 @@
 const SETTINGS = require('../../../private/private.js');
 const TH = require('../../helpers/time.js');
 const Order = require('../../types/Order.js');
+const SettingsManager = require('../../helpers/SettingsManager');
+const TaggersDynamic = require('./taggers/TaggersDynamic.js');
 
 class EntryPlan {
 
-    static PARAMS = {
+    static PARAMS_SCHEMA = {
         START_SUM:              { def: 1000 },       // usd
         STAKE_MODE:             { def: 'fixed' },    // fixed, percent
         STAKE_PERCENT:          { def: 0.05 },       // stake = DEPOSIT * STAKE_PERCENT      
@@ -21,20 +23,21 @@ class EntryPlan {
         JSCODE:                 { def: null }
     };
 
-    constructor(brokerCandles,taggers) {
+    constructor(brokerCandles) {
         this.brokerCandles = brokerCandles; 
-        this.taggers = taggers;       
-        this.reset(SETTINGS.entryParams);
+        this.taggers = new TaggersDynamic();
+        this.settings = new SettingsManager(EntryPlan.PARAMS_SCHEMA);
+        this.updateParamsAndReset(SETTINGS.entryParams);
     }
 
-    reset(params) {
+    getDynamicTaggers() {
+        return this.taggers;
+    }
+
+    updateParamsAndReset(params) {
+        this.settings.reset(params);
+        this.params = this.settings.getParams();
         
-        this.params = {};
-
-        for (var p in EntryPlan.PARAMS) {
-            this.params[p] = ( params.hasOwnProperty(p) ? params[p] : EntryPlan.PARAMS[p].def );
-        }
-
         this.filterFunction = this.genFilterFunction(this.params);
 
         this.entries = [];
@@ -44,10 +47,7 @@ class EntryPlan {
         this.activeOrders = [];
 
         this.deposit = this.params.START_SUM;
-
-        this.taggers.resetDynamic();
-
-        return this.params;
+        this.taggers.reset();
 
     }
 
@@ -56,9 +56,9 @@ class EntryPlan {
         const p = params;
         let jsf = [];
 
-        if (p.SYMBOLS)       { jsf.push('([\''+p.SYMBOLS.join('\',\'')+'\'].includes(o.symbol))'); }
-        if (p.TIMEFRAMES)    { jsf.push('([\''+p.TIMEFRAMES.join('\',\'')+'\'].includes(o.timeframe))'); }
-        if (p.STRATEGIES)    { jsf.push('([\''+p.STRATEGIES.join('\',\'')+'\'].includes(o.strategy))'); }
+        if (p.SYMBOLS)       { jsf.push('([\''+p.SYMBOLS.join('\',\'')+'\'].includes(o.entry.symbol))'); }
+        if (p.TIMEFRAMES)    { jsf.push('([\''+p.TIMEFRAMES.join('\',\'')+'\'].includes(o.entry.timeframe))'); }
+        if (p.STRATEGIES)    { jsf.push('([\''+p.STRATEGIES.join('\',\'')+'\'].includes(o.entry.strategy))'); }
         if (p.TAGS)         {
             for (var t in p.TAGS) {
                 jsf.push(`(o.getTagValue('${t}')=='${p.TAGS[t]}')`);
@@ -75,18 +75,6 @@ class EntryPlan {
         if (q && (q.quantity > 0)) {
             const order = new Order(entry, q.quantity);
             order.setStake(q.usd);
-
-            order.setTags( 
-                this.taggers.getDynamicTags(
-                    order, 
-                    this.orders,
-                    this.activeOrders,
-                    this.entries,
-                    this.activeEntries,
-                    this.params,
-                    order.tags  
-                )
-            );
 
             return order;
         }
@@ -141,22 +129,66 @@ class EntryPlan {
         return boughtInUSD - soldInUSD - commissionInUSD;
     }
 
+    closeEntry(entry) {
 
-    addEntries(entriesArray) {
+        this.activeOrders.forEach( o => {
+            if (o.entry == entry) {
+                // todo: modify deposit
+                const gain = this.calcGain(o);
+                this.deposit += gain;
+                o.setGain(gain);
+            }
+        })
 
-        entriesArray.forEach( e => {
+        this.activeOrders = this.activeOrders.filter( o => o.entry !== entry );
+        this.activeEntries = this.activeEntries.filter( e => e !== entry );
+    }
+
+
+    // *** Getters
+
+    getOrders() { return this.orders; }
+
+
+
+    // *** OrdersManager interface
+
+    // this is called upon candle processor phase end - param array contains
+    // all entries being added at this iteration
+    //
+
+    addEntries(addedEntries) {
+
+        addedEntries.forEach( e => {
             this.entries.push(e);
             this.activeEntries.push(e);
         });
 
         let newOrders = [];
 
-        entriesArray.forEach( e => {
+        addedEntries.forEach( e => {
             var order = this.createOrder(e);
-            // todo: here dynamic tags added
-            if (order && this.filterFunction(order.entry)) {
-                newOrders.push(order);
+            
+            if (order) {
+                order.setTags( 
+                    this.taggers.getDynamicTags(
+                        order, 
+                        this.orders,
+                        this.activeOrders,
+                        this.entries,
+                        this.activeEntries,
+                        addedEntries,
+                        this.params,
+                        order.tags  
+                    )
+                );
+
+                if ( this.filterFunction(order) ) {
+                    newOrders.push(order);
+                }
+    
             }
+
         });
 
         // todo: here simultaneous risk conditions with arbitrage
@@ -173,29 +205,11 @@ class EntryPlan {
     }
 
 
-    closeEntry(entry) {
 
-        this.activeOrders.forEach( o => {
-            if (o.entry == entry) {
-                // todo: modify deposit
-                const gain = this.calcGain(o);
-                this.deposit += gain;
-                o.setGain(gain);
-            }
-        })
-
-        this.activeOrders = this.activeOrders.filter( o => o.entry !== entry );
-        this.activeEntries = this.activeEntries.filter( e => e !== entry );
-    }
-
-    // properties access
-
-    getOrders() { return this.orders; }
 
     // GUI interface:
 
     getParams() {
-        // todo: return merged EntryPlan.PARAMS + this.params 
         return this.params;
     }
 
@@ -207,9 +221,8 @@ class EntryPlan {
     processEntriesHistory(params,entries) {
 
         console.log('EP: recalc: processing history entries -> orders '+TH.ls(TH.now()))
-        this.reset(params);
+        this.updateParamsAndReset(params);
 
-  
         // process in historical manner all opens and closes
 
         let seqo = [];
