@@ -18,7 +18,7 @@ class MACDF extends Tagger {
         },
     ]}
 
-    getStaticTags(entry, flags, entries, tags) // return if entry should pass
+    getStaticTags(entry, flags, entries) // return if entry should pass
     {
         const macdf = flags.get('macdf');
         if (! macdf ) { return; }

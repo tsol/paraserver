@@ -27,14 +27,14 @@ class Tagger {
     staticWeekly(entry,flags,entries,week) {}
     staticMonthly(entry,flags,entries,month) {} 
 
-    getStaticTags(entry, flags, entries, tags) 
+    getStaticTags(entry, flags, entries) 
     {
         return {
             TAGNAME: { value: 'TAGVALUE' },
         }
     }
 
-    getDynamicTags(order, orders, activeOrders, entries, activeEntries, addedEntries, params, tags) 
+    getDynamicTags(order, orders, activeOrders, entries, activeEntries, addedEntries, params) 
     {
         return {
             TAGNAME: { value: 'TAGVALUE' },

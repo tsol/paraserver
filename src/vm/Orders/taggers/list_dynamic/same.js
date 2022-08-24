@@ -28,7 +28,7 @@ class SAME extends Tagger {
     ]}
 
     getDynamicTags(order, orders, activeOrders, entries,
-        activeEntries, addedEntries, params, tags) 
+        activeEntries, addedEntries, params) 
     {
         let res = {
             'SAME-SYM': { value: 'P' },

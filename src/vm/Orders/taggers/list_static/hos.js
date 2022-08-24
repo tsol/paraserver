@@ -37,7 +37,7 @@ class HOS extends Tagger {
     }
 
     
-    getStaticTags(entry, flags, entries, tags)
+    getStaticTags(entry, flags, entries)
     {
         this.tags = {};
 

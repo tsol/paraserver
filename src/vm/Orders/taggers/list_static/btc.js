@@ -30,7 +30,7 @@ class BTC extends Tagger {
     }
 
 
-    getStaticTags(entry, flags, entries, tags) // return if entry should pass
+    getStaticTags(entry, flags, entries) // return if entry should pass
     {
         this.tags = {};
 

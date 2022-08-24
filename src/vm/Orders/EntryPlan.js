@@ -3,6 +3,7 @@ const TH = require('../../helpers/time.js');
 const Order = require('../../types/Order.js');
 const SettingsManager = require('../../helpers/SettingsManager');
 const TaggersDynamic = require('./taggers/TaggersDynamic.js');
+const ArbitrageTagger = require('./taggers/ArbitrageTagger.js');
 
 class EntryPlan {
 
@@ -27,6 +28,7 @@ class EntryPlan {
         this.brokerCandles = brokerCandles; 
         this.taggers = new TaggersDynamic();
         this.settings = new SettingsManager(EntryPlan.PARAMS_SCHEMA);
+        this.arbitrageTagger = new ArbitrageTagger();
         this.updateParamsAndReset(SETTINGS.entryParams);
     }
 
@@ -178,15 +180,12 @@ class EntryPlan {
                         this.entries,
                         this.activeEntries,
                         addedEntries,
-                        this.params,
-                        order.tags  
+                        this.params  
                     )
                 );
 
-                if ( this.filterFunction(order) ) {
-                    newOrders.push(order);
-                }
-    
+                newOrders.push(order);
+
             }
 
         });
@@ -194,6 +193,13 @@ class EntryPlan {
         // todo: here simultaneous risk conditions with arbitrage
         // should be applied (if required) and newOrders reduced to winners
         // OR BETTER YET - arbitrage must be done by a dynamic tagger
+
+        let passedOrders = this.arbitrageTagger.getRiskPassOrders(
+            newOrders, this.activeOrders, this.entries, this.deposit, this.params);
+
+        passedOrders.forEach(o => o.setTag('RISKM','P'));
+
+        newOrders = newOrders.filter( o => this.filterFunction(o) );
 
         newOrders.forEach( order => {
             order.setWallet(this.deposit);

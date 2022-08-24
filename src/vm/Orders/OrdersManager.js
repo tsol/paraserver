@@ -10,6 +10,7 @@ const TaggersStatic = require('./taggers/TaggersStatic.js');
 
 const SETTINGS = require('../../../private/private.js');
 const ReportIntervals = require('../../reports/ReportIntervals');
+const ArbitrageTagger = require('./taggers/ArbitrageTagger');
 
 class OrdersManager {
     
@@ -69,7 +70,8 @@ class OrdersManager {
         const entry = new Entry(params);
 
         entry.setFlags(flagsSnapshot);
-        entry.setTags( this.staticTaggers.getStaticTags(entry, params.flags, this.entries, entry.tags) );
+
+        entry.setTags(  this.staticTaggers.getStaticTags(entry, params.flags, this.entries) );
         entry.setComment(params.comment);
 
         /* filter */
@@ -363,7 +365,8 @@ class OrdersManager {
 
     getTagDescriptions() {
         return [ ... this.staticTaggers.getTagDescriptions(), 
-            ... this.entryPlan.getDynamicTaggers().getTagDescriptions() ];
+            ... this.entryPlan.getDynamicTaggers().getTagDescriptions(),
+            ... ArbitrageTagger.getRISKMTagDescription() ];
     }
 
     /*

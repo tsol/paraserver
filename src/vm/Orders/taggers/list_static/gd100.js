@@ -22,7 +22,7 @@ class GD100 extends Tagger {
         },
         {
             name: 'BD',
-            vals: ['P','F'],
+            vals: ['Y','N'],
             desc: 'Bad (Y) if last '+GD100.NUM_ORDERS+' ordes with same symbol-timeframe-strategy '+
             'had win rate below '+GD100.MIN_RATIO+' percent.'
         },      
@@ -64,7 +64,7 @@ class GD100 extends Tagger {
 
     }
  
-    getStaticTags(entry, flags, entries, tags) 
+    getStaticTags(entry, flags, entries) 
     {
         return {
             GD: { value: ( this.isAllowed(entry) ? 'Y' : 'N') },

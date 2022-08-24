@@ -37,7 +37,7 @@ class TaggersDynamic {
     }
 
     getDynamicTags(order, orders, activeOrders, 
-        entries, activeEntries, addedEntries, params, tags)
+        entries, activeEntries, addedEntries, params)
     {
         const pd = this.dynamicPeriodDetector.detect(order.entry.time);
 
@@ -68,12 +68,14 @@ class TaggersDynamic {
                      params, pd.week);
             });
         }
+        
+        let tags = {};
 
         this.dynamicTaggers.forEach( f => {
             tags = {
                 ... tags, 
                 ... f.getDynamicTags(order, orders, activeOrders, entries, activeEntries,
-                     addedEntries, params, tags)
+                     addedEntries, params)
             };
         });
 

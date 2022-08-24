@@ -34,6 +34,19 @@ class Order {
     setWallet(w) { this.wallet = w; }
     setStake(s) { this.stake = s; }
 
+    getRealStake(leverage) {
+        let USD_IN_GAME = (this.quantity * this.entry.entryPrice);
+        return USD_IN_GAME / ( leverage ? leverage : 1);
+    }
+
+    getRealMaxLoss(leverage,buyPercent,sellPercent) {
+        const USD_ENTRY = (this.quantity * this.entry.entryPrice);
+        const USD_STOP = (this.quantity * this.entry.stopLoss);
+        const LOSS = Math.abs(USD_ENTRY - USD_STOP) 
+            + USD_ENTRY*buyPercent
+            + USD_STOP*sellPercent; 
+        return Math.max(LOSS,this.getRealStake(leverage)); 
+    }
 
     /* export/import IO */
 

@@ -51,7 +51,7 @@ class TaggersStatic {
         this.staticTaggers.forEach( f => f.reset() );
     }
  
-    getStaticTags(entry, flags, entries, tags)
+    getStaticTags(entry, flags, entries)
     {
 
         const pd = this.staticPeriodDetector.detect(entry.time);
@@ -79,6 +79,8 @@ class TaggersStatic {
                 f.staticWeekly(entry,flags,entries,pd.week);
             });
         }
+        
+        let tags = {};
 
         this.staticTaggers.forEach( f => {
             tags = { ... tags, ... f.getStaticTags(entry,flags,entries,tags) };

@@ -43,7 +43,7 @@ class SESSIONS extends Tagger {
         },       
     ]}
 
-    getStaticTags(entry, flags, entries, tags) // return if entry should pass
+    getStaticTags(entry, flags, entries) // return if entry should pass
     {
         const d = new Date(entry.time);
         let hour = d.getUTCHours();

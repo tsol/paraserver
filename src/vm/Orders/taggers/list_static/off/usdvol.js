@@ -9,7 +9,7 @@ const { fnum } = require('../../../../../reports/helper');
 
 class USDVOL extends Tagger {
     
-    getStaticTags(entry, flags, entries, tags) // return if entry should pass
+    getStaticTags(entry, flags, entries) // return if entry should pass
     {
         let res = {};
 

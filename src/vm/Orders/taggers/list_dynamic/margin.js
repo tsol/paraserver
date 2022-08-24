@@ -14,7 +14,7 @@ class MARGIN extends Tagger {
         }    
     ]}
 
-    getDynamicTags(order, orders, activeOrders, entries, activeEntries, addedEntries, params, tags) 
+    getDynamicTags(order, orders, activeOrders, entries, activeEntries, addedEntries, params) 
     {
         let res = {};
 
@@ -25,7 +25,8 @@ class MARGIN extends Tagger {
         const STOPLOSS_PERCENT = order.getTagValue("MAXLSS");
 
         if ( ! STOPLOSS_PERCENT ) {
-            throw new Error('MAXPRF tagger required for MRGRRECT');
+            //throw new Error('MAXPRF tagger required for MARGIN');
+            return res;
         }
 
         res.MRG = { value: 'F' };

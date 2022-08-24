@@ -1,7 +1,7 @@
 
-
+  - disable Submit & cancel buttons on VDynamicForm
+  - RISK MANAGEMENT:
   - Добавить динамический таг - одновременный вход в символ SIM (addedEntries)
-  - Добавить RISK MANAGEMENT, добавить АРБИТРАЖ
 
 
 1. В интерфейсе Загрузка ORDERS / Entries только диаппазоном

@@ -6,15 +6,15 @@ function winRatio(win, loose)
     return  ratio;
 }
 
-function entryStats(entrys)
+function entryStats(entries)
 {
-    let res = entrys.reduce( (t, entry) => { 
+    let res = entries.reduce( (t, entry) => { 
         t.gp += entry.gainPercent;
         if ( entry.gainPercent > 0 ) { t.win++ } else { t.lost++ };
         return t;
     }, { gp: 0, win: 0, lost: 0 });
 
-    res.num = entrys.length;
+    res.num = entries.length;
     res.ratio = winRatio( res.win, res.lost );
     return res;
 }

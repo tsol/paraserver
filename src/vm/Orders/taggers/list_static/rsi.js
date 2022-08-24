@@ -16,7 +16,7 @@ class RSI extends Tagger {
         }
     ]}
 
-    getStaticTags(entry, flags, entries, tags) // return if entry should pass
+    getStaticTags(entry, flags, entries) // return if entry should pass
     {
         const rsi = flags.get('rsi14');
         if (! rsi ) { return; }
