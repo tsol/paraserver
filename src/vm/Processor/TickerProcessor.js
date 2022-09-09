@@ -17,16 +17,7 @@ class TickerProcessor {
         return this.symbol+'-'+this.timeframe;
     }
 
-    getCurrentPrice()  {
-        if (this.candles.length < 1) {
-            console.error('no candles to get current price');
-            return 0;
-        }
-        const lastCandle = this.candles[this.candles.length - 1];
-        return lastCandle.close;
-    }
-
-
+    // only used in dbl_bottom strategy
     getCandlesFrom(closeTime) {
         return this.candles.filter( c => c.closeTime > closeTime );
     }

@@ -10,8 +10,8 @@ class RSI extends Tagger {
     
     getTagsDescription() { return [
         {
-            name: 'MAXPRF',
-            vals: [],
+            name: 'RSI',
+            vals: ['P','F'],
             desc: 'Pass (P) buy entries when RSI>50, pass sell when RSI<50. Otherwise filters (F).'
         }
     ]}

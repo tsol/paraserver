@@ -13,7 +13,6 @@ class Order {
         this.stake = 0;
 
         // RealOrder
-
         //this.brokerORID = null;
         //this.brokerSLID = null;
         //this.brokerTPID = null;

@@ -1,4 +1,3 @@
-
 /*
 ** CandleProxy - is a caching proxy for loading candles.
 **
@@ -16,6 +15,7 @@ const { TF } = require('../types/Timeframes.js');
 
 class CandleProxy {
 
+    // Type: DBCandlesInterface, BrokerCandlesInterface
     constructor (candleDb, brokerCandles)
     {
         this.db = candleDb;

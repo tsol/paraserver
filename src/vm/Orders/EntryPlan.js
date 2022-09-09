@@ -135,7 +135,6 @@ class EntryPlan {
 
         this.activeOrders.forEach( o => {
             if (o.entry == entry) {
-                // todo: modify deposit
                 const gain = this.calcGain(o);
                 this.deposit += gain;
                 o.setGain(gain);
@@ -190,9 +189,9 @@ class EntryPlan {
 
         });
 
-        // todo: here simultaneous risk conditions with arbitrage
-        // should be applied (if required) and newOrders reduced to winners
-        // OR BETTER YET - arbitrage must be done by a dynamic tagger
+
+        // todo: fix, firstly filter, than arbitrageTag and filter again.
+        // In fact: remove RISKM tag - just enable if params.SIMULT_RISK_PERCENT > 0
 
         let passedOrders = this.arbitrageTagger.getRiskPassOrders(
             newOrders, this.activeOrders, this.entries, this.deposit, this.params);

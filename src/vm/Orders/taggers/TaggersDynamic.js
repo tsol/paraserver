@@ -14,6 +14,7 @@ const PeriodDetector = require('./helpers/PeriodDetector.js')
 
 const MARGIN = require('./list_dynamic/margin.js');
 const SAME = require('./list_dynamic/same.js');
+const SOC = require('./list_dynamic/soc.js');
 
 class TaggersDynamic {
 
@@ -22,6 +23,7 @@ class TaggersDynamic {
         this.dynamicTaggers = [
             new MARGIN(),
             new SAME(),
+            new SOC()
         ];
     }
 

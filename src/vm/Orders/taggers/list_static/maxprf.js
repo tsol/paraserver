@@ -24,6 +24,8 @@ class MAXPRF extends Tagger {
         },
     ]}
 
+    // todo: move these to some order helper/service
+
     calcGainPercent(isLong, entryPrice, dstPrice)
     {
         let gainPercent = 0;

@@ -15,7 +15,7 @@ class BTCTREND extends Analyzer {
         static SYMBOL       = 'BTCUSDT';
         static TIMEFRAMES   = ['1h','4h','1d'];
         static MA           = 'emac';
-        static MA_PERIODS   = [9,20,200];
+        static MA_PERIODS   = [9,20];
 
         constructor() {
             super();

@@ -1,3 +1,9 @@
+/*
+    GOOD HUNDRED - tag based on previous win/loose ratio of the current
+    symbol-timeframe-strategy 
+
+*/
+
 const TH = require('../../../../helpers/time');
 const { entryStats } = require('../../../../reports/helper');
 const Tagger = require('../types/Tagger');
@@ -28,7 +34,7 @@ class GD100 extends Tagger {
         },      
     ]}
 
-    staticWeekly(entry,flags,entries,month) {
+    staticWeekly(entry,flags,entries,weekNum) {
  
         const spl = {};
         const bo = entries.sort( (a,b) => b.time > a.time );

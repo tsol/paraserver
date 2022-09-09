@@ -44,57 +44,8 @@ class MARGIN extends Tagger {
 
         return res;
 
-        /* adjust precision
-
-        let newStopLoss, newTakeProfit;
-        
-        [ newStopLoss, newTakeProfit ] = this.correctMarginCallSLTP(
-            entry.entryPrice, (entry.type=='buy'), entry.stopLoss, entry.takeProfit,
-            entry.quantity, -1*this.params.MARGINCALL_GAIN
-        );
-
-        try {        
-            aligned = this.brokerCandles.getAlignedOrderDetails(symbol,entryPrice,
-            this.params.STAKE_USD,newStopLoss,newTakeProfit);
-            newStopLoss = aligned.stopLoss;
-            newTakeProfit = aligned.takeProfit;
-        } catch (e) {
-            console.log("BAD ORDER PARAMS: "+e.message);
-            return null;
-        }
-
-        res.MRG_SL = { value: entry.stopLoss+' => '+newStopLoss };
-
-        */
-
     }
 
-/*
-    correctMarginCallSLTP(entryPrice, isLong, stopLoss, takeProfit, quantity, positiveTargetLoss)
-    {
-        const newStopLoss =
-         this.calcTargetLossPrice(positiveTargetLoss, entryPrice, isLong, quantity);
-
-        if (    (isLong && (newStopLoss <= stopLoss))
-            || (!isLong && (newStopLoss >= stopLoss))
-        ) { return [stopLoss, takeProfit]; }
-     
-        const ratio = Math.abs(entryPrice-newStopLoss) / Math.abs(entryPrice-stopLoss);
-        const oldTakeHeight = entryPrice - takeProfit;
-        const newTakeProfit = entryPrice - 1*oldTakeHeight*ratio;
-
-        return [ newStopLoss, newTakeProfit ];
-    }
-
-    calcTargetLossPrice(positiveTargetLoss, entryPrice, isLong, quantity)
-    {
-        const z = ( isLong ? 1 : -1);
-        const res = (( entryPrice * (z - this.params.COST_BUY_PERCENT) - positiveTargetLoss / quantity )
-            / (this.params.COST_SELL_PERCENT + z));
-        return res;
-    }
-
-*/
 
 }
 

@@ -9,22 +9,19 @@ const Tagger = require('../types/Tagger');
 class BTC extends Tagger {
     
     static SYMBOL       = 'BTCUSDT';
-    static TIMEFRAMES   = ['1h','4h','1d'];
-    static MA_PERIODS   = [9,20,200];
+    static MA_PERIODS   = [9,20];
 
     getTagsDescription() { 
         let tags = [];
-        BTC.TIMEFRAMES.forEach( tf => {
-            BTC.MA_PERIODS.forEach( p => {
+        BTC.MA_PERIODS.forEach( p => {
 
                 tags.push({
-                    name: this.genTagName(tf,p),
+                    name: 'BT'+p,
                     vals: ['P','F','N'],
                     desc: 'Pass (P) if '+BTC.SYMBOL+' is above (buy entries) or below (sell entries) '+
-                    ' EMA '+p+' on '+tf+' timeframe, fail (F) otherwise. When not enough data returns (N).'
+                    'EMA '+p+' on current timeframe, (F) otherwise. When not enough data returns (N).'
                 })
 
-            })
         })
         return tags;
     }
@@ -32,20 +29,17 @@ class BTC extends Tagger {
 
     getStaticTags(entry, flags, entries) // return if entry should pass
     {
-        this.tags = {};
+        let tags = {};
 
-        BTC.TIMEFRAMES.forEach( tf => {
-            BTC.MA_PERIODS.forEach( p => {
-                this.createTag(entry,flags,tf,p);
-            })
+        BTC.MA_PERIODS.forEach( p => {
+            let tagValue = this.createTag(entry,flags,entry.timeframe,p);
+            if (tagValue) {
+                tags['BT'+p] = { value: tagValue };
+            }
         })
 
-        return this.tags;
+        return tags;
 
-    }
-
-    genTagName(timeframe,period) {
-        return 'BT-'+timeframe+'-'+period
     }
 
     createTag(entry,flags,timeframe,period) {
@@ -54,26 +48,16 @@ class BTC extends Tagger {
             BTC.SYMBOL+'-'+timeframe, 'bt-'+timeframe+'-'+period
         );
 
-        const curBFP = this.getBFP(entry.type,btcTrend);
-        const PRE = this.genTagName(timeframe,period);
-
-        this.tags[ PRE ] = {
-            value: curBFP, n: btcTrend
-        };
-      
-    }
-
-    getBFP(entryType, btcTrend)
-    {
-        if (!btcTrend) { return 'N'; }
+        if (! btcTrend ) { return null; }
 
         const doFilter = (
-             ( (btcTrend > 0) && (entryType == 'sell') ) ||
-             ( (btcTrend < 0) && (entryType == 'buy' ) )
+            ( (btcTrend > 0) && (entry.type == 'sell') ) ||
+            ( (btcTrend < 0) && (entry.type == 'buy' ) )
         );
+
         return ( doFilter ? 'F' : 'P');
     }
-    
+
 }
 
 

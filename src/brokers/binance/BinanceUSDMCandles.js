@@ -153,6 +153,9 @@ class BinanceUSDMCandles extends BrokerCandlesInterface {
 
    async waitQueue(sId, weight)
    {
+        // todo: somehow export request queue logic outside to make it reusable
+        // or find ready solution
+        
         while (true)
         {
             let states = this.client.getRateLimitStates();

@@ -1,18 +1,17 @@
 /*
 ** This is mysql backend for CandleProxy candle proxy class.
-**
-**
 */
 
 const mysql = require('mysql2');
 
-const Candle = require('../types/Candle.js');
+const Candle = require('../../types/Candle.js');
+const DBCandlesInterface = require('../types/DBCandlesInterface.js');
 
 const PRICE_STORE_FORMAT = 'DECIMAL(24,12) NOT NULL';
 const VOLUME_STORE_FORMAT = 'DECIMAL(24,12) NOT NULL';
 const TIMESTAMP_STORE_FORMAT = 'BIGINT NOT NULL';
 
-class MysqlCandles {
+class MysqlCandles extends DBCandlesInterface {
 
     constructor()
     {
