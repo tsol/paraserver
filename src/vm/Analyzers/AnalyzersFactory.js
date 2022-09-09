@@ -109,9 +109,9 @@ class AnalyzersFactory {
         return new AnalyzerClass(constructorParams);
     }
 
-    createBox(strategiesToInit, ordersManager, candleProcessor) {
+    createBox(strategiesToInit, ordersManager, candleProcessor, candleDebug) {
  
-        const box = new AnalyzersBox( this, ordersManager, candleProcessor );
+        const box = new AnalyzersBox( this, ordersManager, candleProcessor, candleDebug );
 
         strategiesToInit.forEach( s => {
             box.addAnalyzer(s);

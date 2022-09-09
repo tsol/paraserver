@@ -14,7 +14,11 @@ BASIC CONCEPTION:
   Available VM list hardcoded in strart up code.
 
 
-0. CandleDebug -> трансформировать в отдельную сущность
+ - дописать mysql методы candleDebug
+ - написать получение candleDebug фронтом через candleDebugDB
+ 
+
+
 
 1. Сохранять в DB ( обновлять ) CandleDebug структуру в конце каждой фазы процессинга
  (VM.id, symbol, timeframe, openTime, JSON)

@@ -6,7 +6,7 @@
 */
 
 const Strategy = require("../types/Strategy");
-const CDB = require('../../../types/CandleDebug');
+
 
 class GEROFLVL extends Strategy {
 
@@ -36,7 +36,7 @@ class GEROFLVL extends Strategy {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             const atr = io.get('atr14');
             if (! atr ) { return false; }
@@ -55,7 +55,7 @@ class GEROFLVL extends Strategy {
                     ||  ( !buy && (candle.high > this.foundLevel) )
                 ) {
                     this.resetFinder();
-                    CDB.labelBottom(candle,'xOL'); // out of luft
+                    io.cdb().labelBottom(candle,'xOL'); // out of luft
                     return;
                 }
 
@@ -131,7 +131,7 @@ class GEROFLVL extends Strategy {
             this.direction = ( mp == pl ? 1 : -1 );
             this.weight = weight;
 
-            CDB.labelBottom(candle,'B'+ (this.direction>0?'U':'D'));
+            io.cdb().labelBottom(candle,'B'+ (this.direction>0?'U':'D'));
 
 
         }

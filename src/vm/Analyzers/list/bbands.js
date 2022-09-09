@@ -4,7 +4,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 const STDDEV = require('../helpers/STDDEV.js');
 
 class BollingerBands extends Analyzer {
@@ -26,7 +26,7 @@ class BollingerBands extends Analyzer {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             const price = this.getDataFromCandle(this.source, candle);
             //const tPrice = (candle.low + candle.high) / 2;
@@ -46,7 +46,7 @@ class BollingerBands extends Analyzer {
             const res = { u: bandu, d: bandd, m: maValue };
             io.set(this.name, res);
 
-            CDB.onChart(candle, this.name, res);
+            io.cdb().onChart(candle, this.name, res);
 
         }
 

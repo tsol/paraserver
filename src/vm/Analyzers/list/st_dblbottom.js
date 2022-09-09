@@ -5,7 +5,7 @@
 */
 
 const Strategy = require("../types/Strategy");
-const CDB = require('../../../types/CandleDebug');
+
 
 class EntryFinder {
 
@@ -142,16 +142,16 @@ class EntryFinder {
     label(candle,text) {
         text = this.id+'.'+text;
         if (this.isLong) {
-            return CDB.labelBottom(candle,text);
+            return io.cdb().labelBottom(candle,text);
         }
-        return CDB.labelTop(candle,text);
+        return io.cdb().labelTop(candle,text);
     }
 
     circle(candle,param) {
         if (this.isLong) {
-            return CDB.circleLow(candle, param);
+            return io.cdb().circleLow(candle, param);
         }
-        return CDB.circleHigh(candle,param);
+        return io.cdb().circleHigh(candle,param);
     }
 
     updateNeck(candle)
@@ -347,7 +347,7 @@ class DBLBOTTOM extends Strategy {
   
     addCandle(candle, io) {
         super.addCandle(candle, io);
-        CDB.setSource(this.getId());  
+        io.cdb().setSource(this.getId());  
                 
         const newHigh   = io.get('hl_trend.new.high');   
         if (newHigh)

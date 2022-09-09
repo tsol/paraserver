@@ -10,7 +10,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 
 class AnMA extends Analyzer {
 
@@ -28,7 +28,7 @@ class AnMA extends Analyzer {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             this.values.push( this.getDataFromCandle(this.source, candle) );
 
@@ -45,7 +45,7 @@ class AnMA extends Analyzer {
     
             io.set(this.name, result);
 
-            CDB.onChart(candle, this.name, result);
+            io.cdb().onChart(candle, this.name, result);
 
         }
 

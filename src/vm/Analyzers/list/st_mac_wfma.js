@@ -16,7 +16,7 @@
 */
 
 const Strategy = require("../types/Strategy");
-const CDB = require('../../../types/CandleDebug');
+
 
 class StrategyCrossWMA2 extends Strategy {
   
@@ -38,7 +38,7 @@ class StrategyCrossWMA2 extends Strategy {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
             this.run(candle,io);
             this.prevCandle = candle;
         }
@@ -55,7 +55,7 @@ class StrategyCrossWMA2 extends Strategy {
 
         run(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             const wf = io.get('wfractals');
             if (! wf ) { return; }
@@ -107,13 +107,13 @@ class StrategyCrossWMA2 extends Strategy {
             if (! candle ) { return false; }
             if (isLong) {
                 if (candle.bodySize() < candle.upperTailSize()) {
-                    CDB.labelTop(candle,'Xt');
+                    io.cdb().labelTop(candle,'Xt');
                     return true;
                 }
             }
             else {
                 if (candle.bodySize() < candle.lowerTailSize()) {
-                    CDB.labelBottom(candle,'Xt');
+                    io.cdb().labelBottom(candle,'Xt');
                     return true;
                 }
             }

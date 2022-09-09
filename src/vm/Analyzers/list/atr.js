@@ -5,7 +5,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 
 class AnATR extends Analyzer {
 
@@ -23,7 +23,7 @@ class AnATR extends Analyzer {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             if (this.prevCandle === undefined) {
                 this.prevCandle = candle;
@@ -44,7 +44,7 @@ class AnATR extends Analyzer {
             
             io.set(this.name, atr);
             
-            CDB.offChart(candle,this.name,atr);
+            io.cdb().offChart(candle,this.name,atr);
             this.prevCandle = candle;
         }
 

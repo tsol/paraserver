@@ -7,10 +7,10 @@ const AnalyzersIO = require("./AnalyzerIO");
 
 class AnalyzersBox {
 
-    constructor(factory,ordersManager,candleProcessor) {
+    constructor(factory,ordersManager,candleProcessor, candleDebug) {
         this.factory = factory;
         this.analyzers = [];
-        this.io = new AnalyzersIO(this,ordersManager,candleProcessor);
+        this.io = new AnalyzersIO(this,ordersManager,candleProcessor, candleDebug);
         this.io.init();
     }
 

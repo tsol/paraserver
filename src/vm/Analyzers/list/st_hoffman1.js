@@ -10,7 +10,7 @@
 */
 
 const Strategy = require("../types/Strategy");
-const CDB = require('../../../types/CandleDebug');
+
 const RMA = require('../helpers/RMA.js');
 
 /*
@@ -100,7 +100,7 @@ class HOFFMAN extends Strategy {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             const r = this.rma35range.getRMA(this.trueRange(candle));
             this.prevCandle = candle;
@@ -117,8 +117,8 @@ class HOFFMAN extends Strategy {
             const ku = k + r*0.5;
             const kl = k - r*0.5;
 
-            CDB.onChart(candle, 'ku', ku);
-            CDB.onChart(candle, 'kl', kl);
+            io.cdb().onChart(candle, 'ku', ku);
+            io.cdb().onChart(candle, 'kl', kl);
 
             const other = [
                 io.get('emac20'),
@@ -136,9 +136,9 @@ class HOFFMAN extends Strategy {
             //if (! atr ) { return; }
 
             if (bearish) {
-                CDB.labelBottom(candle,'^')
+                io.cdb().labelBottom(candle,'^')
                 if (this.uptrend(candle,fast,slow,other)) {
-                    CDB.labelTop(candle,'E')
+                    io.cdb().labelTop(candle,'E')
 
                     io.makeEntry(this, 'buy', {
                         entryPrice: candle.high + HOFFMAN.ENTRY_PIPS * this.pip,
@@ -154,9 +154,9 @@ class HOFFMAN extends Strategy {
 
 
             if (bullish) {
-                CDB.labelTop(candle,'v')
+                io.cdb().labelTop(candle,'v')
                 if (this.downtrend(candle,fast,slow,other)) {
-                    CDB.labelBottom(candle,'E')
+                    io.cdb().labelBottom(candle,'E')
 
                     io.makeEntry(this, 'sell', {
                         entryPrice: candle.low - HOFFMAN.ENTRY_PIPS * this.pip,

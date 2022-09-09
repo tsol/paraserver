@@ -8,10 +8,11 @@ class AnalyzersIO {
     static ENTRY_TARGET_LEVEL_SEARCH_RATIO    = 1.8;
     static ENTRY_SWSL_FIND_MAX_CANDLES        = 25;
 
-    constructor(box, ordersManager, candleProcessor) {
+    constructor(box, ordersManager, candleProcessor, candleDebug) {
         this.box = box;
         this.ordersManager = ordersManager;
         this.candleProcessor = candleProcessor;
+        this.candleDebug = candleDebug;
 
         this.candle = null;
         this.flags = null;
@@ -30,6 +31,10 @@ class AnalyzersIO {
 
     getHTF(flagName) {
         return this.flags.getHTF(flagName);
+    }
+
+    cdb() { 
+        return this.candleDebug;
     }
 
     get(flagName) {

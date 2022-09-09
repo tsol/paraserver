@@ -20,7 +20,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 
 class AnCandlePatterns extends Analyzer {
 
@@ -38,7 +38,7 @@ class AnCandlePatterns extends Analyzer {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             if (this.isShootingStar(candle)) {
                 this.setPattern(candle,'shu','down');
@@ -97,8 +97,8 @@ class AnCandlePatterns extends Analyzer {
         }
 
         setPattern(candle,name,bias) {
-            CDB.circleMiddle(candle,{ color: 'cyan', radius: 3, alpha: 0.1 });
-            CDB.labelBottom(candle,name);
+            io.cdb().circleMiddle(candle,{ color: 'cyan', radius: 3, alpha: 0.1 });
+            io.cdb().labelBottom(candle,name);
             this.io.set(this.getId()+'.new.'+name,candle);
             this.lastPatternBias = bias;
         }

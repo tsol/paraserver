@@ -7,7 +7,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 const BTC = require("../../Orders/taggers/list_static/btc");
 
 class BTCTREND extends Analyzer {

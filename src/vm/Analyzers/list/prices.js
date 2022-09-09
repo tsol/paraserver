@@ -3,7 +3,7 @@
 **
 */
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 const EMA = require('../helpers/EMA.js');
 
 class PRICES extends Analyzer {
@@ -27,7 +27,7 @@ class PRICES extends Analyzer {
 
     addCandle(candle,io) {
         super.addCandle(candle,io);
-        CDB.setSource(this.getId());
+        io.cdb().setSource(this.getId());
 
         if (this.prevCandle) {
 

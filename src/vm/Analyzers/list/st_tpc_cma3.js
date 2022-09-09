@@ -12,7 +12,7 @@
 */
 
 const Strategy = require("../types/Strategy");
-const CDB = require('../../../types/CandleDebug');
+
 
 class StrategyCrossMA3 extends Strategy {
   
@@ -39,7 +39,7 @@ class StrategyCrossMA3 extends Strategy {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             const mac50 = io.get('emac50');
             const mac200 = io.get('emac200');
@@ -56,7 +56,7 @@ class StrategyCrossMA3 extends Strategy {
                 }
                 if (! this.prevFiftyAbove && fiftyAbove) {
                     this.wasCross = true;
-                    CDB.labelTop(candle,'C');                
+                    io.cdb().labelTop(candle,'C');                
                 }
                 else {
                     this.prevFiftyAbove = fiftyAbove;
@@ -72,7 +72,7 @@ class StrategyCrossMA3 extends Strategy {
 
             if ( this.candleClosesBelow(candle, mac200) ) {
                 if (++this.countCloseBelow200 >= 3) {
-                    CDB.labelTop(candle,'A');
+                    io.cdb().labelTop(candle,'A');
                     return this.resetFinder();
                 }        
             }
@@ -80,7 +80,7 @@ class StrategyCrossMA3 extends Strategy {
             if (! this.wasTouch ) {
                 if ( this.candleClosesBelow(candle,mac50) ) {
                     this.wasTouch = true;
-                    CDB.labelTop(candle,'T');
+                    io.cdb().labelTop(candle,'T');
                 }
                 else {
                     return;

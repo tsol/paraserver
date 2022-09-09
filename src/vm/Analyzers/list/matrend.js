@@ -2,7 +2,7 @@
 ** Moving Avarage Trend
 */
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 
 class MATREND extends Analyzer {
 
@@ -36,7 +36,7 @@ class MATREND extends Analyzer {
 
     addCandle(candle,io) {
         super.addCandle(candle,io);
-        CDB.setSource(this.getId());
+        io.cdb().setSource(this.getId());
 
         let trend = 'NO';
 
@@ -60,7 +60,7 @@ class MATREND extends Analyzer {
             if (this.currentTrend != 'NO') {
                 this.prevTrend = this.currentTrend;
                 this.resetFinder();
-                CDB.labelBottom(candle,'X'); // break trend
+                io.cdb().labelBottom(candle,'X'); // break trend
             }
             return io.set(this.name,trend);
         }
@@ -75,7 +75,7 @@ class MATREND extends Analyzer {
             this.resetFinder();
             this.currentTrend = trend;
             this.prevDiv = Math.abs(ma1-ma2);
-            CDB.labelBottom(candle,trend);
+            io.cdb().labelBottom(candle,trend);
             return io.set(this.name,trend);
         }
 
@@ -87,14 +87,14 @@ class MATREND extends Analyzer {
                 this.prevTrend = this.currentTrend;
                 this.resetFinder();
                 trend = 'NO';
-                CDB.labelBottom(candle,'xN');
+                io.cdb().labelBottom(candle,'xN');
                 return io.set(this.name,trend);
             }         
         }
 
         this.prevDiv = curDiv;
 
-        CDB.labelTop(candle,(trend == 'UP' ? '^' : 'v'))
+        io.cdb().labelTop(candle,(trend == 'UP' ? '^' : 'v'))
 
         io.set(this.name, trend);
     

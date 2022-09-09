@@ -4,7 +4,7 @@
 */
 
 const Strategy = require("../types/Strategy");
-const CDB = require('../../../types/CandleDebug');
+
 
 class StrategyCrossWMA extends Strategy {
   
@@ -33,7 +33,7 @@ class StrategyCrossWMA extends Strategy {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             const wf = io.get('wfractals');
             if (! wf) { return; } // no fractal this time

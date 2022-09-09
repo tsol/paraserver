@@ -21,7 +21,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 
 class AnHLTrend extends Analyzer {
 
@@ -50,10 +50,10 @@ class AnHLTrend extends Analyzer {
         if ( this.tracingUp() ) {
 
             if (byCandle !== undefined)
-                { CDB.labelTop(byCandle, 'xU '+Math.abs(this.updateDirection)); }
+                { io.cdb().labelTop(byCandle, 'xU '+Math.abs(this.updateDirection)); }
 
             if (this.lastHigh !== undefined) {
-                CDB.labelTop(this.lastHigh,'nFH');
+                io.cdb().labelTop(this.lastHigh,'nFH');
             }
     
             this.lastLow = undefined;
@@ -70,10 +70,10 @@ class AnHLTrend extends Analyzer {
         if ( this.tracingDown() ) {
 
             if (byCandle !== undefined)
-                { CDB.labelTop(byCandle, 'xD '+Math.abs(this.updateDirection)); }
+                { io.cdb().labelTop(byCandle, 'xD '+Math.abs(this.updateDirection)); }
 
             if (this.lastLow !== undefined) {
-                CDB.labelBottom(this.lastLow,'nFL');
+                io.cdb().labelBottom(this.lastLow,'nFL');
             }
 
             this.lastHigh = undefined;
@@ -99,7 +99,7 @@ class AnHLTrend extends Analyzer {
 
     addCandle(candle,io) {
         super.addCandle(candle,io);
-        CDB.setSource(this.getId());
+        io.cdb().setSource(this.getId());
 
         if (io.get('extremum')) {
             this.processExtremum(io.get('extremum'),io);
@@ -143,8 +143,8 @@ class AnHLTrend extends Analyzer {
                 
                 io.set('hl_trend.new.high',extremum.candle);
 
-                CDB.labelTop(extremum.candle,'fH');
-                CDB.circleHigh(extremum.candle, {color: 'yellow'});
+                io.cdb().labelTop(extremum.candle,'fH');
+                io.cdb().circleHigh(extremum.candle, {color: 'yellow'});
 
                 if (this.lastLow) { this.updateDirection=1; } /* hoping to find uptrend */
 
@@ -168,8 +168,8 @@ class AnHLTrend extends Analyzer {
                 
                 io.set('hl_trend.new.low',extremum.candle);
 
-                CDB.labelBottom(extremum.candle,'fL');
-                CDB.circleLow(extremum.candle, {color: 'yellow'});
+                io.cdb().labelBottom(extremum.candle,'fL');
+                io.cdb().circleLow(extremum.candle, {color: 'yellow'});
 
                 if (this.lastHigh) { this.updateDirection=-1; } /* hoping to find down trend */
                 /*
@@ -193,13 +193,13 @@ class AnHLTrend extends Analyzer {
             // there were 2 higher highs update
             if (this.updateDirection >= 3) {
                 this.registerTrend(1);
-                CDB.labelTop(extremum.candle,'UP');
-                CDB.circleHigh(extremum.candle, {color: 'blue'});
+                io.cdb().labelTop(extremum.candle,'UP');
+                io.cdb().circleHigh(extremum.candle, {color: 'blue'});
             }
             else if (this.updateDirection <= -3) {
                 this.registerTrend(-1);
-                CDB.labelBottom(extremum.candle,'DN');
-                CDB.circleLow(extremum.candle, {color: 'blue'});
+                io.cdb().labelBottom(extremum.candle,'DN');
+                io.cdb().circleLow(extremum.candle, {color: 'blue'});
             }
 
         }
@@ -225,8 +225,8 @@ class AnHLTrend extends Analyzer {
 
                     io.set('hl_trend.new.low',this.lastLow);
 
-                    CDB.circleLow(this.lastLow, {color:'green'});
-                    CDB.labelBottom(this.lastLow, 'HL');
+                    io.cdb().circleLow(this.lastLow, {color:'green'});
+                    io.cdb().labelBottom(this.lastLow, 'HL');
                     this.updateDirection++;
                 }
 
@@ -234,8 +234,8 @@ class AnHLTrend extends Analyzer {
                 this.updateDirection++;
 
                 io.set('hl_trend.new.high',candle);
-                CDB.circleHigh(candle, {color: 'green'});
-                CDB.labelTop(candle,'HH');
+                io.cdb().circleHigh(candle, {color: 'green'});
+                io.cdb().labelTop(candle,'HH');
                 
                 //console.log('hl_trend_higher_high');
                 return;
@@ -244,7 +244,7 @@ class AnHLTrend extends Analyzer {
             /* Trend DOWN & higher high */
 
             this.resetTrend(candle);
-            CDB.circleHigh(candle,{color:'red',radius: 3});
+            io.cdb().circleHigh(candle,{color:'red',radius: 3});
 
             return;
         }
@@ -255,8 +255,8 @@ class AnHLTrend extends Analyzer {
         if ( this.tracingDown() || this.tracingNowhere() ) {
             this.lastHigh = candle;
             this.updateDirection--;
-            CDB.circleHigh(candle, {color: 'green'});
-            CDB.labelTop(candle,'LH');
+            io.cdb().circleHigh(candle, {color: 'green'});
+            io.cdb().labelTop(candle,'LH');
             return;
         } 
         */
@@ -287,8 +287,8 @@ class AnHLTrend extends Analyzer {
                     
                     io.set('hl_trend.new.high',this.lastHigh);
                     
-                    CDB.circleHigh(this.lastHigh, {color:'green'});
-                    CDB.labelTop(this.lastHigh, 'LH');
+                    io.cdb().circleHigh(this.lastHigh, {color:'green'});
+                    io.cdb().labelTop(this.lastHigh, 'LH');
                     this.updateDirection--;
                 }
 
@@ -298,14 +298,14 @@ class AnHLTrend extends Analyzer {
 
                 io.set('hl_trend.new.low',candle);
                     
-                CDB.circleLow(candle, {color: 'red'});
-                CDB.labelBottom(candle,'LL');
+                io.cdb().circleLow(candle, {color: 'red'});
+                io.cdb().labelBottom(candle,'LL');
             
                 return;
             }
 
             this.resetTrend(candle);
-            CDB.circleLow(candle,{color:'red',radius: 3});
+            io.cdb().circleLow(candle,{color:'red',radius: 3});
 
             //throw new Error('this should never happen 3');
 
@@ -318,8 +318,8 @@ class AnHLTrend extends Analyzer {
         if ( this.tracingUp() || this.tracingNowhere() ) {
             this.lastLow = candle;
             this.updateDirection++;
-            CDB.circleLow(candle, {color: 'green'});
-            CDB.labelBottom(candle,'HL');
+            io.cdb().circleLow(candle, {color: 'green'});
+            io.cdb().labelBottom(candle,'HL');
             return;
         } 
         */

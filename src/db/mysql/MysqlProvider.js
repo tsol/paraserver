@@ -4,25 +4,25 @@
 
 const mysql = require('mysql2');
 
-import { updateCandleDebug, loadCandleDebugs, saveCandleDebug } from './entities/mysql-CandleDebug';
+const DBProviderInterface = require('../types/DBProviderInterface');
 
-class MysqlData {
+const { updateCandleDebug, saveCandleDebug, resetCandleDebug, loadCandleDebugs,  }
+    = require('./entities/mysql-CandleDebug');
+
+class MysqlProvider extends DBProviderInterface {
 
     constructor()
     {
         this.connection = null;
     }
 
-    updateCandleDebug(params = {vmId, symbol, timeframe, time, data}) {
-        return updateCandleDebug( { con: this.connection, ... params });
-    }
-
-    saveCandleDebug(params = {vmId, symbol, timeframe, time, data}) {
-        return saveCandleDebug( { con: this.connection, ... params });
-    }
-
-    async loadCandleDebugs(params = {vmId, symbol, timeframe, timeFrom, timeTo}) { 
-            return loadCandleDebugs( { con: this.connection, ... params });
+    getCandleDebugIO() {
+        return {
+            update: updateCandleDebug,
+            save: saveCandleDebug,
+            load: loadCandleDebugs,
+            reset: resetCandleDebug
+        }
     }
 
     connect({host, database, user, password })
@@ -40,8 +40,8 @@ class MysqlData {
             con.connect(function(err) {
                 if (err) return reject(err);
                 _self.connection = con;
-                console.log('MDB: connected');
-                resolve(true);
+                console.log('MYSQLDB: connected');
+                resolve(con);
             });
 
         });
@@ -49,11 +49,11 @@ class MysqlData {
     }
 
     disconnect() {
-        if (! this.connection) { return false; }
+        if (! this.connection) { throw new Error('MYSQLDB: not connected') }
 
         this.connection.end(function(err) {
             if (err) throw err;
-            console.log('MDB: disconnected');
+            console.log('MYSQLDB: disconnected');
             this.connection = null;
         });
 
@@ -62,4 +62,4 @@ class MysqlData {
 
 }
 
-module.exports = MysqlData;
+module.exports = MysqlProvider;

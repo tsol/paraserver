@@ -3,7 +3,7 @@
 ** flags: hos = N | UP | DN
 */
 
-const CDB = require('../../../types/CandleDebug');
+
 const RMA = require('../helpers/RMA.js');
 const Analyzer = require("../types/Analyzer");
 
@@ -80,7 +80,7 @@ class HOS extends Analyzer {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             const r = this.rma35range.getRMA(this.trueRange(candle));
             this.prevCandle = candle;
@@ -91,8 +91,8 @@ class HOS extends Analyzer {
             const ku = k + r*0.5;
             const kl = k - r*0.5;
 
-            //CDB.onChart(candle, 'ku', ku);
-            //CDB.onChart(candle, 'kl', kl);
+            //io.cdb().onChart(candle, 'ku', ku);
+            //io.cdb().onChart(candle, 'kl', kl);
 
             const other = [
                 io.get('emac20'),

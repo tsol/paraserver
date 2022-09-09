@@ -6,7 +6,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 const EMA = require('../helpers/EMA.js');
 
 class AnEMA extends Analyzer {
@@ -25,14 +25,14 @@ class AnEMA extends Analyzer {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             const currentValue = this.ema.getEMA(
                 this.getDataFromCandle(this.source, candle)
             );
 
             io.set(this.getId(),currentValue);
-            CDB.onChart(candle, this.name, currentValue);
+            io.cdb().onChart(candle, this.name, currentValue);
 
         }
 

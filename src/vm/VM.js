@@ -14,21 +14,28 @@
 **
 */
 
+const StoreCache = require("../db/StoreCache");
 const OrdersManager = require("./Orders/OrdersManager");
+const CandleDebug = require("./Processor/CandleDebug");
 const VMCandleProcessor = require("./Processor/VMCandleProcessor");
 const CandleSequencer = require('./Sequencer/CandleSequencer');
+const AnalyzersFactory = require('./Analyzers/AnalyzersFactory.js');
 
 class VM {
 
-    constructor(dataDB, candleProxy, brokerUser, clients, analyzersFactory) {
-        this.dataDB = dataDB;
+    constructor(vmId, dataDb, candleProxy, brokerUser, clients) {
+        this.dataDb = dataDb;
+
         this.brokerUser = brokerUser;
         this.candleProxy = candleProxy;
         this.clients = clients;
-        this.analyzersFactory = analyzersFactory;
+        this.analyzersFactory = new AnalyzersFactory();
 
         this.ordersManager = new OrdersManager(brokerUser,candleProxy.getBroker(),clients);
-        this.processor = new VMCandleProcessor(this.ordersManager, analyzersFactory);
+
+        this.candleDebugDB = dataDb.makeCandleDebugIO(vmId);
+        this.candleDebug = new CandleDebug(new StoreCache(this.candleDebugDB));
+        this.processor = new VMCandleProcessor(this.ordersManager, analyzersFactory, this.candleDebug, this.dataDB);
         this.sequencer = null;
 
         this.symbols = null;
@@ -39,6 +46,7 @@ class VM {
         this.options = null;
     }
 
+    getCandleDebug() { return this.candleDebug; }
     getBrokerUser() { return this.brokerUser; }
     getCandleProxy() { return this.candleProxy; }
     getSequencer() { return this.sequencer; };

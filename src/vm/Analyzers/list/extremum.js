@@ -1,5 +1,5 @@
 const Analyzer = require("../types/Analyzer.js");
-const CDB = require('../../../types/CandleDebug');
+
 
 class AnExtremum extends Analyzer {
 
@@ -15,7 +15,7 @@ class AnExtremum extends Analyzer {
 
     addCandle(candle, io) {
         super.addCandle(candle, io);
-        CDB.setSource(this.getId());
+        io.cdb().setSource(this.getId());
 
         if (this.firstCandle === undefined) {
             this.firstCandle = candle;
@@ -49,11 +49,11 @@ class AnExtremum extends Analyzer {
         }
     
         if (highExtremum) {
-            CDB.circleHigh(middle, { color: 'green', radius: 0.5 } );
+            io.cdb().circleHigh(middle, { color: 'green', radius: 0.5 } );
         }
 
         if (lowExtremum) {
-            CDB.circleLow(middle, { color: 'red', radius: 0.5 });
+            io.cdb().circleLow(middle, { color: 'red', radius: 0.5 });
         }
     
         //console.log('spotted extremum on mid='+middle.openTime);

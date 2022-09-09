@@ -3,7 +3,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 
 class MACDF extends Analyzer {
 
@@ -30,7 +30,7 @@ class MACDF extends Analyzer {
 
     addCandle(candle,io) {
         super.addCandle(candle,io);
-        CDB.setSource(this.getId());
+        io.cdb().setSource(this.getId());
 
         const macd = io.get('macd');
 
@@ -64,13 +64,13 @@ class MACDF extends Analyzer {
 
         if (this.switchDirection > 0) {
             if (this.switchLine < 0) {
-                CDB.labelBottom(candle,'DS');
+                io.cdb().labelBottom(candle,'DS');
                 dontRecommend = 'ds';
             }
         }
         else if (this.switchDirection < 0) {
             if (this.switchLine > 0) {
-                CDB.labelBottom(candle,'DB');
+                io.cdb().labelBottom(candle,'DB');
                 dontRecommend = 'db';
             }
         }

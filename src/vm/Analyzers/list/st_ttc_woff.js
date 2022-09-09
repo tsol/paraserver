@@ -16,7 +16,7 @@ DO not trade candles > 300 pips
 */
 
 const Strategy = require("../types/Strategy");
-const CDB = require('../../../types/CandleDebug');
+
 
 class TTCWOFF extends Strategy {
 
@@ -39,7 +39,7 @@ class TTCWOFF extends Strategy {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             const atr = io.get('atr14');
             const ma = io.get('emac20');

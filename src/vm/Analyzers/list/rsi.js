@@ -4,7 +4,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 const RMA = require('../helpers/RMA.js');
 
 class AnRSI extends Analyzer {
@@ -26,7 +26,7 @@ class AnRSI extends Analyzer {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             if (! this.prevCandle) {
                 this.prevCandle = candle;
@@ -68,7 +68,7 @@ class AnRSI extends Analyzer {
 */
 
             io.set(this.name, rsi);            
-            CDB.offChart(candle,this.name,rsi);
+            io.cdb().offChart(candle,this.name,rsi);
         }
 
 

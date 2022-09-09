@@ -5,7 +5,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 const { TF } = require('../../../types/Timeframes.js');
 
 class AnVLevels extends Analyzer {
@@ -27,7 +27,7 @@ class AnVLevels extends Analyzer {
 
         addCandle(candle,io) {
             super.addCandle(candle,io)
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             /* cut levels from begining */
             const cutSince = candle.openTime - TF.getLevelLimitTime(candle.timeframe);
@@ -94,9 +94,9 @@ class AnVLevels extends Analyzer {
             newLevel.addPoint(time,y,bounceUp,atr,weight,candle);
             this.levels.push(newLevel);
             if (bounceUp) {
-                CDB.labelBottom(candle,'NL='+this.levelId);
+                io.cdb().labelBottom(candle,'NL='+this.levelId);
             } else {
-                CDB.labelTop(candle,'NL='+this.levelId);
+                io.cdb().labelTop(candle,'NL='+this.levelId);
             }
         }
 
@@ -241,9 +241,9 @@ class Level {
         const debugMsg = '['+this.supportWeight+'/'+this.resistWeight+']';
 
         if (bounceUp) {
-            CDB.labelBottom(candle,debugMsg);
+            io.cdb().labelBottom(candle,debugMsg);
         } else {
-            CDB.labelTop(candle,debugMsg);
+            io.cdb().labelTop(candle,debugMsg);
         }
     }
 

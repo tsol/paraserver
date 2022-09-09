@@ -6,7 +6,7 @@
 **
 */
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 const EMA = require('../helpers/EMA.js');
 
 class MACD extends Analyzer {
@@ -29,7 +29,7 @@ class MACD extends Analyzer {
 
     addCandle(candle,io) {
         super.addCandle(candle,io);
-        CDB.setSource(this.getId());
+        io.cdb().setSource(this.getId());
 
         const slow = this.slowEMA.getEMA(candle.close);
         const fast = this.fastEMA.getEMA(candle.close);
@@ -49,7 +49,7 @@ class MACD extends Analyzer {
             d: histDiff 
         };
 
-        CDB.onChart(candle, this.name, res);
+        io.cdb().onChart(candle, this.name, res);
         io.set(this.name, res);
     }
     

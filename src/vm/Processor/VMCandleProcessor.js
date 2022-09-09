@@ -6,12 +6,14 @@ const TickerProcessor = require('./TickerProcessor.js');
 
 class VMCandleProcessor extends CandleProcessor {
 
-    constructor(ordersManager, analyzersFactory) {
+    constructor(ordersManager, analyzersFactory, candleDebug, dataDb) {
         super();
         this.isLive = false;
         this.ordersManager = ordersManager;
         this.flags = new Flags();
         this.analyzersFactory = analyzersFactory;
+        this.candleDebug = candleDebug;
+        this.dataDb = dataDb;
         this.tickers = {};
         this.lastPrice = {};
     }
@@ -24,7 +26,8 @@ class VMCandleProcessor extends CandleProcessor {
                 const key = s+'-'+t;
                 let box = 
                 ( TF.get(t).pulseOnly ? null :
-                    this.analyzersFactory.createBox(strategies, this.ordersManager, this)
+                    this.analyzersFactory.createBox(strategies, this.ordersManager, this,
+                         this.candleDebug)
                 );
                 this.tickers[key] = 
                     new TickerProcessor(s,t,box);
@@ -85,6 +88,9 @@ class VMCandleProcessor extends CandleProcessor {
         if (ticker) {
             ticker.addCandle(closedCandle,this.flags,this.isLive);
         }
+
+        // todo: if running live: start gathering candles on phase start
+        // dump them to database upon ending
 
     }
 

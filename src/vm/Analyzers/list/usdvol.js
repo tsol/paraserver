@@ -6,7 +6,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 const RMA = require('../helpers/RMA.js');
 
 const { fnum } = require('../../../helper.js');
@@ -27,12 +27,12 @@ class USDVOL extends Analyzer {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             const curValue = fnum(this.rma.getRMA( (candle.volume * candle.close) / 1000 ),3);
             
             io.set(this.getId(),curValue);
-            CDB.onChart(candle, this.name, curValue);
+            io.cdb().onChart(candle, this.name, curValue);
         }
 
 }

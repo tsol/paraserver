@@ -17,7 +17,7 @@ Bullish Fractal=
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 
 class AnWFractals extends Analyzer {
 
@@ -33,7 +33,7 @@ class AnWFractals extends Analyzer {
 
         addCandle(candle,io) {
             super.addCandle(candle,io);
-            CDB.setSource(this.getId());
+            io.cdb().setSource(this.getId());
 
             this.candles.push(candle);
 
@@ -52,7 +52,7 @@ class AnWFractals extends Analyzer {
                 &&  (h > c[4].high)
             ) {
                 io.set('wfractals',{ type: 'high', candle: mc } );
-                CDB.labelTop(mc, '^');
+                io.cdb().labelTop(mc, '^');
             }
 
             if ( 
@@ -62,7 +62,7 @@ class AnWFractals extends Analyzer {
                 &&  (l < c[4].low)
             ) {
                 io.set('wfractals',{ type: 'low', candle: mc } );
-                CDB.labelBottom(mc, 'v');
+                io.cdb().labelBottom(mc, 'v');
             }
 
         }

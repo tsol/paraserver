@@ -13,7 +13,7 @@
 */
 
 const Analyzer = require("../types/Analyzer");
-const CDB = require('../../../types/CandleDebug');
+
 
 class AnHills extends Analyzer {
 
@@ -41,7 +41,7 @@ class AnHills extends Analyzer {
     addCandle(candle, io) {
         super.addCandle(candle, io);
         
-        CDB.setSource(this.getId());
+        io.cdb().setSource(this.getId());
 
         const atr = io.get('atr14');
         const mac = io.get(this.followMac);
@@ -95,7 +95,7 @@ class AnHills extends Analyzer {
                 // new direction is down
                 if (direction < 0) {
                     if (this.prevTopCandle) {
-                        CDB.circleHigh( this.prevTopCandle, { radius: 2, color: 'pink' } );
+                        io.cdb().circleHigh( this.prevTopCandle, { radius: 2, color: 'pink' } );
                         io.set('hills.new.high', this.prevTopCandle);
                     }
                     this.prevTopCandle = undefined;
@@ -103,7 +103,7 @@ class AnHills extends Analyzer {
                 }
                 else if (direction > 0) {
                     if (this.prevBottomCandle) {
-                        CDB.circleLow( this.prevBottomCandle, { radius: 2, color: 'pink' } );
+                        io.cdb().circleLow( this.prevBottomCandle, { radius: 2, color: 'pink' } );
                         io.set('hills.new.low', this.prevBottomCandle);
                     }
                     this.prevBottomCandle = undefined;

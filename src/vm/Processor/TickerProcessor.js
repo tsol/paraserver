@@ -5,11 +5,12 @@ const { TF } = require('../../types/Timeframes.js');
 
 class TickerProcessor {
 
-    constructor(symbol,timeframe,analyzersBox) {
+    constructor(symbol,timeframe,analyzersBox,candleDebug) {
         this.candles = [];
         this.symbol = symbol;
         this.timeframe = timeframe;
         this.analyzersBox = analyzersBox;
+        this.candleDebug = candleDebug;
         this.limit = TF.get(timeframe).limit;            
     }
    
@@ -44,6 +45,7 @@ class TickerProcessor {
         const firstCandle = this.candles.shift();
         if (this.analyzersBox ) {
             this.analyzersBox.forgetBefore(firstCandle.openTime);
+            this.candleDebug.forgetBefore(this.symbol, firstCandle.openTime);
         }
     }
 
