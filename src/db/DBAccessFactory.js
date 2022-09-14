@@ -17,22 +17,23 @@ class DBAccessFactory {
         const con = this.connection;
         const { save, update, reset, load } = this.db.getCandleDebugIO();
         return {
-            update: o => update( { con, vmId, ... o.toSTORE() }),
-            save: o => save( { con, vmId, ... o.toSTORE() }),
-            load: params => load( { con, vmId, ... params } ),
-            reset: () => reset( { con, vmId } )
+            // todo: change o.toSTORE from here to just o
+            update: obj => update( con, vmId, obj ),
+            save: objArray => save( con, vmId, objArray ),
+            load: params => load( con, vmId, params ),
+            reset: () => reset( con, vmId )
         }
     }
 
     async connect(params)
     {
-        await this.db.connect(params).then( (connection) => {
+        return this.db.connect(params).then( (connection) => {
             this.connection = connection;
         })
     }
 
     disconnect() {
-        this.db.disconnect();
+        return this.db.disconnect();
     }
 
 }

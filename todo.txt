@@ -15,8 +15,9 @@ BASIC CONCEPTION:
 
 
  - дописать mysql методы candleDebug
+ - создать базу данных для candleDebug - в методе ресет
+
  - написать получение candleDebug фронтом через candleDebugDB
- 
 
 
 

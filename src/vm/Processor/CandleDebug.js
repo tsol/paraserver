@@ -9,6 +9,10 @@ class CandleDebug {
         this.items = [];
     }
 
+    getStoreCache() {
+        return this.storeCache;
+    }
+
     setSource(s) {
         this.source = s;
     }

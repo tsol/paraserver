@@ -1,12 +1,13 @@
 
 class DBProviderInterface {
 
+    // db interface for CandleDebug entity
     getCandleDebugIO() {
         return {
-            update: ({con, vmId, symbol, timeframe, time, entries}) => {},
-            save: ({con, vmId, symbol, timeframe, time, entries}) => {},
-            load: ({con, vmId, symbol, timeframe, timeFrom, timeTo}) => {},
-            reset: ({con, vmId}) => {}
+            update: (con, vmId, obj) => {},
+            save: (con, vmId, objArray) => {},
+            load: (con, vmId, {symbol, timeframe, timeFrom, timeTo}) => {},
+            reset: (con, vmId) => {}
         }
     }
 

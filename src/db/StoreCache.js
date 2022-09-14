@@ -46,7 +46,8 @@ class StoreCache {
     }
 
     storePhase(phaseEndTime) {
-        this.cache.forEach( o => this.save(o.toSTORE()) );
+        //this.cache.forEach( o => this.save(o.toSTORE()) );
+        this.save({ itemsArray: this.cache });
         this.updateCache.forEach( o => this.update( obj.toSTORE() ) );
 
         this.cache = [];

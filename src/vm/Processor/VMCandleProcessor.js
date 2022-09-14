@@ -16,10 +16,13 @@ class VMCandleProcessor extends CandleProcessor {
         this.dataDb = dataDb;
         this.tickers = {};
         this.lastPrice = {};
+        this.pulseEndTime = null;
     }
 
 
     init(symbols,timeframes,strategies) {
+
+        this.candleDebug.getStoreCache().reset();
 
         for(var s of symbols){
             for(var t of timeframes) {
@@ -77,6 +80,7 @@ class VMCandleProcessor extends CandleProcessor {
         // prepare for candleProcess
         // console.log('CPRO: phase start '+TH.ls(candleCloseTime)+' passed: '+
         //     Number(passedTime/1000).toFixed(2)+' secs.');
+        this.pulseEndTime = candleCloseTime;
     }
 
     processCandle(closedCandle) {
@@ -97,7 +101,7 @@ class VMCandleProcessor extends CandleProcessor {
     processPhaseEnd() {
 
         this.ordersManager.processEntriesQueue();
-        
+        this.candleDebug.getStoreCache().storePhase(this.pulseEndTime);
         // process orders queue, arbitration
         //console.log('CPRO: phase end');
     }
