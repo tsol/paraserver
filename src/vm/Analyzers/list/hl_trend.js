@@ -41,11 +41,12 @@ class AnHLTrend extends Analyzer {
     init(io)
     {
         io.require('extremum');
+        this.io = io;
     }
 
     getId() { return 'hl_trend'; }
 
-    resetTrend(byCandle) {
+    resetTrend(byCandle, io) {
 
         if ( this.tracingUp() ) {
 
@@ -108,12 +109,12 @@ class AnHLTrend extends Analyzer {
         /* current candle punched our trend or expectations */
         if ( this.tracingUp() ) {
             if ( (this.lastLow !== undefined) && candle.tailBelow(this.lastLow)) {
-                this.resetTrend(candle);
+                this.resetTrend(candle,io);
             }
         }
         else if ( this.tracingDown() ) {
             if ( (this.lastHigh !== undefined) && candle.tailAbove(this.lastHigh)) {
-                this.resetTrend(candle);
+                this.resetTrend(candle,io);
             }
         }
         
@@ -243,7 +244,7 @@ class AnHLTrend extends Analyzer {
 
             /* Trend DOWN & higher high */
 
-            this.resetTrend(candle);
+            this.resetTrend(candle,io);
             io.cdb().circleHigh(candle,{color:'red',radius: 3});
 
             return;
@@ -304,7 +305,7 @@ class AnHLTrend extends Analyzer {
                 return;
             }
 
-            this.resetTrend(candle);
+            this.resetTrend(candle,io);
             io.cdb().circleLow(candle,{color:'red',radius: 3});
 
             //throw new Error('this should never happen 3');

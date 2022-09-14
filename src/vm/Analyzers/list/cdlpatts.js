@@ -97,8 +97,8 @@ class AnCandlePatterns extends Analyzer {
         }
 
         setPattern(candle,name,bias) {
-            io.cdb().circleMiddle(candle,{ color: 'cyan', radius: 3, alpha: 0.1 });
-            io.cdb().labelBottom(candle,name);
+            this.io.cdb().circleMiddle(candle,{ color: 'cyan', radius: 3, alpha: 0.1 });
+            this.io.cdb().labelBottom(candle,name);
             this.io.set(this.getId()+'.new.'+name,candle);
             this.lastPatternBias = bias;
         }

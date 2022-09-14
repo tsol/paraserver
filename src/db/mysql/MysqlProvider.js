@@ -13,6 +13,7 @@ class MysqlProvider extends DBProviderInterface {
 
     constructor()
     {
+        super();
         this.connection = null;
     }
 

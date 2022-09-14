@@ -11,13 +11,15 @@ const CREATE_LINES = [
 
 async function prepareCandleDebug(con) {
 
-    const resExists = await con.query(`SHOW TABLES LIKE ${TABLE_NAME}`);
-    if (resExists.length > 0) { 
+    const resExists = await con.query(`SHOW TABLES LIKE '${TABLE_NAME}'`);
+    if (resExists[0].length > 0) { 
         return true;
     }
         
     const sqlQuery = `CREATE TABLE ${TABLE_NAME} (`+CREATE_LINES.join(', ')+')'
         
+    console.log(sqlQuery)
+
     const resCreate = await con.query(sqlQuery);
     return true;
 
@@ -54,16 +56,18 @@ async function saveCandleDebugs(con, vmId, items) {
         ]);
     })
 
-    const result = await con.query(sqlQuery, [values]);
+    const result = await con.query(sqlQuery, [values]).catch( err => {
+        console.log('MYSQL-CDLDBG: insert error: ', sqlQuery, values, err);
+        throw Error('insert failed');
+    })
 
-    console.log("MYSQL-CDLDBG: inserted rows: ", result.affectedRows)
+    console.log("MYSQL-CDLDBG: inserted rows: ", result[0].affectedRows)
     return true;
 }
 
 async function updateCandleDebug(con, vmId, obj) {
 
-    const sqlQuery = `UPDATE ${TABLE_NAME} SET entries=? 
-        WHERE vmid = ? AND symbol = ? AND timeframe = ? AND time = ?`;
+    const sqlQuery = `UPDATE ${TABLE_NAME} SET entries = ? WHERE vmid = ? AND symbol = ? AND timeframe = ? AND time = ?`;
     const f = obj.toSTORE();
     let values = [
         JSON.stringify(f.entries),
@@ -73,8 +77,11 @@ async function updateCandleDebug(con, vmId, obj) {
         f.time
     ];
 
-    const result = await con.query(sqlQuery, [values]);
-    console.log("MYSQL-CDLDBG: updated row: ", result.affectedRows)
+    const result = await con.query(sqlQuery, values).catch( err => {
+        console.log('MYSQL-CDLDBG: update error: ', sqlQuery, values, err);
+        throw Error('update failed');
+    })
+    console.log("MYSQL-CDLDBG: updated row: ", result[0].affectedRows)
     return true;
 }
 

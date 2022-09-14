@@ -27,6 +27,7 @@ class CandleDebug {
 
     addItemByCandle(candle, debugEntry) {
         let item = this.findItemByCandle(candle)
+
         if (item) {
             item.addEntry(debugEntry);
             this.storeCache.itemChanged(candle.closeTime, item);
@@ -38,7 +39,7 @@ class CandleDebug {
             timeframe: candle.timeframe,
             time: candle.openTime
         });
-        
+        this.items.push(item);
         item.addEntry(debugEntry);
         this.storeCache.itemNew(item);
     }

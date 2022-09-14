@@ -21,7 +21,7 @@ const dbCandles = new MysqlCandles();
 const dbAccessFactory = new DBAccessFactory(new MysqlProvider());
 
 dbAccessFactory.connect(SETTINGS.databases.mysqlData).then( () => {
-    dbCandles.connect( SETTINGS.databases.dbCandles ).then( () => {
+    dbCandles.connect( SETTINGS.databases.mysqlCandles ).then( () => {
         brokerCandles.init().then( () => {
             brokerUser.init().then( () => {
 

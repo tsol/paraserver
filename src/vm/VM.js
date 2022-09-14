@@ -31,11 +31,11 @@ class VM {
         this.clients = clients;
         this.analyzersFactory = new AnalyzersFactory();
 
-        this.ordersManager = new OrdersManager(brokerUser,candleProxy.getBroker(),clients);
-
         this.candleDebugDB = dataDb.makeCandleDebugIO(vmId);
         this.candleDebug = new CandleDebug(new StoreCache(this.candleDebugDB));
-        this.processor = new VMCandleProcessor(this.ordersManager, analyzersFactory, this.candleDebug, this.dataDB);
+        this.ordersManager = new OrdersManager(brokerUser,candleProxy.getBroker(),clients,this.candleDebug);
+
+        this.processor = new VMCandleProcessor(this.ordersManager, this.analyzersFactory, this.candleDebug, this.dataDB);
         this.sequencer = null;
 
         this.symbols = null;

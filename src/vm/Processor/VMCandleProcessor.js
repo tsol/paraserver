@@ -33,7 +33,7 @@ class VMCandleProcessor extends CandleProcessor {
                          this.candleDebug)
                 );
                 this.tickers[key] = 
-                    new TickerProcessor(s,t,box);
+                    new TickerProcessor(s,t,box,this.candleDebug);
             }
         }
 

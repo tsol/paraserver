@@ -21,8 +21,8 @@ class StoreCache {
         this.storedEndTime = 0;
     }
 
-    save(params) { return this.saveFn(params); }
-    update(params) { return this.updateFn(params); }
+    save(arrayItems) { return this.saveFn(arrayItems); }
+    update(item) { return this.updateFn(item); }
     load(params) { return this.loadFn(params); }
 
     reset() {
@@ -34,7 +34,7 @@ class StoreCache {
 
         if ([ ... this.cache, ... this.updateCache ].includes(obj)) { return }
 
-        if (endTime < this.storedEndTime) {
+        if (endTime <= this.storedEndTime) {
             return this.updateCache.push(obj);
         }
 
@@ -47,8 +47,8 @@ class StoreCache {
 
     storePhase(phaseEndTime) {
         //this.cache.forEach( o => this.save(o.toSTORE()) );
-        this.save({ itemsArray: this.cache });
-        this.updateCache.forEach( o => this.update( obj.toSTORE() ) );
+        this.save( this.cache );
+        this.updateCache.forEach( o => this.update(o ) );
 
         this.cache = [];
         this.updateCache = [];

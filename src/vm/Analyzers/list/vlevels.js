@@ -39,25 +39,25 @@ class AnVLevels extends Analyzer {
             const hillLow = io.get('hills.new.low');
             if (hillLow) {
                 this.addBounceLevel(true, hillLow.openTime, hillLow.low,
-                    atr, 30, hillLow);
+                    atr, 30, hillLow, io);
             }
 
             const hillHigh = io.get('hills.new.high');
             if (hillHigh) {
                 this.addBounceLevel(false, hillHigh.openTime, hillHigh.high,
-                    atr, 30, hillHigh);
+                    atr, 30, hillHigh, io);
             }
 
             let extremumCandle = io.get('hl_trend.new.high');
             if ( extremumCandle ) {
                 this.addBounceLevel(false, extremumCandle.openTime, extremumCandle.high,
-                     atr, 10, extremumCandle);
+                     atr, 10, extremumCandle, io);
             }
 
             extremumCandle = io.get('hl_trend.new.low');
             if ( extremumCandle ) {
                 this.addBounceLevel(true, extremumCandle.openTime, extremumCandle.low,
-                     atr, 10, extremumCandle);
+                     atr, 10, extremumCandle, io);
             }
 
             io.set('vlevels', this);
@@ -77,12 +77,12 @@ class AnVLevels extends Analyzer {
 
 
 
-        addBounceLevel(bounceUp, time, y, atr, weight, candle) {
+        addBounceLevel(bounceUp, time, y, atr, weight, candle, io) {
             let wasFound = false;
             for (const l of this.levels)
             {
                 if (l.inLevel(y)) {
-                    l.addPoint(time,y,bounceUp,atr,weight, candle);
+                    l.addPoint(time,y,bounceUp,atr,weight, candle, io);
                     wasFound = true;
                 }
             }
@@ -91,7 +91,7 @@ class AnVLevels extends Analyzer {
             }
             this.levelId++;
             const newLevel = new Level(this.levelId);
-            newLevel.addPoint(time,y,bounceUp,atr,weight,candle);
+            newLevel.addPoint(time,y,bounceUp,atr,weight,candle,io);
             this.levels.push(newLevel);
             if (bounceUp) {
                 io.cdb().labelBottom(candle,'NL='+this.levelId);
@@ -223,7 +223,7 @@ class Level {
 
     getId() { return this.id; };
     
-    addPoint(time,level,bounceUp,height,weight,candle) {
+    addPoint(time,level,bounceUp,height,weight,candle,io) {
         const wasPoint = this.points.find( p => p.time === time );
         if (wasPoint) { return; }
         

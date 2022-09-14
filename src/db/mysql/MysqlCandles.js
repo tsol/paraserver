@@ -15,6 +15,7 @@ class MysqlCandles extends DBCandlesInterface {
 
     constructor()
     {
+        super();
         this.connection = null;
     }
 

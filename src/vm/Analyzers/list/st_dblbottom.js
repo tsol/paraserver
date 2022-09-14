@@ -17,8 +17,9 @@ class EntryFinder {
 
     static DBG_BOTTOMS          = { radius: 1.7, color: 'black' };
  
-    constructor(strategyObject,id,isLong,firstBottom) {
+    constructor(strategyObject,id,isLong,firstBottom,io) {
         this.id = id;
+        this.io = io;
         this.isLong = isLong;
         this.strategyObject = strategyObject;
 
@@ -142,16 +143,16 @@ class EntryFinder {
     label(candle,text) {
         text = this.id+'.'+text;
         if (this.isLong) {
-            return io.cdb().labelBottom(candle,text);
+            return this.io.cdb().labelBottom(candle,text);
         }
-        return io.cdb().labelTop(candle,text);
+        return this.io.cdb().labelTop(candle,text);
     }
 
     circle(candle,param) {
         if (this.isLong) {
-            return io.cdb().circleLow(candle, param);
+            return this.io.cdb().circleLow(candle, param);
         }
-        return io.cdb().circleHigh(candle,param);
+        return this.io.cdb().circleHigh(candle,param);
     }
 
     updateNeck(candle)
@@ -331,7 +332,7 @@ class DBLBOTTOM extends Strategy {
         const sinceCandles = io.getCandlesFrom(startCandle.closeTime);
 
         const newId = this.nextFinderId();
-        const newFinder = new EntryFinder(this,newId,isLong,startCandle);
+        const newFinder = new EntryFinder(this,newId,isLong,startCandle,io);
 
         for (var c of sinceCandles) {
             if (c !== currentCandle) { // currentCandle will be processed in main cycle

@@ -16,14 +16,13 @@ class OrdersManager {
     
     static LIMIT_ORDER_TIMEOUT_CANDLES = 1;
 
-
-
-    constructor(brokerUser, brokerCandles, clients) {
+    constructor(brokerUser, brokerCandles, clients, candleDebug) {
 
         this.clients = clients;
         this.brokerCandles = brokerCandles;
         this.real = new OrdersReal(brokerUser, clients);
         this.report = new ReportIntervals();
+        this.candleDebug = candleDebug;
 
         this.entriesQueue = [];
         this.entries = [];
@@ -76,10 +75,10 @@ class OrdersManager {
 
         /* filter */
     
-        CDB.setSource(params.strategy);
-        CDB.labelTop(params.candle,'EN');
-        CDB.circleMiddle(params.candle,{ color: 'blue', radius: 5, alpha: 0.1 });
-        CDB.entry(params.candle,params.entryPrice,params.takeProfit,params.stopLoss);
+        this.candleDebug.setSource(params.strategy);
+        this.candleDebug.labelTop(params.candle,'EN');
+        this.candleDebug.circleMiddle(params.candle,{ color: 'blue', radius: 5, alpha: 0.1 });
+        this.candleDebug.entry(params.candle,params.entryPrice,params.takeProfit,params.stopLoss);
 
         this.entries.push(entry);
         this.activeEntries.push(entry);
