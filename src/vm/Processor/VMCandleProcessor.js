@@ -16,7 +16,6 @@ class VMCandleProcessor extends CandleProcessor {
         this.dataDb = dataDb;
         this.tickers = {};
         this.lastPrice = {};
-        this.pulseEndTime = null;
     }
 
 
@@ -76,11 +75,10 @@ class VMCandleProcessor extends CandleProcessor {
 
     }
 
-    processPhaseStart(candleCloseTime, passedTime) {
+    processPhaseStart(pulseEndTime, passedTime) {
         // prepare for candleProcess
         // console.log('CPRO: phase start '+TH.ls(candleCloseTime)+' passed: '+
         //     Number(passedTime/1000).toFixed(2)+' secs.');
-        this.pulseEndTime = candleCloseTime;
     }
 
     processCandle(closedCandle) {
@@ -98,12 +96,28 @@ class VMCandleProcessor extends CandleProcessor {
 
     }
 
-    processPhaseEnd() {
+    processPhaseEnd(pulseEndTime) {
 
         this.ordersManager.processEntriesQueue();
-        this.candleDebug.getStoreCache().storePhase(this.pulseEndTime);
-        // process orders queue, arbitration
-        //console.log('CPRO: phase end');
+        if (this.isLive) {
+            console.log('CDBG_STORE_PHASE at '+TH.ls(pulseEndTime));
+            this.candleDebug.getStoreCache().storePhase(pulseEndTime);
+        }
+    }
+
+
+    loadedHistoryBlock(pulseEndTime) {
+        //this.candleDebug.getStoreCache().storePhase(pulseEndTime);
+    }
+
+    loadedHistoryPart(pulseEndTime) {
+        console.log('CDBG_STORE_HISTORY_PART at '+TH.ls(pulseEndTime));
+        this.candleDebug.getStoreCache().storePhase(pulseEndTime);
+    }
+
+    loadedHistoryEnd(pulseEndTime) {
+        console.log('CDBG_STORE_HISTORY_END at '+TH.ls(pulseEndTime));
+        this.candleDebug.getStoreCache().storePhase(pulseEndTime);
     }
 
 }

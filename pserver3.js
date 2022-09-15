@@ -50,6 +50,9 @@ dbAccessFactory.connect(SETTINGS.databases.mysqlData).then( () => {
                     
                     if (SETTINGS.debugDays) { 
                         fromTime = TH.utcDaysBack(SETTINGS.debugDays);
+                    }
+
+                    if (SETTINGS.notLive) {
                         toTime = (new Date()).getTime();
                     }
                     
@@ -59,7 +62,7 @@ dbAccessFactory.connect(SETTINGS.databases.mysqlData).then( () => {
                 
                     if (! symbols ) { symbols = allSymbols; }
 
-                    symbols = symbols.filter( c => c !== 'BTCUSDT' ); symbols.unshift('BTCUSDT');
+                   // symbols = symbols.filter( c => c !== 'BTCUSDT' ); symbols.unshift('BTCUSDT');
 
                     vm.init(symbols,timeframes,strategies,fromTime,toTime,{})
                         .then( () => { console.log('VM initialized'); });

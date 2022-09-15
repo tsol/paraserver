@@ -8,6 +8,8 @@
 **
 */
 
+const TH = require("../helpers/time");
+
 class StoreCache {
 
     constructor( { update, save, reset, load } ) {
@@ -32,8 +34,9 @@ class StoreCache {
 
     itemChanged(endTime, obj) {
 
-        if ([ ... this.cache, ... this.updateCache ].includes(obj)) { return }
-
+        if (this.cache.includes(obj)) { return }
+        if (this.updateCache.includes(obj)) { return }
+         
         if (endTime <= this.storedEndTime) {
             return this.updateCache.push(obj);
         }

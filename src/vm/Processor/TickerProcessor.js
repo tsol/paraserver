@@ -45,7 +45,7 @@ class TickerProcessor {
         const firstCandle = this.candles.shift();
         if (this.analyzersBox ) {
             this.analyzersBox.forgetBefore(firstCandle.openTime);
-            this.candleDebug.forgetBefore(this.symbol, firstCandle.openTime);
+            this.candleDebug.forgetBefore(this.symbol, this.timeframe, firstCandle.openTime);
         }
     }
 

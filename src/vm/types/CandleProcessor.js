@@ -41,10 +41,14 @@ class CandleProcessor {
         console.log('CPRO: closed candle '+closedCandle.symbol+'-'+closedCandle.timeframe);
     }
 
-    processPhaseEnd() {
+    processPhaseEnd(candleCloseTime) {
         // process orders queue, arbitration
         //console.log('CPRO: phase end');
     }
+
+    loadedHistoryBlock(candleCloseTime) {}
+    loadedHistoryPart(candleCloseTime) {}
+    loadedHistoryEnd(candleCloseTime) {}
 
 }
 

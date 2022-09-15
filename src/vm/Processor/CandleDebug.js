@@ -1,4 +1,5 @@
 const SETTINGS = require('../../../private/private.js');
+const TH = require('../../helpers/time.js');
 const CandleDebugEntry = require('../../types/CandleDebugEntry');
 
 class CandleDebug {
@@ -7,6 +8,7 @@ class CandleDebug {
         this.storeCache = storeCache;
         this.source = 'none';
         this.items = [];
+        this.forgotBefore = 0;
     }
 
     getStoreCache() {
@@ -26,6 +28,12 @@ class CandleDebug {
     }
 
     addItemByCandle(candle, debugEntry) {
+
+        if (candle.openTime <= this.forgotBefore) {
+            console.log('WARN: CDB: request debug on very old candle', candle)
+            return false;
+        }
+
         let item = this.findItemByCandle(candle)
 
         if (item) {
@@ -44,8 +52,10 @@ class CandleDebug {
         this.storeCache.itemNew(item);
     }
 
-    forgetBefore(symbol,timestamp) {
-        this.items = this.items.filter( cd => (cd.symbol !== symbol) || (cd.time > timestamp) );
+    forgetBefore(symbol,timeframe, timestamp) {
+        this.forgotBefore = timestamp;
+        this.items = this.items.filter( cd => (cd.symbol !== symbol) 
+             || (cd.timeframe !== timeframe) || (cd.time > timestamp) );
     }
 
     onChart(candle, name, value, param = {}) {

@@ -12,7 +12,7 @@ candleProcessor must implement:
     processUpdate(...params)            - between phases live price update
     processPhaseStart(candleCloseTime)  - prepare for bunch of closed candles 
     processCandle(closedCandle)         - closed candle  
-    processPhaseEnd()                   - phase ended - go ahead make orders
+    processPhaseEnd(candleCloseTime)    - phase ended - go ahead make orders
 
 TODO:
     6. align days with UTC time
@@ -33,10 +33,8 @@ const { setImmediate, setTimeout } = require('node:timers/promises')
 class CandleSequencer {
 
     static SPLIT_PROCESS_CANDLES = 1000;
-    static SPLIT_LOAD_SIZE = 10*24*60*60*1000; //1*24*60*60*1000; 
+    static SPLIT_LOAD_PART_SIZE = 1*24*60*60*1000; // 1*24*60*60*1000 = day
 
-    // todo: make SPLIT_LOAD_SIZE dynamic depending on mimimal timeframe
-    // and symbols ( 87 symbols + 1m ~= 3 days )
 
     constructor(symbols,timeframes,candleProxy,candleProcessor) {
         
@@ -58,6 +56,14 @@ class CandleSequencer {
         this.timeframes.sort( (a,b) => TF.get(b).length - TF.get(a).length );
         
 
+    }
+
+    getLoadPartSize() {
+
+        // todo: make SPLIT_LOAD_SIZE dynamic depending on mimimal timeframe
+        // and symbols ( 87 symbols + 1m ~= 3 days )
+
+        return CandleSequencer.SPLIT_LOAD_PART_SIZE;
     }
 
     getIsLive() {
@@ -165,6 +171,7 @@ class CandleSequencer {
 
         await this.loadAndProcessHistory(timeStart,timeEnd);
 
+        this.candleProcessor.loadedHistoryEnd(this.lastPulseTime);
 
         console.log('CSEQ: history done');
 
@@ -243,9 +250,10 @@ class CandleSequencer {
                 this.lastPriceUpdateReset(c);
             });
 
-            this.candleProcessor.processPhaseEnd();
+            this.candleProcessor.processPhaseEnd(this.lastPulseTime);
 
             if (count >= CandleSequencer.SPLIT_PROCESS_CANDLES) {
+                this.candleProcessor.loadedHistoryBlock(this.lastPulseTime);
                 return false;
             }
 
@@ -276,7 +284,7 @@ class CandleSequencer {
 
         let currentStart = null;
         let currentEnd = timeStart-1;
-        const maxParts = Math.ceil( (timeEnd-timeStart) / CandleSequencer.SPLIT_LOAD_SIZE );
+        const maxParts = Math.ceil( (timeEnd-timeStart) / this.getLoadPartSize() );
         let currentPart = 1;
 
         console.log('CSEQ: load/process history: ['+TH.ls(timeStart)+'/'+TH.ls(timeEnd)+']');
@@ -284,7 +292,7 @@ class CandleSequencer {
         while (currentEnd < timeEnd) {
         
             currentStart = currentEnd+1;
-            currentEnd = currentStart + CandleSequencer.SPLIT_LOAD_SIZE-1;
+            currentEnd = currentStart + this.getLoadPartSize()-1;
             if (currentEnd > timeEnd) { currentEnd = timeEnd; }
 
             if (currentStart >= currentEnd) { break; }
@@ -303,6 +311,8 @@ class CandleSequencer {
 
             await setImmediate(this.processHistoryBuffers());
             currentPart++;
+
+            this.candleProcessor.loadedHistoryPart(this.lastPulseTime);
         }
 
         this.tbuffers = [];
@@ -372,7 +382,7 @@ class CandleSequencer {
             }
         }
 
-        this.candleProcessor.processPhaseEnd();
+        this.candleProcessor.processPhaseEnd(this.lastPulseTime);
 
     }
 

@@ -4,6 +4,7 @@
 **
 */
 
+const TH = require("../../../helpers/time");
 const Strategy = require("../types/Strategy");
 
 
@@ -47,7 +48,8 @@ class EntryFinder {
 
         this.label(firstBottom,'B1');
 
-        console.log('DBL: new finder #'+id+', '+isLong+', '+firstBottom.symbol);
+        console.log('DBL: new finder #'+id+', '+isLong+', '+
+            firstBottom.symbol+' '+TH.ls(firstBottom.openTime));
 
     }
 

@@ -1,3 +1,5 @@
+const TH = require("../../../helpers/time");
+
 const TABLE_NAME = 'candledebug';
 
 const CREATE_LINES = [
@@ -57,7 +59,14 @@ async function saveCandleDebugs(con, vmId, items) {
     })
 
     const result = await con.query(sqlQuery, [values]).catch( err => {
-        console.log('MYSQL-CDLDBG: insert error: ', sqlQuery, values, err);
+        //console.log('MYSQL-CDLDBG: insert error: ', sqlQuery, values, err);
+
+        values.forEach( v => {
+            console.log(`  STORE_INSERT_OBJ ${v[1]}-${v[2]} `+TH.ls(v[3]))
+        })
+
+        console.log('MYSQL-CDLDBG: insert error: ', err);
+
         throw Error('insert failed');
     })
 
