@@ -30,6 +30,7 @@ class WebClients {
             });
         
             socket.on("get_chart", (arg) => {
+
                 if (! arg.tickerId ) {
                     console.log('SIO: invalid get_chart params');
                 }
@@ -44,8 +45,10 @@ class WebClients {
             
                 if (arg.timestamp) { param.timestamp = arg.timestamp; }
         
-                let data = clientIO.getTickerChart(param);
-                socket.emit("chart", data);
+                clientIO.getTickerChart(param)
+                    .then( data => socket.emit("chart", data) )
+                    .catch( err => console.log('SIO: getTickerChart error', err) );
+
             });
         
             socket.on("get_flags", (arg) => {

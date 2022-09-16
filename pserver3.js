@@ -62,7 +62,7 @@ dbAccessFactory.connect(SETTINGS.databases.mysqlData).then( () => {
                 
                     if (! symbols ) { symbols = allSymbols; }
 
-                   // symbols = symbols.filter( c => c !== 'BTCUSDT' ); symbols.unshift('BTCUSDT');
+                    symbols = symbols.filter( c => c !== 'BTCUSDT' ); symbols.unshift('BTCUSDT');
 
                     vm.init(symbols,timeframes,strategies,fromTime,toTime,{})
                         .then( () => { console.log('VM initialized'); });

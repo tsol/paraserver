@@ -24,15 +24,32 @@ class ClientIO {
         return this.vm.getProcessor().getFlags().getAllFlagsByTickerId(tickerId);
     }
 
-    getTickerChart({ symbol, timeframe, limit, timestamp } ) {
-        // todo: load from candleProxy
-        // todo2: load from DB + LEFT JOIN candleDebug
+    async getTickerChart({ symbol, timeframe, limit, timestamp } ) {
 
-        const ticker = this.vm.getProcessor().getTicker(symbol,timeframe);
-        if (! ticker ) { return null; }
+        const candlesDB = this.vm.getCandleProxy();
+        const cdebugDB = this.vm.getCandleDebugDB();
 
-        return ticker.getChart(limit,timestamp);
+        const borders = await candlesDB.getPeriodBordersFromDB(
+                symbol, timeframe, timestamp, limit);
+        
+        const candles = await candlesDB.getCandlesPeriod( symbol, timeframe, 
+            borders.startTimestamp,
+            borders.endTimestamp,
+            false
+        );
+ 
+        const cdebug = await cdebugDB.load({symbol, timeframe,
+            timeFrom: borders.startTimestamp,
+            timeTo: borders.endTimestamp
+        });
 
+        return {
+            id: symbol+'-'+timeframe,
+            candles: candles,
+            cdebug: cdebug,
+            targetTimestamp: timestamp
+        }
+        
     }
 
     getTickersState() {

@@ -22,6 +22,12 @@ class CandleProxy {
         this.broker = brokerCandles;
     }
   
+    storeNewCandles(arrCandles) {
+        arrCandles.forEach( candle => {
+            this.db.saveCandlesToDB(candle.symbol, candle.timeframe, [candle]);
+        });
+    }
+
     getBroker() {
         return this.broker;
     }
@@ -148,6 +154,50 @@ class CandleProxy {
     }
   
   
+    async getPeriodBordersFromDB(symbol, timeframe, targetTimestamp, maxCandles) {
+
+        const [dbFirstCandle, dbLastCandle] = await Promise.all([
+            this.db.getFirstCandle(symbol,timeframe),
+            this.db.getLastCandle(symbol,timeframe)
+        ]);
+
+        if ( ! dbFirstCandle || ! dbLastCandle ) { throw new Error('no data') }
+
+        const [firstTimestamp, lastTimestamp] = [dbFirstCandle.openTime, dbLastCandle.openTime];
+
+        if (! targetTimestamp ) { targetTimestamp = lastTimestamp; }
+        if (! maxCandles ) { maxCandles = 1000; }
+
+        const tfLen = TF.getTimeframeLength(timeframe);
+        const periodLen = tfLen * maxCandles;
+        const halfPeriod = Math.floor(periodLen/2);
+
+        let startTimestamp = targetTimestamp - halfPeriod;
+        let endTimestamp = targetTimestamp + halfPeriod;
+
+        // shift maxCandles right 
+        if (startTimestamp < firstTimestamp) {
+            const diff = firstTimestamp - startTimestamp;
+            startTimestamp = firstTimestamp;
+            endTimestamp += diff;
+        }
+
+        // shift maxCandles left
+        if (endTimestamp > lastTimestamp) {
+            const diff = endTimestamp - lastTimestamp;
+            endTimestamp = lastTimestamp;
+            startTimestamp -= diff;
+        }
+
+        // truncate left wing (less than maxCandles return) 
+        if (startTimestamp < firstTimestamp) {
+            startTimestamp = firstTimestamp;
+        }
+
+        return { startTimestamp, endTimestamp };
+    }
+
+
   }
 
 class PIO { /* private static */
@@ -172,7 +222,6 @@ class PIO { /* private static */
         }
 
     }
-
 
 }
 

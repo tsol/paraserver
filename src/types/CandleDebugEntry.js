@@ -20,7 +20,17 @@ class CandleDebugEntry {
         }
     }
 
+    toGUI() {
+        return {
+            symbol: this.symbol,
+            timeframe: this.timeframe,
+            time: this.time,
+            entries: this.entries
+        }
+    }
+
     static fromSTORE(params = {symbol,timeframe,time,entries}) {
+        params.entries = JSON.parse(params.entries);
         return new CandleDebugEntry(params);
     }
 

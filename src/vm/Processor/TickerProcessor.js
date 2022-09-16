@@ -61,54 +61,6 @@ class TickerProcessor {
         };
      }
  
-
-    getChart(limit, targetTimestamp) {
-        
-        const currentTimestamp = this.getLastTimestamp();
-        const firstTimestamp = this.getFirstTimestamp();
-
-        if (! firstTimestamp) {
-            return null;
-        }
-        let wasTarget = true;
-        if (! targetTimestamp) { targetTimestamp = currentTimestamp; wasTarget=false; }
-        if (! limit ) { limit = 1000; }
-        
-        const tfLen = TF.getTimeframeLength(this.timeframe);
-        const periodLen = tfLen * limit;
-        const halfPeriod = Math.floor(periodLen/2);
-
-        let endTimestamp = targetTimestamp + halfPeriod;
-        let startTimestamp = targetTimestamp - halfPeriod;
-
-        // shift limit right 
-        if (startTimestamp < firstTimestamp) {
-            const diff = firstTimestamp - startTimestamp;
-            startTimestamp = firstTimestamp;
-            endTimestamp += diff;
-        }
-        // shift limit left
-        if (endTimestamp > currentTimestamp) {
-            const diff = endTimestamp - currentTimestamp;
-            endTimestamp = currentTimestamp;
-            startTimestamp -= diff;
-        }
-
-        // truncate left wing (less than limit return) 
-        if (startTimestamp < firstTimestamp) {
-            startTimestamp = firstTimestamp;
-        }
-
-        return {
-            id: this.getId(),
-            candles: this.candles.filter(
-                 c => (c.openTime >= startTimestamp) && (c.closeTime <= endTimestamp)
-            ),
-            targetTimestamp: (wasTarget ? targetTimestamp : null)
-        }
-    }
-
-
     getFirstTimestamp() {
         if (this.candles.length == 0) {
             return null;

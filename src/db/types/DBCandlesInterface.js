@@ -5,7 +5,10 @@ class DBCandlesInterface {
     async loadCandlesPeriod(symbol,timeframe,startTimestamp,endTimestamp) {}
     
     // saves array of Candle objects
-    saveCandlesToDB(symbol,timeframe,candles) {}
+    async saveCandlesToDB(symbol,timeframe,candles) {}
+
+    async getFirstCandle(symbol,timeframe) {};
+    async getLastCandle(symbol,timeframe) {};
 
 }
 

@@ -2,7 +2,7 @@
 ** This is mysql backend for CandleProxy candle proxy class.
 */
 
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 
 const Candle = require('../../types/Candle.js');
 const DBCandlesInterface = require('../types/DBCandlesInterface.js');
@@ -19,45 +19,56 @@ class MysqlCandles extends DBCandlesInterface {
         this.connection = null;
     }
 
-    connect({host, database, user, password })
+    async connect({host, database, user, password })
     {      
-        var _self = this;
-        return new Promise(function(resolve, reject) {
-        
-            var con = mysql.createConnection({
+        this.connection = await mysql.createConnection({
                 host: host,
                 user: user,
                 password: password,
                 database: database
-            });
+        });
       
-            con.connect(function(err) {
-                if (err) return reject(err);
-                _self.connection = con;
-                console.log('MYSQLCANDLES: connected');
-                resolve(true);
-            });
-
-        });
-
+        await this.connection.connect();
+        console.log('MYSQL-CANDLES: connected');
+        return true;
     }
 
-    disconnect() {
-        if (! this.connection) { return false; }
-
-        this.connection.end(function(err) {
-            if (err) throw err;
-            console.log('MYSQLCANDLES: disconnected');
-            this.connection = null;
-        });
-
+    async disconnect() {
+        await this.connection.end();
+        this.connection = null;
+        console.log('MYSQL-CANDLES: disconnected');
     }
+
+    async getFirstCandle(symbol,timeframe) {
+        const tableName = PIO.getTableName(symbol,timeframe);
+        const con = this.connection;    
+        const sqlQuery = 
+            `SELECT * FROM ${tableName} ORDER BY open_time ASC LIMIT 1`;
+        await PIO.touchTable(con, tableName);
+        let [result, meta] = await con.query( sqlQuery );
+        if (result && result.length > 0) {
+            return PIO.parseCandleFromMYSQL(symbol,timeframe,result[0]);
+        }
+        return null;
+    }
+
+
+    async getLastCandle(symbol,timeframe) {
+        const tableName = PIO.getTableName(symbol,timeframe);
+        const con = this.connection;    
+        const sqlQuery = 
+            `SELECT * FROM ${tableName} ORDER BY close_time DESC LIMIT 1`;
+        await PIO.touchTable(con, tableName);
+        let [result, meta] = await con.query( sqlQuery );
+        if (result && result.length > 0) {
+            return PIO.parseCandleFromMYSQL(symbol,timeframe,result[0]);
+        }
+        return null;
+    }
+
 
     async loadCandlesPeriod(symbol,timeframe,startTimestamp,endTimestamp) {
 
-        if (! this.connection ) throw new Error('MYSQLCANDLES: no connection');
-
-        var _self = this;
         const tableName = PIO.getTableName(symbol,timeframe);
         const con = this.connection;
         const sqlQuery = 
@@ -65,35 +76,23 @@ class MysqlCandles extends DBCandlesInterface {
             +"WHERE "
             +"(close_time >= "+startTimestamp+")"
             +" AND "
-            +"(close_time <= "+endTimestamp+")"
+            +"(open_time <= "+endTimestamp+")"
             +" ORDER BY close_time";
 
-
         await PIO.touchTable(this.connection, tableName);
+     
+        const [result, meta] = await con.query( sqlQuery );
 
-        return new Promise(function(resolve, reject) {
-      
-            if (! con ) reject(new Error('MYSQLCANDLES: lost connection'));
-        
-            con.query( sqlQuery,
-                function (err, result, fields) {
-                    if (err) reject(err);
+        let candles = [];
 
-                    let candles = [];
+        result.forEach( (candleFromDb) => {
+            candles.push(PIO.parseCandleFromMYSQL(symbol,timeframe,candleFromDb));
+        })
 
-                    result.forEach( (candleFromDb) => {
-                        candles.push(PIO.parseCandleFromMYSQL(symbol,timeframe,candleFromDb));
-                    })
-
-                    return resolve(candles);
-                }
-            );
-
-        });
-
+        return candles;
     }
 
-    saveCandlesToDB(symbol,timeframe,candles) {
+    async saveCandlesToDB(symbol,timeframe,candles) {
 
         if (! candles || candles.length == 0) return;
 
@@ -116,18 +115,14 @@ class MysqlCandles extends DBCandlesInterface {
             ]);
         })
 
-        this.connection.query(sqlQuery, [values], function (err, result) {
-          if (err) {
-              console.log('FAILED INSERT:');
-              console.log(sqlQuery);
-              console.log('VALUES:');
-              console.log(values);
-              console.log(err);
-              return;
-          }
-          console.log("MYSQLCANDLES: number of records inserted: " + result.affectedRows);
-        });
-
+        const [result, meta] = await this.connection.query(sqlQuery, [values])
+            .catch(err => {
+                console.log('FAILED INSERT:',sqlQuery,values,err);
+                return false;
+            });
+        
+        console.log("MYSQL-CANDLES: inserted rows: " + result.affectedRows);
+        
     }
 
 }
@@ -139,31 +134,16 @@ class PIO { /* private hidden IO */
         return tableName.toLowerCase();
     }
 
-    static touchTable(con, tableName)
+    static async touchTable(con, tableName)
     { 
-        return new Promise(function(resolve, reject) {
-            if (! con ) reject('MYSQLCANDLES: no connection');
+        const [resultShow] = await con.query(`SHOW TABLES LIKE '${tableName}'`);
+        if (resultShow.length > 0) { return true; }
         
-            con.query("SHOW TABLES LIKE '"+tableName+"'",
-            function (err, result, fields) {
-                if (err) reject(err);
-                
-                if (result.length > 0) { 
-                    // console.log('MDB: table already exists');
-                    return resolve(true);
-                }
+        const sqlQuery = PIO.createTableSQLQuery(tableName);
+        const [resultCreate] = await con.query(sqlQuery);
 
-                const sqlQuery = PIO.createTableSQLQuery(tableName);
-                
-                con.query(sqlQuery, function (err, result) {
-                    if (err) reject (err);
-                    if (!result) reject(new Error('MDB: table was not created.'));
-                    console.log("MDB: new table created "+tableName);
-                    resolve(false);
-                });
-                
-            });
-        });
+        console.log("MYSQL-CANDLES: new table created "+tableName);
+        return false;
     }
 
     static createTableSQLQuery(tableName) {

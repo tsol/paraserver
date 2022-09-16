@@ -46,6 +46,7 @@ class VM {
         this.options = null;
     }
 
+    getCandleDebugDB() { return this.candleDebugDB; }
     getCandleDebug() { return this.candleDebug; }
     getBrokerUser() { return this.brokerUser; }
     getCandleProxy() { return this.candleProxy; }

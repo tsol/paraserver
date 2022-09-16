@@ -1,4 +1,5 @@
 const TH = require("../../../helpers/time");
+const CandleDebugEntry = require("../../../types/CandleDebugEntry");
 
 const TABLE_NAME = 'candledebug';
 
@@ -29,14 +30,16 @@ async function prepareCandleDebug(con) {
 
 async function loadCandleDebugs(con, vmId, { symbol, timeframe, timeFrom, timeTo }) {
 
-    const sql = `SELECT * FROM ${TABLE_NAME} WHERE vmid = ${vmId}`;
+    let sql = `SELECT * FROM ${TABLE_NAME} WHERE vmid = ${vmId}`;
 
     if (symbol) { sql += ` AND symbol='${symbol}'` }
     if (timeframe) { sql += ` AND timeframe='${timeframe}'` }
     if (timeFrom) { sql += ` AND time >= ${timeFrom}` }
     if (timeTo) { sql += ` AND time <= ${timeTo}` }
         
-    return con.query( sql );
+    const [result] = await con.query( sql );
+
+    return result.map( cdb => CandleDebugEntry.fromSTORE(cdb).toGUI() );
 
 }
 

@@ -6,22 +6,20 @@ class Timeframes
     HOUR_LENGTH = this.MIN_LENGTH * 60;
 
     TFRAMES = [
-        { name: '1d',  htf: null,  levelDays: 365, days: 100,  trade: false, limit: 0, levelsLimitTime: 0, length: this.DAY_LENGTH },
-        { name: '4h',  htf: '1d',  levelDays:  93, days: 17,  trade: false, limit: 0, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
-        { name: '1h',  htf: '4h',  levelDays:  14, days: 5,   trade: false, limit: 0, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
-        { name: '30m', htf: '4h',  levelDays:   7, days: 3,   trade: false, limit: 0, levelsLimitTime: 0, length: 30 * this.MIN_LENGTH },
-        { name: '15m', htf: '1h',  levelDays:   5, days: 2,    trade: false, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
-        { name: '5m',  htf: '1h',  levelDays:   5, days: 1,    trade: false, limit: 0, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
-        { name: '3m',  htf: '1h',  levelDays:   2, days: 1,    trade: false, limit: 0, levelsLimitTime: 0, length: 3 * this.MIN_LENGTH },
-        { name: '1m',  htf: '1h',  levelDays:   1, days: 1,    trade: false, limit: 0, levelsLimitTime: 0, length: 1 * this.MIN_LENGTH, pulseOnly: true },
-
+        { name: '1d',  htf: null,  levelDays: 365, limit: 300,  trade: false, levelsLimitTime: 0, length: this.DAY_LENGTH },
+        { name: '4h',  htf: '1d',  levelDays:  93, limit: 300,  trade: false, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
+        { name: '1h',  htf: '4h',  levelDays:  14, limit: 300,  trade: false, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
+        { name: '30m', htf: '4h',  levelDays:   7, limit: 300,  trade: false, levelsLimitTime: 0, length: 30 * this.MIN_LENGTH },
+        { name: '15m', htf: '1h',  levelDays:   5, limit: 300,  trade: false, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
+        { name: '5m',  htf: '1h',  levelDays:   5, limit: 300,  trade: false, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
+        { name: '3m',  htf: '1h',  levelDays:   2, limit: 300,  trade: false, levelsLimitTime: 0, length: 3 * this.MIN_LENGTH },
+        { name: '1m',  htf: '1h',  levelDays:   1, limit: 300,  trade: false, levelsLimitTime: 0, length: 1 * this.MIN_LENGTH, pulseOnly: true },
     ];
 
     constructor() {
         this.TFRAMES.forEach( (tf) => {
-            tf.limit = Math.floor( (tf.days * this.DAY_LENGTH) / tf.length );
+            //tf.limit = Math.floor( (tf.days * this.DAY_LENGTH) / tf.length );
             tf.levelsLimitTime = tf.levelDays * this.DAY_LENGTH;
-            //console.log('TF: tf limit set '+tf.name+' = '+tf.limit+' candles');
         });
     }
 

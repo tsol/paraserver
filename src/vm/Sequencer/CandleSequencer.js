@@ -33,7 +33,7 @@ const { setImmediate, setTimeout } = require('node:timers/promises')
 class CandleSequencer {
 
     static SPLIT_PROCESS_CANDLES = 1000;
-    static SPLIT_LOAD_PART_SIZE = 1*24*60*60*1000; // 1*24*60*60*1000 = day
+    static SPLIT_LOAD_PART_SIZE = 3*24*60*60*1000; // 1*24*60*60*1000 = day
 
 
     constructor(symbols,timeframes,candleProxy,candleProcessor) {
@@ -373,6 +373,10 @@ class CandleSequencer {
         this.lastPulseTime = closeTime;
         this.candleProcessor.processPhaseStart(this.lastPulseTime, passedTime);
 
+        // question: why not just arrived.forEach ???
+        // answer: because order of symbols and timeframes is crutial
+        // thats the reason behind whole 'phases and pulses' idea
+        
         for(var s of this.symbols) {
             for (var t of this.timeframes) {
                 const candle = arrived[s+'-'+t];
@@ -381,6 +385,9 @@ class CandleSequencer {
                 }
             }
         }
+        
+        // todo: if we have several VMs ?
+        this.candleProxy.storeNewCandles( Object.values(arrived) );
 
         this.candleProcessor.processPhaseEnd(this.lastPulseTime);
 

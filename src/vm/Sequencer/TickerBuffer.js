@@ -48,7 +48,7 @@ class TickerBuffer {
             return { res: true, symbol: this.symbol };
         }
         catch (error) {
-            console.log('TBUF cought error: '+error.message);
+            console.log('TBUF cought error: ', error);
             return { res: false, symbol: this.symbol };
         }
     }
