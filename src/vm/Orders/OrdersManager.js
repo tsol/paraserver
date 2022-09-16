@@ -63,7 +63,14 @@ class OrdersManager {
         let flagsSnapshot = null;
 
         if (! SETTINGS.noFlagsSnapshot) {
-            flagsSnapshot = JSON.parse(JSON.stringify(params.flags.getAll()));
+           
+            flagsSnapshot = JSON.parse(
+                JSON.stringify(
+                    params.flags.getAllFlagsByTickerId(
+                        params.flags.id(params.symbol, params.timeframe)
+                    )
+                )
+            );
         }
 
         const entry = new Entry(params);

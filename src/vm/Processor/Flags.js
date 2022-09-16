@@ -31,6 +31,11 @@ class Flags {
         this.currentTimeframe = timeframe;
         this.tickers[ this.currentId() ] = {};
         this.currentTicker = this.tickers[ this.currentId() ];
+        //console.log('entry: start',symbol,timeframe)
+    }
+
+    id(symbol,timeframe) {
+        return symbol+'-'+timeframe;
     }
 
     currentId() {
@@ -44,10 +49,6 @@ class Flags {
     get(field) {
         if (! this.currentTicker[ field ] ) { return null; }
         return this.currentTicker[ field ];
-    }
-
-    getAll() {
-        return this.getAllFlagsByTickerId( this.currentId() );
     }
 
     getAllFlagsByTickerId(tickerId) {
