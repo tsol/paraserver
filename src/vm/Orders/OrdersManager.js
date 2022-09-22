@@ -214,6 +214,9 @@ class OrdersManager {
         });
 
 
+        // update price anyway
+        entries.forEach( o => o.updateCurrentPrice(currentPrice) );
+
         this.limitEntriesPriceUpdate(symbol,eventTime,lowPrice,highPrice,currentPrice);
 
         return;

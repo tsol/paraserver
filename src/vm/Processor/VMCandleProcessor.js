@@ -99,6 +99,7 @@ class VMCandleProcessor extends CandleProcessor {
     processPhaseEnd(pulseEndTime) {
 
         this.ordersManager.processEntriesQueue();
+        
         if (this.isLive) {
             console.log('CDBG_STORE_PHASE at '+TH.ls(pulseEndTime));
             this.candleDebug.getStoreCache().storePhase(pulseEndTime);

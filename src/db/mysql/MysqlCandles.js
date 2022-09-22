@@ -98,7 +98,7 @@ class MysqlCandles extends DBCandlesInterface {
 
         const tableName = PIO.getTableName(symbol,timeframe);
 
-        var sqlQuery = `INSERT INTO ${tableName} 
+        var sqlQuery = `INSERT IGNORE INTO ${tableName} 
             (open_time,open,high,low,close,volume,close_time) VALUES ?`;
 
         let values = [];

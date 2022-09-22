@@ -13,7 +13,7 @@ const BTC = require("../../Orders/taggers/list_static/btc");
 class BTCTREND extends Analyzer {
 
         static SYMBOL       = 'BTCUSDT';
-        static TIMEFRAMES   = ['1h','4h','1d'];
+        static TIMEFRAMES   = ['15m','1h','4h','1d'];
         static MA           = 'emac';
         static MA_PERIODS   = [9,20];
 

@@ -11,7 +11,7 @@ class Timeframes
         { name: '1h',  htf: '4h',  levelDays:  14, limit: 300,  trade: false, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
         { name: '30m', htf: '4h',  levelDays:   7, limit: 300,  trade: false, levelsLimitTime: 0, length: 30 * this.MIN_LENGTH },
         { name: '15m', htf: '1h',  levelDays:   5, limit: 300,  trade: false, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
-        { name: '5m',  htf: '1h',  levelDays:   5, limit: 300,  trade: false, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
+        { name: '5m',  htf: '1h',  levelDays:   5, limit: 300,  trade: false, levelsLimitTime: 0, length: 5 * this.MIN_LENGTH },
         { name: '3m',  htf: '1h',  levelDays:   2, limit: 300,  trade: false, levelsLimitTime: 0, length: 3 * this.MIN_LENGTH },
         { name: '1m',  htf: '1h',  levelDays:   1, limit: 300,  trade: false, levelsLimitTime: 0, length: 1 * this.MIN_LENGTH, pulseOnly: true },
     ];
