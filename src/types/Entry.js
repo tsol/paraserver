@@ -79,6 +79,7 @@ class Entry {
 
     updateCurrentPrice(currentPrice)
     {
+        
         if (this.currentPrice === currentPrice) { return; }
 
         this.currentPrice = currentPrice;

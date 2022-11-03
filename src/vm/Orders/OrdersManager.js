@@ -75,6 +75,9 @@ class OrdersManager {
 
         const entry = new Entry(params);
 
+        let found = this.activeEntries.find( e => e.id === entry.id );
+        if (found) { return null; }
+
         entry.setFlags(flagsSnapshot);
 
         entry.setTags(  this.staticTaggers.getStaticTags(entry, params.flags, this.entries) );
@@ -85,10 +88,9 @@ class OrdersManager {
         this.candleDebug.setSource(params.strategy);
         this.candleDebug.labelTop(params.candle,'EN');
         this.candleDebug.circleMiddle(params.candle,{ color: 'blue', radius: 5, alpha: 0.1 });
-        this.candleDebug.entry(params.candle,params.entryPrice,params.takeProfit,params.stopLoss);
 
-        this.entries.push(entry);
         this.activeEntries.push(entry);
+        this.entries.push(entry);
 
         return entry;
     }
@@ -174,7 +176,7 @@ class OrdersManager {
 
         if ( this.isClockUpdated(eventTime)) { this.runSchedule(); }
 
-        const entries = this.activeEntries.filter( o => (o.symbol === symbol) );
+        let entries = this.activeEntries.filter( o => (o.symbol === symbol) );
         let long  = entries.filter( o => o.isLong() );
         let short = entries.filter( o => o.isShort() );
         
@@ -182,15 +184,13 @@ class OrdersManager {
 
         short.forEach( (o) => {            
             if ( highPrice >= o.stopLoss ) {
-                o.updateCurrentPrice(o.stopLoss);
-                this.closeEntry(o, false);
+                this.closeEntry(o, false, o.stopLoss);
             } 
         });
 
         long.forEach( (o) => {
             if (lowPrice <= o.stopLoss) {
-                o.updateCurrentPrice(o.stopLoss);
-                this.closeEntry(o, false);
+                this.closeEntry(o, false, o.stopLoss);
             } 
         });
 
@@ -201,18 +201,17 @@ class OrdersManager {
 
         short.forEach( (o) => {
             if (lowPrice <= o.takeProfit) {
-                o.updateCurrentPrice(o.takeProfit);
-                this.closeEntry(o, true);
+                this.closeEntry(o, true, o.takeProfit);
             } 
         });
 
         long.forEach( (o) => {
             if (highPrice >= o.takeProfit) {
-                o.updateCurrentPrice(o.takeProfit);
-                this.closeEntry(o, true);
+                this.closeEntry(o, true, o.takeProfit);
             } 
         });
 
+        entries = entries.filter( o => o.isActive() );
 
         // update price anyway
         entries.forEach( o => o.updateCurrentPrice(currentPrice) );
@@ -220,7 +219,6 @@ class OrdersManager {
         this.limitEntriesPriceUpdate(symbol,eventTime,lowPrice,highPrice,currentPrice);
 
         return;
-
 
     }
 
@@ -283,10 +281,14 @@ class OrdersManager {
         let entries = (entriesArray || this.activeEntries);
         console.log('OEMU: closing all');
         console.log(entries);
-        entries.forEach( o => this.closeEntry(o, o.gainPercent > 0) && o.setTag('SHTDN','Y') );
+        entries.forEach( o => this.closeEntry(o, o.gainPercent > 0, null) && o.setTag('SHTDN','Y') );
     }
  
-    closeEntry(entry,isWin) {
+    closeEntry(entry,isWin, updatePrice) {
+        
+        if (updatePrice !== null) 
+            { entry.updateCurrentPrice(updatePrice); }
+
         entry.doClose(isWin,this.lastUpdateTime);
         this.activeEntries = this.activeEntries.filter( o => o !== entry );
         this.entryPlan.closeEntry(entry);

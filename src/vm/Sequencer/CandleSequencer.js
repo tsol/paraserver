@@ -32,8 +32,8 @@ const { setImmediate, setTimeout } = require('node:timers/promises')
 
 class CandleSequencer {
 
-    static SPLIT_PROCESS_CANDLES = 1000;
-    static SPLIT_LOAD_PART_SIZE = 1*24*60*60*1000; // 1*24*60*60*1000 = day
+    static SPLIT_PROCESS_CANDLES = 100;
+    static SPLIT_LOAD_PART_SIZE = 5*24*60*60*1000; // 1*24*60*60*1000 = day
 
 
     constructor(symbols,timeframes,candleProxy,candleProcessor) {

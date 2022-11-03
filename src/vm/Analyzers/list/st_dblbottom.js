@@ -1,5 +1,5 @@
 /*
-** Strategy: Double Bottom pattern, depends on AnHLTrend flags 'hl_trend.new.low'
+** Strategy: Double Bottom pattern, depends on AnHLTrend flags 'hl_trend.new.low' or 'hills.new.low'
 **
 **
 */
@@ -10,8 +10,13 @@ const Strategy = require("../types/Strategy");
 
 class EntryFinder {
 
-    static MAX_BOTTOMS_LENGTH   = 25;
-    static MAX_ENTRY_LENGTH     = 40;
+    static FIRST_BOTTOM_TRIGGER = 'hills'; // or 'hl_trend'
+
+    //static SECOND_BOTTOM_PERCENT = 0.1;
+
+    static MAX_BOTTOMS_LENGTH   = 100;
+    static MAX_ENTRY_LENGTH     = 200;
+
     static REQ_LEVEL            = 40;
     static RR_RATIO             = 1.5;
     static NECK_HEIGHT_MULT     = 0.95;
@@ -27,14 +32,14 @@ class EntryFinder {
         this.firstBottom = firstBottom;
 
         if (this.isLong) {
-            this.firstBottomY0 = firstBottom.low;
-            this.firstBottomY1 = firstBottom.bodyLow();
+            this.zoneY0 = firstBottom.low;
+            this.zoneY1 = firstBottom.bodyLow();
         }
         else {
-            this.firstBottomY0 = firstBottom.bodyHigh();
-            this.firstBottomY1 = firstBottom.high;
+            this.zoneY0 = firstBottom.bodyHigh();
+            this.zoneY1 = firstBottom.high;
         }
-
+   
         this.secondBottom = null;
         this.greenCount = 0;
         this.redCount = 0;
@@ -55,7 +60,7 @@ class EntryFinder {
 
     getId() { return this.id; }
 
-    addCandle(candle, io) {
+    addCandle(candle, io, candleIsCurrent) {
         
         if (this.candleBreaksZone(candle)) {
             this.label(candle,'xB')
@@ -95,19 +100,17 @@ class EntryFinder {
 
             if (this.readyToSpotSecondBottom() && this.candleTouchesZone(candle)) {
                 
-                if (! this.wfcandle ) {
-                    this.label(candle,'xW');    // was no williams fractal
-                    return false;
-                }
+                if ( this.wfcandle ) { // if there was an extremum (true neck)
 
-                if ( [this.firstBottom,this.prevCandle,this.secondCandle,candle]
-                    .includes(this.neckCandle)) {
-                    this.label(candle,'xNC');  // neckline is too close to secondBottom
-                    return false;
-                }
+                    if ( [this.firstBottom,this.prevCandle,this.secondCandle,candle]
+                        .includes(this.neckCandle)) {
+                        this.label(candle,'xNC');  // neckline is too close to secondBottom
+                        return false;
+                    }
                 
-                this.secondBottom = candle;
-                this.label(candle,'B2');
+                    this.secondBottom = candle;
+                    this.label(candle,'B2');
+                }
             }
 
         }
@@ -120,6 +123,14 @@ class EntryFinder {
             this.circle(this.secondBottom, EntryFinder.DBG_BOTTOMS);
 
             this.label(this.neckCandle,'NCK');
+
+            if ( ! candleIsCurrent ) {
+                this.label(candle,'xS'); // stale entry.
+                // by the time we found entry point, we already have newer candles
+                // too late to enter. This is because first bottom can be found
+                // with significant delay 
+                return false;
+            }
 
             if ( ! this.makeEntry(candle, io) ) {
                 this.label(candle,'NE');
@@ -183,21 +194,21 @@ class EntryFinder {
     }
 
     inZone(y) {
-        return (y >= this.firstBottomY0) && (y <= this.firstBottomY1);
+        return (y >= this.zoneY0) && (y <= this.zoneY1);
     }
 
     candleAboveZone(candle)  {
         if (this.isLong) {
-            return candle.low > this.firstBottomY1;
+            return candle.low > this.zoneY1;
         }
-        return candle.low < this.firstBottomY0;
+        return candle.low < this.zoneY0;
     }
 
     candleBreaksZone(candle) {
         if (this.isLong) {
-            return candle.low <= this.firstBottomY0;
+            return candle.low <= this.zoneY0;
         }
-        return candle.high >= this.firstBottomY1;      
+        return candle.high >= this.zoneY1;      
     }
 
     candleTouchesZone(candle)
@@ -215,23 +226,21 @@ class EntryFinder {
 
         let touchFirst = this.countTouchWeights(this.firstBottom,io);
         levelTouchWeight += ( this.isLong ? touchFirst.sw : touchFirst.rw );
-//        levelTouchWeight += touchFirst.sw + touchFirst.rw;
   
         let touchSecond = this.countTouchWeights(this.secondBottom,io);
         levelTouchWeight += ( this.isLong ? touchSecond.sw : touchSecond.rw );
-//        levelTouchWeight += touchSecond.sw + touchSecond.rw;
 
-        /*
+        if (levelTouchWeight < EntryFinder.REQ_LEVEL ) {
+            return false;
+        }
+
         let sameLevel = false;
         touchFirst.ids.forEach( tfId => { 
             if (touchSecond.ids.includes(tfId)) { sameLevel = true; }
         });
-        if ( ! sameLevel ) { return false; }
-*/
-        if (levelTouchWeight < EntryFinder.REQ_LEVEL ) {
-            return false;
-        }
-        
+        if ( ! sameLevel ) { return false; }        
+
+
         let ids = [ ... touchFirst.ids, ... touchSecond.ids];
 
         this.label(candle,'W:'+levelTouchWeight+' ['+ids.join(',')+']');
@@ -308,11 +317,12 @@ class DBLBOTTOM extends Strategy {
     constructor() {
         super();
         this.finders = [];
+        this.maxId = 0;
     }
 
     init(io)
     {
-        io.require('hl_trend');
+        io.require(EntryFinder.FIRST_BOTTOM_TRIGGER);
         io.require('vlevels');
         io.require('wfractals');
     }
@@ -320,10 +330,14 @@ class DBLBOTTOM extends Strategy {
     getId() { return 'dblbottom'; }
 
     nextFinderId() {
-        //return ++this.fid;
-        let max = 0;
-        this.finders.forEach( f => { if (f.getId() > max) { max = f.getId(); } });
-        return max+1;
+        this.maxId++;
+        if (this.maxId > 99) {
+            this.maxId = 1;
+        }
+        return this.maxId;
+        //let max = 0;
+        //this.finders.forEach( f => { if (f.getId() > max) { max = f.getId(); } });
+        //return max+1;
     }
 
     newFinder(isLong,startCandle,io,currentCandle)
@@ -338,7 +352,7 @@ class DBLBOTTOM extends Strategy {
 
         for (var c of sinceCandles) {
             if (c !== currentCandle) { // currentCandle will be processed in main cycle
-                if (! newFinder.addCandle(c,io) ) {
+                if (! newFinder.addCandle(c,io,false) ) {
                     return null;
                 }
             }
@@ -352,18 +366,18 @@ class DBLBOTTOM extends Strategy {
         super.addCandle(candle, io);
         io.cdb().setSource(this.getId());  
                 
-        const newHigh   = io.get('hl_trend.new.high');   
+        const newHigh   = io.get(EntryFinder.FIRST_BOTTOM_TRIGGER+'.new.high');   
         if (newHigh)
             { this.newFinder(false,newHigh,io,candle); }
 
-        const newLow    = io.get('hl_trend.new.low'); 
+        const newLow    = io.get(EntryFinder.FIRST_BOTTOM_TRIGGER+'.new.low'); 
         if (newLow)
             { this.newFinder(true,newLow,io,candle); }
 
         let findersRemove = [];
 
         for (var finder of this.finders) {
-            if ( ! finder.addCandle(candle,io) ) {
+            if ( ! finder.addCandle(candle,io,true) ) {
                 findersRemove.push(finder);
             }
         }

@@ -17,8 +17,8 @@ const MACDF = require('./list_static/macdf.js');
 const SESSIONS = require('./list_static/sessions.js');
 const BTC = require('./list_static/btc.js');
 const RSI = require('./list_static/rsi.js');
-const HOT = require('./list_static/hot.js');
-const GD100 = require('./list_static/gd100.js');
+//const HOT = require('./list_static/hot.js');
+//const GD100 = require('./list_static/gd100.js');
 const MAXPRF = require('./list_static/maxprf.js');
 
 
@@ -32,9 +32,9 @@ class TaggersStatic {
             new MACDF(),
             new SESSIONS(),
             new RSI(),
-            new GD100(),
+            //new GD100(),
             new MAXPRF(),
-            new HOT(),
+            //new HOT(),
             new BTC()
         ];
 

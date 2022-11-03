@@ -20,9 +20,10 @@ class AnalyzersIO {
     }
 
     init() {
-        this.require('atr14');
-        this.require('prev_swing');
-        this.require('btctrend');
+        this.require('rsi14'); // required by static order tag 'RSI'
+        this.require('atr14'); // required by automatic default SL/TP calc in makeEntry function 
+        this.require('prev_swing'); // required by makeEntry function
+        this.require('btctrend'); // required by static tags BT9, BT20
     }
 
     require(analyzerName) {
@@ -109,6 +110,15 @@ class AnalyzersIO {
             flags: this.flags,
             candle: this.candle
         };
+
+        // invert
+        /*
+         params.isLong = ! params.isLong;
+         const tmp = params.takeProfit;
+         params.takeProfit = params.stopLoss;
+         params.stopLoss = tmp;
+         params.cmt += ' INV';
+        */
 
         params.isLimit = isLimit;
 

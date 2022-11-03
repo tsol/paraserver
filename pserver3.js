@@ -52,7 +52,7 @@ dbAccessFactory.connect(SETTINGS.databases.mysqlData).then( () => {
                         fromTime = TH.utcDaysBack(SETTINGS.debugDays);
                     }
 
-                    if (SETTINGS.notLive) {
+                    if (! SETTINGS.notLive) {
                         toTime = (new Date()).getTime();
                     }
                     

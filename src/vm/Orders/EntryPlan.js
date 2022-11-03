@@ -193,10 +193,10 @@ class EntryPlan {
         // todo: fix, firstly filter, than arbitrageTag and filter again.
         // In fact: remove RISKM tag - just enable if params.SIMULT_RISK_PERCENT > 0
 
-        let passedOrders = this.arbitrageTagger.getRiskPassOrders(
-            newOrders, this.activeOrders, this.entries, this.deposit, this.params);
+        //let passedOrders = this.arbitrageTagger.getRiskPassOrders(
+        //    newOrders, this.activeOrders, this.entries, this.deposit, this.params);
 
-        passedOrders.forEach(o => o.setTag('RISKM','P'));
+        // passedOrders.forEach(o => o.setTag('RISKM','P'));
 
         newOrders = newOrders.filter( o => this.filterFunction(o) );
 
