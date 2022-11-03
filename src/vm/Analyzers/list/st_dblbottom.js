@@ -44,12 +44,14 @@ class EntryFinder {
         this.greenCount = 0;
         this.redCount = 0;
         this.totalCount = 0;
+        this.levelTouchWeight = 0;
         
         this.neckCandle = null;
 
         this.secondCandle = null;
         this.prevCandle = null;
         this.wfcandle = null;   // should be at leas one wfractal
+        this.candleAfterB2 = null;
 
         this.label(firstBottom,'B1');
 
@@ -110,32 +112,39 @@ class EntryFinder {
                 
                     this.secondBottom = candle;
                     this.label(candle,'B2');
+
+                    let nok = this.bottomsNotOkReason(io);
+                    if (nok) {
+                        this.label(candle,nok);
+                        return false;
+                    }
+
                 }
             }
 
+        } else {
+            // secondBottom allready was initialized by previous candle
+            if (this.candleAfterB2 === null) {
+                this.candleAfterB2 = candle;
+
+                if ( this.canEnterAfterB2(candle) ) {
+                    if ( candleIsCurrent ) {
+                        this.makeEntryAfterB2(candle, io);
+                        return false;
+                    }
+                }
+            }
         }
+
 
         // we have second bottom and a closure above neckline
 
         if (this.secondBottom && this.closesAboveNeck(candle) ) {
-            
-            this.circle(this.firstBottom, EntryFinder.DBG_BOTTOMS);
-            this.circle(this.secondBottom, EntryFinder.DBG_BOTTOMS);
-
-            this.label(this.neckCandle,'NCK');
-
             if ( ! candleIsCurrent ) {
                 this.label(candle,'xS'); // stale entry.
-                // by the time we found entry point, we already have newer candles
-                // too late to enter. This is because first bottom can be found
-                // with significant delay 
                 return false;
             }
-
-            if ( ! this.makeEntry(candle, io) ) {
-                this.label(candle,'NE');
-            }
-
+            this.makeEntryAboveNeckline(candle,io);
             return false;
         }
 
@@ -219,9 +228,14 @@ class EntryFinder {
         return this.inZone(candle.high);
     }
 
+    markUpEntry(entryCandle,label) {
+        this.circle(this.firstBottom, EntryFinder.DBG_BOTTOMS);
+        this.circle(this.secondBottom, EntryFinder.DBG_BOTTOMS);
+        this.label(this.neckCandle,'NCK');
+        this.label(entryCandle,label+':'+this.levelTouchWeight);
+    }
 
-    makeEntry(candle, io) {
-         
+    bottomsNotOkReason(io) {
         let levelTouchWeight = 0;
 
         let touchFirst = this.countTouchWeights(this.firstBottom,io);
@@ -231,44 +245,61 @@ class EntryFinder {
         levelTouchWeight += ( this.isLong ? touchSecond.sw : touchSecond.rw );
 
         if (levelTouchWeight < EntryFinder.REQ_LEVEL ) {
-            return false;
+            return 'xQL';
         }
 
         let sameLevel = false;
         touchFirst.ids.forEach( tfId => { 
             if (touchSecond.ids.includes(tfId)) { sameLevel = true; }
         });
-        if ( ! sameLevel ) { return false; }        
+        if ( ! sameLevel ) {
+            return 'xSL';
+        }
 
+        this.levelTouchWeight = levelTouchWeight;
 
-        let ids = [ ... touchFirst.ids, ... touchSecond.ids];
+        return null;
+    }
 
-        this.label(candle,'W:'+levelTouchWeight+' ['+ids.join(',')+']');
+    canEnterAfterB2(candleAfterB2) {
+        if (! this.candleAboveZone(candleAfterB2) ) { return false; }
+        const colorOk = (this.isLong && candleAfterB2.isGreen()) ||
+                        (!this.isLong && candleAfterB2.isRed());
+        if (! colorOk) { return false; }
 
-        /* neck height SL/TP */
-/*      
-        let figureHeight = 0;
+        let ds, dh = 0;
+
+        if (this.isLong) {
+            ds = candleAfterB2.bodyHigh() - this.secondBottom.low;
+            dh = this.neckCandle.high - this.secondBottom.low;
+        }
+        else {
+            ds = this.secondBottom.high - candleAfterB2.bodyLow();
+            dh = this.secondBottom.high - this.neckCandle.low;
+        }
+
+        return ( dh - 3*ds > 0 );
+
+    }
+
+    makeEntryAfterB2(candle, io) {
+        
+        this.markUpEntry(candle,'EB');
+           
         let entryPrice = candle.close;
         let stopLoss = 0;
         let takeProfit = 0;
         let takeLen = 0;
 
         if (this.isLong) {
-            figureHeight = this.neckCandle.bodyHigh() -
-                Math.min(this.firstBottom.bodyLow(),this.secondBottom.bodyLow());
-            takeProfit = this.neckCandle.bodyHigh() + 
-                figureHeight * EntryFinder.NECK_HEIGHT_MULT;
+            takeProfit = this.neckCandle.bodyHigh();
             takeLen = takeProfit - entryPrice;
             stopLoss = entryPrice - takeLen / EntryFinder.RR_RATIO;
         }
         else {
-            figureHeight = 
-                Math.max(this.firstBottom.bodyHigh(),this.secondBottom.bodyHigh()) -
-                this.neckCandle.bodyLow();
-                takeProfit = this.neckCandle.bodyLow() -
-                    figureHeight * EntryFinder.NECK_HEIGHT_MULT;
-                takeLen = entryPrice - takeProfit;
-                stopLoss = entryPrice + takeLen / EntryFinder.RR_RATIO;
+            takeProfit = this.neckCandle.bodyLow();
+            takeLen = entryPrice - takeProfit;
+            stopLoss = entryPrice + takeLen / EntryFinder.RR_RATIO;
         }
 
         io.makeEntry(this.strategyObject, ( this.isLong ? 'buy' : 'sell' ), {
@@ -276,12 +307,19 @@ class EntryFinder {
             takeProfit, stopLoss
         });
         
-*/
+        return true;
+
+    }
+
+
+    makeEntryAboveNeckline(candle, io) {
+        
+        this.markUpEntry(candle,'EN');
+
         io.makeEntry(this.strategyObject, ( this.isLong ? 'buy' : 'sell' ), {
             rrRatio: EntryFinder.RR_RATIO,
             usePrevSwing: true
         });
-
 
         return true;
 
