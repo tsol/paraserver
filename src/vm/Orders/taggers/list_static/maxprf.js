@@ -42,12 +42,12 @@ class MAXPRF extends Tagger {
     {
         let res = {};
 
-        const profitPreview = this.calcGainPercent( (entry.type=='buy'),
+        const profitPreview = this.calcGainPercent( entry.isLong,
             entry.entryPrice,entry.takeProfit);
 
         res.MAXPRF = { value: fnum(profitPreview,3) };
 
-        const lossPreview = this.calcGainPercent( (entry.type=='buy'),
+        const lossPreview = this.calcGainPercent( entry.isLong,
             entry.entryPrice,entry.stopLoss); 
 
         res.MAXLSS = { value: fnum(lossPreview,3) };

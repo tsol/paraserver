@@ -24,7 +24,7 @@ class Order {
    
     getQuantity() { return this.quantity; }
     getIsLong() { return this.entry.isLong; }
-    getType() { return this.entry.type; }
+    getType() { return this.entry.getType(); }
     getSymbol() { return this.entry.symbol; }
     getEntryPrice() { return this.entry.entryPrice; }
     getTakeProfit() { return this.entry.takeProfit; }
