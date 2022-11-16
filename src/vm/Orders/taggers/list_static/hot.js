@@ -49,8 +49,8 @@ class HOT extends Tagger {
         if ( hosTrendFlag == 'N') { return 'N'; }
 
         const doFilter = (
-            ( (hosTrendFlag == 'UP') && (entry.type == 'sell') ) ||
-            ( (hosTrendFlag == 'DN') && (entry.type == 'buy' ) )
+            ( (hosTrendFlag == 'UP') && (!entry.isLong) ) ||
+            ( (hosTrendFlag == 'DN') && (entry.isLong ) )
         );
        
         return ( doFilter ? 'F' : 'P');

@@ -51,8 +51,8 @@ class BTC extends Tagger {
         if (! btcTrend ) { return null; }
 
         const doFilter = (
-            ( (btcTrend > 0) && (entry.type == 'sell') ) ||
-            ( (btcTrend < 0) && (entry.type == 'buy' ) )
+            ( (btcTrend > 0) && (! entry.isLong ) ) ||
+            ( (btcTrend < 0) && ( entry.isLong ) )
         );
 
         return ( doFilter ? 'F' : 'P');

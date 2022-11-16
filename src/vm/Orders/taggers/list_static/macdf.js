@@ -26,11 +26,11 @@ class MACDF extends Tagger {
         let filterResult = 'P';
 
         if (macdf.r == 'db') {
-            if (entry.type == 'buy')
+            if (entry.isLong)
                 { filterResult = 'F'; }
         }
         else if (macdf.r == 'ds') {
-            if (entry.type == 'sell')
+            if (!entry.isLong)
                 { filterResult = 'F'; }
         }
  

@@ -24,11 +24,11 @@ class RSI extends Tagger {
         let filterResult = 'P';
 
         if (rsi < 50) {
-            if (entry.type == 'buy')
+            if (entry.isLong)
                 { filterResult = 'F'; }
         }
         else if (rsi > 50) {
-            if (entry.type == 'sell')
+            if (!entry.isLong)
                 { filterResult = 'F'; }
         }
  
