@@ -16,10 +16,10 @@ const { TF } = require('../types/Timeframes.js');
 class CandleProxy {
 
     // Type: DBCandlesInterface, BrokerCandlesInterface
-    constructor (candleDb, brokerCandles)
+    constructor (candleDb, candleSourceBroker)
     {
         this.db = candleDb;
-        this.broker = brokerCandles;
+        this.broker = candleSourceBroker;
     }
   
     storeNewCandles(arrCandles) {
@@ -32,10 +32,10 @@ class CandleProxy {
         return this.broker;
     }
 
-    async getClosedCandlesSince(symbol, timeframe, sinceTimestamp, useBroker)
+    async getClosedCandlesSince(symbol, timeframe, sinceTimestamp, doUseBroker)
     {
         const currentTimestamp = TF.currentTimestamp();
-        return await this.getCandlesPeriod(symbol,timeframe,sinceTimestamp,currentTimestamp, useBroker);
+        return await this.getCandlesPeriod(symbol,timeframe,sinceTimestamp,currentTimestamp, doUseBroker);
     }
 
     // this will load from mysql candles
@@ -44,12 +44,12 @@ class CandleProxy {
     // store missing candles to mysql (only closed ones!)
     // and return all candles array in a Promise
 
-    async getCandlesPeriod( symbol, timeframe, sinceTimestamp, toTimestamp, useBroker ) {
+    async getCandlesPeriod( symbol, timeframe, sinceTimestamp, toTimestamp, doUseBroker ) {
       
         let dbCandles = await 
             this.db.loadCandlesPeriod(symbol,timeframe,sinceTimestamp,toTimestamp);
 
-        if (! useBroker ) {
+        if (! doUseBroker ) {
             return dbCandles;
         }
 
@@ -58,7 +58,7 @@ class CandleProxy {
         let needBrokerSince = sinceTimestamp;
         let needBrokerTo = toTimestamp;
 
-        if (! dbCandles || dbCandles.length === 0) {
+        if (! dbCandles || (dbCandles.length === 0) || PIO.candlesNotConsistent(dbCandles)) {
 
             let brokerCandles = await 
                 broker.loadCandlesPeriod(symbol,timeframe,needBrokerSince,needBrokerTo);
@@ -77,7 +77,7 @@ class CandleProxy {
 
             if (PIO.candleHitsBoundary(lastCandle, toTimestamp)) {
                 // all period was loaded from db, cool...
-                console.log('CDB: DB_ONLY ('+symbol+'-'+timeframe+') '
+                console.log('CDL-PROXY: DB_ONLY ('+symbol+'-'+timeframe+') '
                     +TF.timestampToDate(sinceTimestamp)
                     +' <- DB -> '
                     +TF.timestampToDate(toTimestamp)
@@ -89,7 +89,7 @@ class CandleProxy {
             needBrokerSince = lastCandle.closeTime+1;
             needBrokerTo = toTimestamp;
 
-            console.log('CDB: DB-BROKER ('+symbol+'-'+timeframe+') '
+            console.log('CDL-PROXY: DB-BROKER ('+symbol+'-'+timeframe+') '
                 +TF.timestampToDate(sinceTimestamp)
                 +' <- DB -> '
                 +TF.timestampToDate(needBrokerSince)
@@ -114,7 +114,7 @@ class CandleProxy {
         needBrokerSince = sinceTimestamp;
         needBrokerTo = firstCandle.closeTime-1;
 
-        console.log('CDB: BROKER-DB-? ('+symbol+'-'+timeframe+') '
+        console.log('CDL-PROXY: BROKER-DB-? ('+symbol+'-'+timeframe+') '
             +TF.timestampToDate(needBrokerSince)
             +' <- BROKER -> '
             +TF.timestampToDate(needBrokerTo)
@@ -134,7 +134,7 @@ class CandleProxy {
 
         if (needBrokerSince < needBrokerTo) {
   
-            console.log('CDB: ?-DB-BROKER ('+symbol+'-'+timeframe+') '
+            console.log('CDL-PROXY: ?-DB-BROKER ('+symbol+'-'+timeframe+') '
                 +TF.timestampToDate(sinceTimestamp)
                 +' <- DB-BROKER1 -> '
                 +TF.timestampToDate(needBrokerSince)
@@ -213,7 +213,7 @@ class PIO { /* private static */
         }
         let lc = candlesArray[candlesArray.length-1];
         if (!lc.closed) {
-            console.log('CDB: removed last candle from array was not closed');
+            console.log('CDL-PROXY: removed last candle from array was not closed');
             console.log(lc.symbol+'-'+lc.timeframe
                 +' open: '+TF.timestampToDate(lc.openTime)
                 +' close: '+TF.timestampToDate(lc.closeTime)
@@ -221,6 +221,26 @@ class PIO { /* private static */
             candlesArray.pop();
         }
 
+    }
+
+
+    // WARNING: on brokers with gaps 
+    static candlesNotConsistent(candlesArray) {
+
+        for (let i=1; i<candlesArray.length; i++) {
+            if (!this.oneCandleRightAfterAnther(candlesArray[i-1], candlesArray[i])) {
+                console.log('CDL-PROXY: candle array not consistent!');
+                console.log(candlesArray[i]);
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
+    static oneCandleRightAfterAnther(firstCandle,secondCandle) {
+        return (firstCandle.closeTime + 1) === secondCandle.openTime;
     }
 
 }

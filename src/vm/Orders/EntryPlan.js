@@ -124,7 +124,7 @@ class EntryPlan {
         const commissionInUSD = soldInUSD * this.params.COST_SELL_PERCENT +
                                 boughtInUSD * this.params.COST_BUY_PERCENT;
 
-        if (order.entry.isLong()) {
+        if (order.entry.isLong) {
             return soldInUSD - boughtInUSD - commissionInUSD;
         }
         
@@ -210,8 +210,10 @@ class EntryPlan {
 
     }
 
-
-
+    getOrderByEntryId(entryId) {
+        if (! this.orders || this.orders.length === 0) { return null; }
+        return this.orders.find( o => o.entry.id == entryId );
+    }
 
     // GUI interface:
 

@@ -2,16 +2,17 @@
 // todo: should accept manipulate RealOrder class
 
 const UserEventsInterface = require('../../brokers/types/BrokerEventsUserInterface.js');
+const OrderReal = require('../../types/OrderReal');
 
 class OrdersReal extends UserEventsInterface {
     
-    constructor(broker, clients) {
+    constructor(brokerUser, clients) {
         super();
-        this.broker = broker;
+        this.broker = brokerUser;
         this.orders = [];
         this.clients = clients;
 
-        broker.subscribe(this);
+        brokerUser.subscribe(this);
     }
 
     reset() {
@@ -41,15 +42,15 @@ class OrdersReal extends UserEventsInterface {
         console.log('OM: searching for rouge SL/TP leftover orders...');
 
         let order = this.orders.find( o =>
-             o.isBroker() && ( o.brokerSLID == id || o.brokerTPID == id  )
+             ( o.brokerSLID == id || o.brokerTPID == id  )
         );
         if (!order) { return; }
-
-        console.log('OM: found SL/TP orders to clean up: '+JSON.stringify(order.id));
         
         let removeId = ( order.brokerSLID == id ? order.brokerTPID : order.brokerSLID );
 
-        this.broker.closeOrderIds( order.symbol, [ removeId ])
+        console.log('OM: found SL/TP orders to clean up: order=', order.entry.id, ' removeId=', removeId);
+
+        this.broker.closeOrderIds( order.getSymbol(), [ removeId ])
             .then((r) => {
                 console.log("OM: removed ok id="+removeId);
             })
@@ -59,19 +60,6 @@ class OrdersReal extends UserEventsInterface {
 
     }
 
-    newOrder(
-        time,
-        strategy,
-        symbol,
-        timeframe,
-        isLong,
-        entryPrice, 
-        takeProfit, 
-        stopLoss,
-        comment,
-        flags 
-    ) {
-    }
 
     getOrder(orderId) {
         return this.orders.find( o => o.id === orderId);
@@ -83,27 +71,33 @@ class OrdersReal extends UserEventsInterface {
         }
     }
 
-    async newOrderFromEmu(emulatedOrder) {
+    async makeMarketOrder( emulatedOrder ) {
         const e = emulatedOrder;
         try {
+
+            
             const result = await this.broker.makeMarketOrder(
-                e.symbol,
-                e.isLong(),
-                e.quantity,
-                e.stopLoss,
-                e.takeProfit
+                e.getSymbol(),
+                e.getIsLong(),
+                e.getQuantity(),
+                e.getStopLoss(),
+                e.getTakeProfit()
             );
+            
+            //const result = { entry: { id: 1 }, sl: { id: 1 }, tp: {id: 1} };
 
             console.log('ORDER_REAL: OK');
             console.log(result);
             
-            e.setBrokerTrue();
+            const realOrder = new OrderReal( 
+                { ... e.entry },
+                e.getQuantity(),
+                result.entry.id,
+                result.sl.id,
+                result.tp.id
+            )
 
-            e.setBrokerORID(result.entry.id);
-            e.setBrokerSLID(result.sl.id);
-            e.setBrokerTPID(result.tp.id);
-
-            this.addOrder(e);
+            this.addOrder(realOrder);
 
             return result;
         }

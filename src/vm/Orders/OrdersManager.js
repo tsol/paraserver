@@ -31,10 +31,12 @@ class OrdersManager {
 
         this.staticTaggers = new TaggersStatic();
         this.entryPlan = new EntryPlan(brokerCandles);
-  
+    
         this.lastUpdateTime = null;
         this.previousHour = null;
         this.previousMinute = null;
+
+        this.isLive = false;
     }
 
     reset() {
@@ -45,6 +47,10 @@ class OrdersManager {
         // todo entries/entryPlan etc...
     }
     
+    switchLive() {
+        this.isLive = true;
+    }
+
     /* analyzers IO */
 
     getSymbolInfo(symbol) {
@@ -135,20 +141,51 @@ class OrdersManager {
         }
     }
 
+    async doMakeOrderReal(emulatedOrder) {
+        
+        if (! this.isLive) { return null; }
 
-    approveLiveEntries(entries, isLimit) {
+        try {
+            let res = await this.real.makeMarketOrder( emulatedOrder );
+            emulatedOrder.setComment(' [BROK] '+JSON.stringify(res));
+            return res;
+        }
+        catch (err) {
+            console.log('MAKE_EMULATE_ORDER: ERROR');
+            console.log(err);
+            emulatedOrder.setComment(' [BRER] '+err.message);
+        }
+        return null;
+
+    }
+
+    async doMakeOrderRealById(entryId) {
+
+        const order = this.entryPlan.getOrderByEntryId(entryId);
+
+        if (! order) { return null; }
+        return await this.doMakeOrderReal(order);
+    }
+
+    async approveLiveEntries(entries, isLimit) {
 
         if ( entries.length == 0 ) { return; }
 
-        let entriesApproved = this.entryPlan.addEntries(entries);
+        let ordersApproved = this.entryPlan.addEntries(entries);
 
-        if (SETTINGS.dev ) {
-            // to REAL if not Limit. 
+        if (! this.isLive ) { return; }
 
+        if (SETTINGS.dev || isLimit ) {
+            // Do not make real orders in DEV mode
+            // or for now limit orders
             return;
         }
 
-        return entriesApproved;
+        for (let order of ordersApproved) {
+            this.doMakeOrderReal(order);
+        }
+
+        return ordersApproved;
     }
 
     /* candleProcessor io */
@@ -177,8 +214,8 @@ class OrdersManager {
         if ( this.isClockUpdated(eventTime)) { this.runSchedule(); }
 
         let entries = this.activeEntries.filter( o => (o.symbol === symbol) );
-        let long  = entries.filter( o => o.isLong() );
-        let short = entries.filter( o => o.isShort() );
+        let long  = entries.filter( o => o.isLong );
+        let short = entries.filter( o => ! o.isLong );
         
         // 1. MARGIN CALLS + STOP LOSSES first
 
@@ -388,17 +425,9 @@ class OrdersManager {
 */
 
 /*
-
-    async doMakeOrderFromEmulated(emulatedOrderId) {
-        const emulatedOrder = this.emulator.getOrderById(emulatedOrderId);
-        if (!emulatedOrder) { return; }
-
-        if (emulatedOrder.isBroker()) {
-            console.log('MAKE_EMULATE_ORDER: order already at broker!');
-            return;
-        }
+    async doMakeRealOrder(order) {
     
-        this.clients.onNewRealOrder(emulatedOrder);
+        this.clients.onNewRealOrder(order);
 
         if ( SETTINGS.dev ) {
             return null;
@@ -420,7 +449,6 @@ class OrdersManager {
 
     }
 */
-
 
 }
 

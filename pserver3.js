@@ -41,7 +41,6 @@ dbAccessFactory.connect(SETTINGS.databases.mysqlData).then( () => {
                 let fromTime   = TH.utcDaysBack(92);
                 let toTime     = null;
 
-                if (SETTINGS.dev) {
                     if (SETTINGS.debugSymbols)      { symbols = SETTINGS.debugSymbols; }
                     if (SETTINGS.debugTimeframes)   { timeframes = SETTINGS.debugTimeframes; }
                     if (SETTINGS.debugStrategies)   { strategies = SETTINGS.debugStrategies; }
@@ -52,12 +51,10 @@ dbAccessFactory.connect(SETTINGS.databases.mysqlData).then( () => {
                         fromTime = TH.utcDaysBack(SETTINGS.debugDays);
                     }
 
-                    if (! SETTINGS.notLive) {
+                    if (SETTINGS.notLive) {
                         toTime = (new Date()).getTime();
                     }
                     
-                }
-
                 brokerCandles.getTradableSymbols().then( (allSymbols) => {
                 
                     if (! symbols ) { symbols = allSymbols; }

@@ -13,7 +13,7 @@ class Entry {
         SELL: 'sell'
     })
 
-    constructor({ time,strategy,symbol,timeframe,isLong,entryPrice,stopLoss,takeProfit,candle })
+    constructor({ time,strategy,symbol,timeframe,isLong,entryPrice,stopLoss,takeProfit })
     {
 
         this.id = symbol+'-'+timeframe+'-'+strategy+'-'+time;
@@ -21,14 +21,12 @@ class Entry {
         this.symbol = symbol;
         this.timeframe = timeframe;
         this.strategy = strategy;
-        this.type = ( isLong ? Entry.TYPE.BUY : Entry.TYPE.SELL );
+        this.isLong = isLong;
         
         this.entryPrice = entryPrice;
         this.takeProfit = takeProfit;
         this.stopLoss = stopLoss;
         this.currentPrice = entryPrice;
-
-        this.candle = candle;
 
         this.active = true;
         this.result = Entry.RESULT.ACTIVE; 
@@ -52,8 +50,8 @@ class Entry {
     isWin() { return this.gainPercent > 0; }
     isClosed() { return ! this.active; }
     isActive() { return this.active; }
-    isLong() { return this.type === Entry.TYPE.BUY; }
-    isShort() { return this.type === Entry.TYPE.SELL; }
+
+    getType() { return ( this.isLong ? Entry.TYPE.BUY : Entry.TYPE.SELL ); };
 
     getTagValue(tagName) { 
         if ( this.tags[tagName] ) {
@@ -84,7 +82,7 @@ class Entry {
 
         this.currentPrice = currentPrice;
 
-        if (this.isLong()) {
+        if (this.isLong) {
 
             this.gainPercent = ((this.currentPrice - this.entryPrice) / this.entryPrice)*100;
 
@@ -141,7 +139,7 @@ class Entry {
         return {
             id: this.id,
             time: this.time,
-            type:  this.type,
+            type:  this.getType(),
             symbol: this.symbol,
             timeframe: this.timeframe,
             strategy: this.strategy,
@@ -169,7 +167,7 @@ class Entry {
         return {
             id: this.id,
             time: this.time,
-            type:  this.type,
+            type:  ( this.isLong ? Entry.TYPE.BUY : Entry.TYPE.SELL),
             symbol: this.symbol,
             timeframe: this.timeframe,
             strategy: this.strategy,

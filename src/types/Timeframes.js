@@ -7,10 +7,10 @@ class Timeframes
 
     TFRAMES = [
         { name: '1d',  htf: null,  levelDays: 365, limit: 300,  trade: false, levelsLimitTime: 0, length: this.DAY_LENGTH },
-        { name: '4h',  htf: '1d',  levelDays:  93, limit: 300,  trade: false, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
-        { name: '1h',  htf: '4h',  levelDays:  14, limit: 300,  trade: false, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
-        { name: '30m', htf: '4h',  levelDays:   7, limit: 300,  trade: false, levelsLimitTime: 0, length: 30 * this.MIN_LENGTH },
-        { name: '15m', htf: '1h',  levelDays:   5, limit: 300,  trade: false, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
+        { name: '4h',  htf: '1d',  levelDays: 122, limit: 300,  trade: false, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
+        { name: '1h',  htf: '4h',  levelDays:  41, limit: 300,  trade: false, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
+        { name: '30m', htf: '4h',  levelDays:  17, limit: 300,  trade: false, levelsLimitTime: 0, length: 30 * this.MIN_LENGTH },
+        { name: '15m', htf: '1h',  levelDays:   7, limit: 300,  trade: false, levelsLimitTime: 0, length: 15 * this.MIN_LENGTH },
         { name: '5m',  htf: '1h',  levelDays:   5, limit: 300,  trade: false, levelsLimitTime: 0, length: 5 * this.MIN_LENGTH },
         { name: '3m',  htf: '1h',  levelDays:   2, limit: 300,  trade: false, levelsLimitTime: 0, length: 3 * this.MIN_LENGTH },
         { name: '1m',  htf: '1h',  levelDays:   1, limit: 300,  trade: false, levelsLimitTime: 0, length: 1 * this.MIN_LENGTH, pulseOnly: true },

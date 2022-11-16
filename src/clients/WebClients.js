@@ -117,14 +117,13 @@ class WebClients {
                 socket.emit("tags", clientIO.getTagDescriptions());
             });
 
-
-        /*
-            socket.on("make_real_order", (arg) => {
+            socket.on("make_real_order", async (arg) => {
+                console.log('make_real_order');
                 socket.emit("new_real_order", 
-                    clientIO.doMakeOrderFromEmulated(arg.orderId)
+                    await clientIO.doMakeOrderFromEmulated(arg.orderId)
                 );
             });
-        
+/*
             socket.on("get_orders_stats", (arg) => {
                 let orderStats = clientIO.getOrdersStatistics(arg.fromTimestamp, arg.toTimestamp);
                 let timeframes = clientIO.getTimeframes();

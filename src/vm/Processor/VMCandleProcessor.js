@@ -64,6 +64,7 @@ class VMCandleProcessor extends CandleProcessor {
     switchLive() {
         this.isLive = true;
         console.log('CPRO: switching live...');
+        this.ordersManager.switchLive();
     }
 
     priceUpdate(symbol,eventTime,lowPrice,highPrice,currentPrice) {

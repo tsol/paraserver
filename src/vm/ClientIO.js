@@ -100,11 +100,10 @@ class ClientIO {
         return this.vm.getOrdersManager().getTagDescriptions();
     }
 
-/*
     async doMakeOrderFromEmulated(emOrderId) {
-        return this.vm.getOrdersManager().doMakeOrderFromEmulated(emOrderId);
+        return this.vm.getOrdersManager().doMakeOrderRealById(emOrderId);
     }
-*/
+
 
 }
 

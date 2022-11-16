@@ -8,8 +8,11 @@ class Order {
         this.entry = entryObj;  
         this.quantity = quantity;
         this.gain = 0;
+        this.comment = '';
+
         this.tags = {};
-        this.wallet = 0;
+
+        this.wallet = 0; // todo: move these two to 'OrderEmulated extends Order'
         this.stake = 0;
 
         // RealOrder
@@ -18,6 +21,17 @@ class Order {
         //this.brokerTPID = null;
 
     }
+   
+    getQuantity() { return this.quantity; }
+    getIsLong() { return this.entry.isLong; }
+    getType() { return this.entry.type; }
+    getSymbol() { return this.entry.symbol; }
+    getEntryPrice() { return this.entry.entryPrice; }
+    getTakeProfit() { return this.entry.takeProfit; }
+    getStopLoss() { return this.entry.stopLoss; }
+    getTimeframe() { return this.entry.timeframe; }
+    getStrategy() { return this.entry.strategy; }
+
 
     getTagValue(tagName) { 
         if ( this.tags[tagName] ) {
@@ -25,6 +39,8 @@ class Order {
         }
         return this.entry.getTagValue(tagName);
     }
+
+    setComment(cmt) { this.comment = cmt; }
 
     setTag(tagName,tagValue) { this.tags[tagName] = { value: tagValue } };
     setTags(tags) { this.tags = tags; }
@@ -64,7 +80,7 @@ class Order {
 
             id: this.entry.id,
             time: this.entry.time,
-            type:  this.entry.type,
+            type:  this.entry.getType(),
             symbol: this.entry.symbol,
             timeframe: this.entry.timeframe,
             strategy: this.entry.strategy,
@@ -86,7 +102,12 @@ class Order {
             wallet: fnum(this.wallet,3),
             stake: fnum(this.stake,3),
             
-            comment:  [this.entry.tagsStringify(), this.tagsStringify()].join(', ')
+            comment:  [
+                    this.comment,
+                    this.entry.comment,
+                    this.entry.tagsStringify(),
+                    this.tagsStringify()
+                ].join(', ')
         }
     }
     

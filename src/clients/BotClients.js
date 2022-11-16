@@ -102,10 +102,10 @@ class BotClients {
     onNewRealOrder(order) {
 
         this.broadcast(
-            (order.type == 'buy' ? '🍏 Long' : '🍎 Short')+
-            ' <b>'+order.symbol+'</b> '+order.entryPrice+
-            '\n[💰 '+order.takeProfit+' ⛔ '+order.stopLoss+']'+
-            '\n('+order.timeframe+', '+order.strategy+')'
+            (order.getIsLong() ? '🍏 Long' : '🍎 Short')+
+            ' <b>'+order.getSymbol()+'</b> '+order.getEntryPrice()+
+            '\n[💰 '+order.getTakeProfit()+' ⛔ '+order.getStopLoss()+']'+
+            '\n('+order.getTimeframe()+', '+order.getStrategy()+')'
         );
     }
 
