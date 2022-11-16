@@ -62,11 +62,11 @@ class OrdersReal extends UserEventsInterface {
 
 
     getOrder(orderId) {
-        return this.orders.find( o => o.id === orderId);
+        return this.orders.find( o => o.getId() === orderId);
     }
 
     addOrder(order) {
-        if (! this.getOrder( order.id )) {
+        if (! this.getOrder( order.getId() )) {
             this.orders.push(order);
         }
     }
@@ -75,7 +75,6 @@ class OrdersReal extends UserEventsInterface {
         const e = emulatedOrder;
         try {
 
-            
             const result = await this.broker.makeMarketOrder(
                 e.getSymbol(),
                 e.getIsLong(),

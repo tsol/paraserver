@@ -22,6 +22,7 @@ class Order {
 
     }
    
+    getId() { return this.entry.id; }
     getQuantity() { return this.quantity; }
     getIsLong() { return this.entry.isLong; }
     getType() { return this.entry.getType(); }
@@ -78,7 +79,7 @@ class Order {
     toGUI() {
         return {
 
-            id: this.entry.id,
+            id: this.getId(),
             time: this.entry.time,
             type:  this.entry.getType(),
             symbol: this.entry.symbol,
