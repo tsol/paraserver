@@ -1,258 +1,241 @@
 /*
-** Indicator: hl_trend (High-Low Trend Detection)
-**
-** Detecting uptrend when candles make higher highs and lower lows
-** And downtrend visa-versa
-**
-** Always sets flag:
-** 
-** hl_trend: {
-**     trend: false,
-**     direction: 0,
-**     swings: 1,
-**     bias: -1
-** }
-** 
-** on new highs or lows detections generates following flags:
-** 
-** hl_trend.new.high = candleObject
-** hl_trend.new.low = candleObject
-** 
-*/
+ ** Indicator: hl_trend (High-Low Trend Detection)
+ **
+ ** Detecting uptrend when candles make higher highs and lower lows
+ ** And downtrend visa-versa
+ **
+ ** Always sets flag:
+ **
+ ** hl_trend: {
+ **     trend: false,
+ **     direction: 0,
+ **     swings: 1,
+ **     bias: -1
+ ** }
+ **
+ ** on new highs or lows detections generates following flags:
+ **
+ ** hl_trend.new.high = candleObject
+ ** hl_trend.new.low = candleObject
+ **
+ */
 
-const Analyzer = require("../types/Analyzer");
-
+const Analyzer = require('../types/Analyzer');
 
 class AnHLTrend extends Analyzer {
+  constructor() {
+    super();
 
-    constructor() {
-        super();
-        
-        this.lastHigh = undefined;
-        this.lastLow = undefined;
+    this.lastHigh = undefined;
+    this.lastLow = undefined;
 
-        this.lowestOnSwing = undefined;
-        this.highestOnSwing = undefined;
+    this.lowestOnSwing = undefined;
+    this.highestOnSwing = undefined;
 
-        this.updateDirection = 0; /* bias, expectations, also swings counter */
-        this.trendDirection = 0;  /* confirmed trend -1 or +1 */
+    this.updateDirection = 0; /* bias, expectations, also swings counter */
+    this.trendDirection = 0; /* confirmed trend -1 or +1 */
+  }
+
+  init(io) {
+    io.require('extremum');
+    this.io = io;
+  }
+
+  getId() {
+    return 'hl_trend';
+  }
+
+  resetTrend(byCandle, io) {
+    if (this.tracingUp()) {
+      if (byCandle !== undefined) {
+        io.cdb().labelTop(byCandle, 'xU ' + Math.abs(this.updateDirection));
+      }
+
+      if (this.lastHigh !== undefined) {
+        io.cdb().labelTop(this.lastHigh, 'nFH');
+      }
+
+      this.lastLow = undefined;
+
+      this.lowestOnSwing = undefined;
+      this.highestOnSwing = undefined;
+
+      this.updateDirection = 0;
+      this.trendDirection = 0;
+
+      return;
     }
 
-    init(io)
-    {
-        io.require('extremum');
-        this.io = io;
+    if (this.tracingDown()) {
+      if (byCandle !== undefined) {
+        io.cdb().labelTop(byCandle, 'xD ' + Math.abs(this.updateDirection));
+      }
+
+      if (this.lastLow !== undefined) {
+        io.cdb().labelBottom(this.lastLow, 'nFL');
+      }
+
+      this.lastHigh = undefined;
+
+      this.lowestOnSwing = undefined;
+      this.highestOnSwing = undefined;
+
+      this.updateDirection = 0;
+      this.trendDirection = 0;
+
+      return;
     }
 
-    getId() { return 'hl_trend'; }
+    this.lastHigh = undefined;
+    this.lastLow = undefined;
 
-    resetTrend(byCandle, io) {
+    this.lowestOnSwing = undefined;
+    this.highestOnSwing = undefined;
 
-        if ( this.tracingUp() ) {
+    this.updateDirection = 0;
+    this.trendDirection = 0;
+  }
 
-            if (byCandle !== undefined)
-                { io.cdb().labelTop(byCandle, 'xU '+Math.abs(this.updateDirection)); }
+  addCandle(candle, io) {
+    super.addCandle(candle, io);
+    io.cdb().setSource(this.getId());
 
-            if (this.lastHigh !== undefined) {
-                io.cdb().labelTop(this.lastHigh,'nFH');
-            }
-    
-            this.lastLow = undefined;
-        
-            this.lowestOnSwing = undefined;
-            this.highestOnSwing = undefined;
-        
-            this.updateDirection = 0;
-            this.trendDirection = 0;
-
-            return;        
-        }
-        
-        if ( this.tracingDown() ) {
-
-            if (byCandle !== undefined)
-                { io.cdb().labelTop(byCandle, 'xD '+Math.abs(this.updateDirection)); }
-
-            if (this.lastLow !== undefined) {
-                io.cdb().labelBottom(this.lastLow,'nFL');
-            }
-
-            this.lastHigh = undefined;
-            
-            this.lowestOnSwing = undefined;
-            this.highestOnSwing = undefined;
-            
-            this.updateDirection = 0;
-            this.trendDirection = 0;
-        
-            return;
-        }
-
-        this.lastHigh = undefined;
-        this.lastLow = undefined;
-
-        this.lowestOnSwing = undefined;
-        this.highestOnSwing = undefined;
-
-        this.updateDirection = 0;
-        this.trendDirection = 0;
+    if (io.get('extremum')) {
+      this.processExtremum(io.get('extremum'), io);
     }
 
-    addCandle(candle,io) {
-        super.addCandle(candle,io);
-        io.cdb().setSource(this.getId());
-
-        if (io.get('extremum')) {
-            this.processExtremum(io.get('extremum'),io);
-        }
-
-        /* current candle punched our trend or expectations */
-        if ( this.tracingUp() ) {
-            if ( (this.lastLow !== undefined) && candle.tailBelow(this.lastLow)) {
-                this.resetTrend(candle,io);
-            }
-        }
-        else if ( this.tracingDown() ) {
-            if ( (this.lastHigh !== undefined) && candle.tailAbove(this.lastHigh)) {
-                this.resetTrend(candle,io);
-            }
-        }
-        
-        io.set('hl_trend',{
-            trend: this.isInTrend(),
-            direction: this.trendDirection,
-            swings: Math.abs(this.updateDirection),
-            bias: this.updateDirection
-        });
-        
+    /* current candle punched our trend or expectations */
+    if (this.tracingUp()) {
+      if (this.lastLow !== undefined && candle.tailBelow(this.lastLow)) {
+        this.resetTrend(candle, io);
+      }
+    } else if (this.tracingDown()) {
+      if (this.lastHigh !== undefined && candle.tailAbove(this.lastHigh)) {
+        this.resetTrend(candle, io);
+      }
     }
 
-    processExtremum(extremumFlag, io)
-    {
-        const extremum = extremumFlag;
-      
-        if ( extremum.type === 'high') {
-            this.updateHigherHigh(extremum.candle,io);
-        }
-        else {
-            this.updateLowerLow(extremum.candle,io);
-        }
+    io.set('hl_trend', {
+      trend: this.isInTrend(),
+      direction: this.trendDirection,
+      swings: Math.abs(this.updateDirection),
+      bias: this.updateDirection,
+    });
+  }
 
-        if ( extremum.high ) {
-            if (this.lastHigh === undefined ) {
-                this.lastHigh = extremum.candle;
-                
-                io.set('hl_trend.new.high',extremum.candle);
+  processExtremum(extremumFlag, io) {
+    const extremum = extremumFlag;
 
-                io.cdb().labelTop(extremum.candle,'fH');
-                io.cdb().circleHigh(extremum.candle, {color: 'yellow'});
+    if (extremum.type === 'high') {
+      this.updateHigherHigh(extremum.candle, io);
+    } else {
+      this.updateLowerLow(extremum.candle, io);
+    }
 
-                if (this.lastLow) { this.updateDirection=1; } /* hoping to find uptrend */
+    if (extremum.high) {
+      if (this.lastHigh === undefined) {
+        this.lastHigh = extremum.candle;
 
-                /*
-                if (this.lastLow) {
-                    this.startCountCandles(extremum.candle)
-                }
-                */
-            }
-            else if (this.highestOnSwing == undefined) {
-                this.highestOnSwing = extremum.candle;
-            }
-            else if (extremum.candle.tailAbove(this.highestOnSwing)) {
-                this.highestOnSwing = extremum.candle;
-            }    
-        }
+        io.set('hl_trend.new.high', extremum.candle);
 
-        if ( extremum.low ) {
-            if (this.lastLow === undefined ) {
-                this.lastLow = extremum.candle;
-                
-                io.set('hl_trend.new.low',extremum.candle);
+        io.cdb().labelTop(extremum.candle, 'fH');
+        io.cdb().circleHigh(extremum.candle, { color: 'yellow' });
 
-                io.cdb().labelBottom(extremum.candle,'fL');
-                io.cdb().circleLow(extremum.candle, {color: 'yellow'});
+        if (this.lastLow) {
+          this.updateDirection = 1;
+        } /* hoping to find uptrend */
+      } else if (this.highestOnSwing == undefined) {
+        this.highestOnSwing = extremum.candle;
+      } else if (extremum.candle.tailAbove(this.highestOnSwing)) {
+        this.highestOnSwing = extremum.candle;
+      }
+    }
 
-                if (this.lastHigh) { this.updateDirection=-1; } /* hoping to find down trend */
-                /*
+    if (extremum.low) {
+      if (this.lastLow === undefined) {
+        this.lastLow = extremum.candle;
+
+        io.set('hl_trend.new.low', extremum.candle);
+
+        io.cdb().labelBottom(extremum.candle, 'fL');
+        io.cdb().circleLow(extremum.candle, { color: 'yellow' });
+
+        if (this.lastHigh) {
+          this.updateDirection = -1;
+        } /* hoping to find down trend */
+        /*
                 if (this.lastHigh) {
                     this.startCountCandles(extremum.candle)
                 }
                 */
-            }
-            else if (this.lowestOnSwing == undefined) {
-                this.lowestOnSwing = extremum.candle;
-            }
-            else if (extremum.candle.tailBelow(this.lowestOnSwing)) {
-                this.lowestOnSwing = extremum.candle;
-            }
-        }
-
-        // todo: decide if trend is in order and set direction
-
-        if (! this.isInTrend() ) {
-
-            // there were 2 higher highs update
-            if (this.updateDirection >= 3) {
-                this.registerTrend(1);
-                io.cdb().labelTop(extremum.candle,'UP');
-                io.cdb().circleHigh(extremum.candle, {color: 'blue'});
-            }
-            else if (this.updateDirection <= -3) {
-                this.registerTrend(-1);
-                io.cdb().labelBottom(extremum.candle,'DN');
-                io.cdb().circleLow(extremum.candle, {color: 'blue'});
-            }
-
-        }
-
+      } else if (this.lowestOnSwing == undefined) {
+        this.lowestOnSwing = extremum.candle;
+      } else if (extremum.candle.tailBelow(this.lowestOnSwing)) {
+        this.lowestOnSwing = extremum.candle;
+      }
     }
 
-    updateHigherHigh(candle,io) {
-        
-        if (this.lastHigh == undefined)
-            { return; }
+    // todo: decide if trend is in order and set direction
 
-        if (candle.tailAbove(this.lastHigh)) {
+    if (!this.isInTrend()) {
+      // there were 2 higher highs update
+      if (this.updateDirection >= 3) {
+        this.registerTrend(1);
+        io.cdb().labelTop(extremum.candle, 'UP');
+        io.cdb().circleHigh(extremum.candle, { color: 'blue' });
+      } else if (this.updateDirection <= -3) {
+        this.registerTrend(-1);
+        io.cdb().labelBottom(extremum.candle, 'DN');
+        io.cdb().circleLow(extremum.candle, { color: 'blue' });
+      }
+    }
+  }
 
-            /* new higher hight or first hight */
-            if ( this.tracingUp() || this.tracingNowhere() ) {
+  updateHigherHigh(candle, io) {
+    if (this.lastHigh == undefined) {
+      return;
+    }
 
-                if ( this.tracingUp() 
-                    && (this.lastLow !== undefined)
-                    && (this.lowestOnSwing !== undefined)
-                ) {
-                    this.lastLow = this.lowestOnSwing;
-                    this.lowestOnSwing = undefined;
+    if (candle.tailAbove(this.lastHigh)) {
+      /* new higher hight or first hight */
+      if (this.tracingUp() || this.tracingNowhere()) {
+        if (
+          this.tracingUp() &&
+          this.lastLow !== undefined &&
+          this.lowestOnSwing !== undefined
+        ) {
+          this.lastLow = this.lowestOnSwing;
+          this.lowestOnSwing = undefined;
 
-                    io.set('hl_trend.new.low',this.lastLow);
+          io.set('hl_trend.new.low', this.lastLow);
 
-                    io.cdb().circleLow(this.lastLow, {color:'green'});
-                    io.cdb().labelBottom(this.lastLow, 'HL');
-                    this.updateDirection++;
-                }
-
-                this.lastHigh = candle;
-                this.updateDirection++;
-
-                io.set('hl_trend.new.high',candle);
-                io.cdb().circleHigh(candle, {color: 'green'});
-                io.cdb().labelTop(candle,'HH');
-                
-                //console.log('hl_trend_higher_high');
-                return;
-            }
-
-            /* Trend DOWN & higher high */
-
-            this.resetTrend(candle,io);
-            io.cdb().circleHigh(candle,{color:'red',radius: 3});
-
-            return;
+          io.cdb().circleLow(this.lastLow, { color: 'green' });
+          io.cdb().labelBottom(this.lastLow, 'HL');
+          this.updateDirection++;
         }
-              
-        /* confirm down trend setting a lower high */
-       
-        /*
+
+        this.lastHigh = candle;
+        this.updateDirection++;
+
+        io.set('hl_trend.new.high', candle);
+        io.cdb().circleHigh(candle, { color: 'green' });
+        io.cdb().labelTop(candle, 'HH');
+
+        //console.log('hl_trend_higher_high');
+        return;
+      }
+
+      /* Trend DOWN & higher high */
+
+      this.resetTrend(candle, io);
+      io.cdb().circleHigh(candle, { color: 'red', radius: 3 });
+
+      return;
+    }
+
+    /* confirm down trend setting a lower high */
+
+    /*
         if ( this.tracingDown() || this.tracingNowhere() ) {
             this.lastHigh = candle;
             this.updateDirection--;
@@ -262,60 +245,56 @@ class AnHLTrend extends Analyzer {
         } 
         */
 
-        /* just an lower hight while uptrend */
-            
+    /* just an lower hight while uptrend */
+  }
+
+  updateLowerLow(candle, io) {
+    if (this.lastLow === undefined) {
+      return;
     }
 
-    updateLowerLow(candle,io) {
+    /* LOWER LOW */
 
-        if (this.lastLow === undefined) {
-            return;
+    if (candle.tailBelow(this.lastLow)) {
+      /* new lower low is below prev */
+      if (this.tracingDown() || this.tracingNowhere()) {
+        if (
+          this.tracingDown() &&
+          this.lastHigh !== undefined &&
+          this.highestOnSwing !== undefined
+        ) {
+          this.lastHigh = this.highestOnSwing;
+          this.highestOnSwing = undefined;
+
+          io.set('hl_trend.new.high', this.lastHigh);
+
+          io.cdb().circleHigh(this.lastHigh, { color: 'green' });
+          io.cdb().labelTop(this.lastHigh, 'LH');
+          this.updateDirection--;
         }
 
-        /* LOWER LOW */
+        this.lastLow = candle;
+        this.updateDirection--;
+        //console.log('hl_trend_lower_low');
 
-        if (candle.tailBelow(this.lastLow)) {
+        io.set('hl_trend.new.low', candle);
 
-            /* new lower low is below prev */
-            if ( this.tracingDown() || this.tracingNowhere() ) {
+        io.cdb().circleLow(candle, { color: 'red' });
+        io.cdb().labelBottom(candle, 'LL');
 
-                if ( this.tracingDown()
-                    && (this.lastHigh !== undefined)
-                    && (this.highestOnSwing !== undefined)
-                ) {
-                    this.lastHigh = this.highestOnSwing;
-                    this.highestOnSwing = undefined;
-                    
-                    io.set('hl_trend.new.high',this.lastHigh);
-                    
-                    io.cdb().circleHigh(this.lastHigh, {color:'green'});
-                    io.cdb().labelTop(this.lastHigh, 'LH');
-                    this.updateDirection--;
-                }
+        return;
+      }
 
-                this.lastLow = candle;
-                this.updateDirection--;
-                //console.log('hl_trend_lower_low');
+      this.resetTrend(candle, io);
+      io.cdb().circleLow(candle, { color: 'red', radius: 3 });
 
-                io.set('hl_trend.new.low',candle);
-                    
-                io.cdb().circleLow(candle, {color: 'red'});
-                io.cdb().labelBottom(candle,'LL');
-            
-                return;
-            }
+      //throw new Error('this should never happen 3');
 
-            this.resetTrend(candle,io);
-            io.cdb().circleLow(candle,{color:'red',radius: 3});
+      return;
+    }
 
-            //throw new Error('this should never happen 3');
-
-            return;
-        }
-            
-
-        /* confirm up trend setting a higher low */
-        /*
+    /* confirm up trend setting a higher low */
+    /*
         if ( this.tracingUp() || this.tracingNowhere() ) {
             this.lastLow = candle;
             this.updateDirection++;
@@ -325,25 +304,33 @@ class AnHLTrend extends Analyzer {
         } 
         */
 
-        /* just a higher low during tracingDown */
+    /* just a higher low during tracingDown */
+  }
 
-    }
+  isInTrend() {
+    return this.trendDirection !== 0;
+  }
+  isUptrend() {
+    return this.trendDirection > 0;
+  }
+  isDowntrend() {
+    return this.trendDirection < 0;
+  }
 
-    isInTrend() { return this.trendDirection !== 0; }
-    isUptrend() { return this.trendDirection > 0; };
-    isDowntrend() { return this.trendDirection < 0; }
+  tracingUp() {
+    return this.updateDirection > 0 || this.isUptrend();
+  }
+  tracingDown() {
+    return this.updateDirection < 0 || this.isDowntrend();
+  }
+  tracingNowhere() {
+    return !this.isInTrend() && this.updateDirection == 0;
+  }
 
-    tracingUp() { return (this.updateDirection > 0) || this.isUptrend(); }
-    tracingDown() { return (this.updateDirection < 0) || this.isDowntrend(); }
-    tracingNowhere() { return (! this.isInTrend() ) && (this.updateDirection == 0); }
-
-    registerTrend(direction)
-    {
-        /* todo: add first candle really started trend? */
-        this.trendDirection = direction;
-    }
-
-
+  registerTrend(direction) {
+    /* todo: add first candle really started trend? */
+    this.trendDirection = direction;
+  }
 }
 
 module.exports = AnHLTrend;

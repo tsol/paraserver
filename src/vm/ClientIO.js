@@ -1,110 +1,119 @@
 /* This is interface for all our possible clients's requests.
-** 
-** Telegram Bot or WebSockets http client - all get this object as their
-** interface to the system.
-*/
+ **
+ ** Telegram Bot or WebSockets http client - all get this object as their
+ ** interface to the system.
+ */
 
 class ClientIO {
+  constructor(vm) {
+    this.vm = vm;
+  }
 
-    constructor(vm) {
-        this.vm = vm;
+  getAllSymbols() {
+    const seq = this.vm.getSequencer();
+    if (!seq) {
+      return [];
     }
- 
-    getAllSymbols() {
-        const seq = this.vm.getSequencer();
-        if (! seq) { return []; }
-        return seq.getSymbols();
-    }
+    return seq.getSymbols();
+  }
 
-    async getAccountInformation() {
-        return this.vm.getBrokerUser().getAccountInformation();
-    }
+  async getAccountInformation() {
+    return this.vm.getBrokerUser().getAccountInformation();
+  }
 
-    getTickerFlags(tickerId) {
-        return this.vm.getProcessor().getFlags().getAllFlagsByTickerId(tickerId);
-    }
+  getTickerFlags(tickerId) {
+    return this.vm.getProcessor().getFlags().getAllFlagsByTickerId(tickerId);
+  }
 
-    async getTickerChart({ symbol, timeframe, limit, timestamp } ) {
+  async getTickerChart({ symbol, timeframe, limit, timestamp }) {
+    const candlesDB = this.vm.getCandleProxy();
+    const cdebugDB = this.vm.getCandleDebugDB();
 
-        const candlesDB = this.vm.getCandleProxy();
-        const cdebugDB = this.vm.getCandleDebugDB();
+    const borders = await candlesDB.getPeriodBordersFromDB(
+      symbol,
+      timeframe,
+      timestamp,
+      limit
+    );
 
-        const borders = await candlesDB.getPeriodBordersFromDB(
-                symbol, timeframe, timestamp, limit);
-        
-        const candles = await candlesDB.getCandlesPeriod( symbol, timeframe, 
-            borders.startTimestamp,
-            borders.endTimestamp,
-            false
-        );
- 
-        const cdebug = await cdebugDB.load({symbol, timeframe,
-            timeFrom: borders.startTimestamp,
-            timeTo: borders.endTimestamp
-        });
+    const candles = await candlesDB.getCandlesPeriod(
+      symbol,
+      timeframe,
+      borders.startTimestamp,
+      borders.endTimestamp,
+      false
+    );
 
-        return {
-            id: symbol+'-'+timeframe,
-            candles: candles,
-            cdebug: cdebug,
-            targetTimestamp: timestamp
-        }
-        
-    }
+    const cdebug = await cdebugDB.load({
+      symbol,
+      timeframe,
+      timeFrom: borders.startTimestamp,
+      timeTo: borders.endTimestamp,
+    });
 
-    getTickersState() {
-        return this.vm.getProcessor().getTickersState();
-    }
-    
-    getCurrentPrice(symbol) {
-        return this.vm.getProcessor().getLastPrice(symbol);
-    }
+    return {
+      id: symbol + '-' + timeframe,
+      candles: candles,
+      cdebug: cdebug,
+      targetTimestamp: timestamp,
+    };
+  }
 
-    getEntriesList() {
-        return this.vm.getOrdersManager().getEntriesList();
-    }
+  getTickersState() {
+    return this.vm.getProcessor().getTickersState();
+  }
 
-    getOrdersList(args) {
-        return this.vm.getOrdersManager().getOrdersList(args);
-    }
+  getCurrentPrice(symbol) {
+    return this.vm.getProcessor().getLastPrice(symbol);
+  }
 
-    getEntryPlanParams() {
-        return this.vm.getOrdersManager().getEntryPlanParams();
-    }
+  getEntriesList() {
+    return this.vm.getOrdersManager().getEntriesList();
+  }
 
-    setEntryPlanParams(params) {
-        return this.vm.getOrdersManager().setEntryPlanParams(params);
-    }
+  getOrdersList(args) {
+    return this.vm.getOrdersManager().getOrdersList(args);
+  }
 
-    getEntry(entryId) {
-        return this.vm.getOrdersManager().getEntryById(entryId);
-    }
+  getRealOrdersList(args) {
+    return this.vm.getOrdersManager().getRealOrdersList(args);
+  }
 
-    getReport(params) {
-        return this.vm.getOrdersManager().getReport(params);
-    }
+  getEntryPlanParams() {
+    return this.vm.getOrdersManager().getEntryPlanParams();
+  }
 
-    getOrdersStatistics(fromTimestamp, toTimestamp) {
-        //return this.vm.getOrdersManager().getEmulatedStatistics(fromTimestamp, toTimestamp);
-    }
+  setEntryPlanParams(params) {
+    return this.vm.getOrdersManager().setEntryPlanParams(params);
+  }
 
-    getTimeframes() {
-        return this.vm.getTimeframes();
-    }
+  getEntry(entryId) {
+    return this.vm.getOrdersManager().getEntryById(entryId);
+  }
 
-    getStrategies() {
-        return this.vm.getStrategies();
-    }
+  getReport(params) {
+    return this.vm.getOrdersManager().getReport(params);
+  }
 
-    getTagDescriptions() {
-        return this.vm.getOrdersManager().getTagDescriptions();
-    }
+  getOrdersStatistics(fromTimestamp, toTimestamp) {
+    //return this.vm.getOrdersManager().getEmulatedStatistics(fromTimestamp, toTimestamp);
+  }
 
-    async doMakeOrderFromEmulated(emOrderId) {
-        return this.vm.getOrdersManager().doMakeOrderRealById(emOrderId);
-    }
+  getTimeframes() {
+    return this.vm.getTimeframes();
+  }
 
+  getStrategies() {
+    return this.vm.getStrategies();
+  }
 
+  getTagDescriptions() {
+    return this.vm.getOrdersManager().getTagDescriptions();
+  }
+
+  async doMakeOrderFromEmulated(emOrderId) {
+    return this.vm.getOrdersManager().doMakeOrderRealById(emOrderId);
+  }
 }
 
 module.exports = ClientIO;

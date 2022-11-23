@@ -1,68 +1,76 @@
-
-
 class AnalyzersIO {
+  static ENTRY_DEF_RR_RATIO = 1.5;
+  static ENTRY_STOP_ATR_RATIO = 1;
+  static ENTRY_TARGET_LEVEL_REQ_WEIGHT = 40;
+  static ENTRY_TARGET_LEVEL_SEARCH_RATIO = 1.8;
+  static ENTRY_SWSL_FIND_MAX_CANDLES = 25;
 
-    static ENTRY_DEF_RR_RATIO                 = 1.5;
-    static ENTRY_STOP_ATR_RATIO               = 1;
-    static ENTRY_TARGET_LEVEL_REQ_WEIGHT      = 40;
-    static ENTRY_TARGET_LEVEL_SEARCH_RATIO    = 1.8;
-    static ENTRY_SWSL_FIND_MAX_CANDLES        = 25;
+  constructor(box, ordersManager, candleProcessor, candleDebug) {
+    this.box = box;
+    this.ordersManager = ordersManager;
+    this.candleProcessor = candleProcessor;
+    this.candleDebug = candleDebug;
 
-    constructor(box, ordersManager, candleProcessor, candleDebug) {
-        this.box = box;
-        this.ordersManager = ordersManager;
-        this.candleProcessor = candleProcessor;
-        this.candleDebug = candleDebug;
+    this.candle = null;
+    this.flags = null;
+  }
 
-        this.candle = null;
-        this.flags = null;
+  init() {
+    this.require('rsi14'); // required by static order tag 'RSI'
+    this.require('atr14'); // required by automatic default SL/TP calc in makeEntry function
+    this.require('prev_swing'); // required by makeEntry function
+    this.require('btctrend'); // required by static tags BT9, BT20
+    this.require('hl_trend'); // required by static HLT15m, HLT1h tags
+  }
 
-    }
+  require(analyzerName) {
+    return this.box.addAnalyzer(analyzerName);
+  }
 
-    init() {
-        this.require('rsi14'); // required by static order tag 'RSI'
-        this.require('atr14'); // required by automatic default SL/TP calc in makeEntry function 
-        this.require('prev_swing'); // required by makeEntry function
-        this.require('btctrend'); // required by static tags BT9, BT20
-    }
+  getHTF(flagName) {
+    return this.flags.getHTF(flagName);
+  }
 
-    require(analyzerName) {
-        return this.box.addAnalyzer(analyzerName);
-    }
+  cdb() {
+    return this.candleDebug;
+  }
 
-    getHTF(flagName) {
-        return this.flags.getHTF(flagName);
-    }
+  get(flagName) {
+    return this.flags.get(flagName);
+  }
 
-    cdb() { 
-        return this.candleDebug;
-    }
+  set(flagName, value) {
+    this.flags.set(flagName, value);
+  }
 
-    get(flagName) {
-        return this.flags.get(flagName);
-    }
+  getCandlesFrom(closeTime) {
+    return this.candleProcessor.getCandlesFrom(
+      this.candle.symbol,
+      this.candle.timeframe,
+      closeTime
+    );
+  }
 
-    set(flagName, value) {
-        this.flags.set(flagName,value);
-    }
+  getSymbolInfo(symbol) {
+    return this.ordersManager.getSymbolInfo(symbol);
+  }
 
-    getCandlesFrom(closeTime)
+  // enters at current candles close
+  makeEntry(
+    strategyObject,
+    type,
     {
-        return this.candleProcessor.getCandlesFrom(this.candle.symbol,this.candle.timeframe,closeTime);
+      entryPrice,
+      stopLoss,
+      takeProfit,
+      stopFrom,
+      rrRatio,
+      stopATRRatio,
+      useTargetLevel,
+      usePrevSwing,
     }
-
-    getSymbolInfo(symbol) {
-        return this.ordersManager.getSymbolInfo(symbol);
-    }
-
-    // enters at current candles close
-    makeEntry(strategyObject, type, {
-            entryPrice, stopLoss, takeProfit,
-            stopFrom, rrRatio, stopATRRatio,
-            useTargetLevel, usePrevSwing
-        } ) 
-    {
-        /*
+  ) {
+    /*
         if (this.getOpenOrder(
             this.candle.symbol, this.candle.timeframe, strategyObject.getId()
             )) {
@@ -70,49 +78,62 @@ class AnalyzersIO {
             return false;
         }
         */
-       
-        const isLimit = Boolean(entryPrice);
-        const isBuy = ( type === 'buy' );
-        const direction = ( isBuy ? 1 : -1 );
 
-        const atr14 = this.flags.get('atr14');
-        if (! atr14 ) { return console.log('HELPER: atr14 not ready.'); }
+    const isLimit = Boolean(entryPrice);
+    const isBuy = type === 'buy';
+    const direction = isBuy ? 1 : -1;
 
-        let cmt = '';
+    const atr14 = this.flags.get('atr14');
+    if (!atr14) {
+      return console.log('HELPER: atr14 not ready.');
+    }
 
-        if (! rrRatio) { rrRatio = AnalyzersIO.ENTRY_DEF_RR_RATIO; }
-        if (! stopATRRatio) { stopATRRatio = AnalyzersIO.ENTRY_STOP_ATR_RATIO; }
-        
-        if (! entryPrice) { entryPrice = this.candle.close; }
-        
-        if (! stopFrom ) { stopFrom = entryPrice };
-    
-        if (! stopLoss ) { stopLoss = stopFrom - direction * atr14 * stopATRRatio; } 
-        if (usePrevSwing) {
-            stopLoss = this.calcPrevSwingSL(type,stopLoss);
-        }
+    let cmt = '';
 
-        const stopHeight = Math.abs(entryPrice - stopLoss);
+    if (!rrRatio) {
+      rrRatio = AnalyzersIO.ENTRY_DEF_RR_RATIO;
+    }
+    if (!stopATRRatio) {
+      stopATRRatio = AnalyzersIO.ENTRY_STOP_ATR_RATIO;
+    }
 
-        if (! takeProfit) { takeProfit = entryPrice + direction * stopHeight * rrRatio; }
+    if (!entryPrice) {
+      entryPrice = this.candle.close;
+    }
 
- 
-        const params = {
-            time: this.candle.closeTime,
-            strategy: strategyObject.getId(),
-            symbol: this.candle.symbol,
-            timeframe: this.candle.timeframe,
-            isLong: isBuy,
-            entryPrice: entryPrice, 
-            takeProfit: takeProfit, 
-            stopLoss: stopLoss,
-            comment: cmt,
-            flags: this.flags,
-            candle: this.candle
-        };
+    if (!stopFrom) {
+      stopFrom = entryPrice;
+    }
 
-        // invert
-        /*
+    if (!stopLoss) {
+      stopLoss = stopFrom - direction * atr14 * stopATRRatio;
+    }
+    if (usePrevSwing) {
+      stopLoss = this.calcPrevSwingSL(type, stopLoss);
+    }
+
+    const stopHeight = Math.abs(entryPrice - stopLoss);
+
+    if (!takeProfit) {
+      takeProfit = entryPrice + direction * stopHeight * rrRatio;
+    }
+
+    const params = {
+      time: this.candle.closeTime,
+      strategy: strategyObject.getId(),
+      symbol: this.candle.symbol,
+      timeframe: this.candle.timeframe,
+      isLong: isBuy,
+      entryPrice: entryPrice,
+      takeProfit: takeProfit,
+      stopLoss: stopLoss,
+      comment: cmt,
+      flags: this.flags,
+      candle: this.candle,
+    };
+
+    // invert
+    /*
          params.isLong = ! params.isLong;
          const tmp = params.takeProfit;
          params.takeProfit = params.stopLoss;
@@ -120,49 +141,56 @@ class AnalyzersIO {
          params.cmt += ' INV';
         */
 
-        params.isLimit = isLimit;
+    params.isLimit = isLimit;
 
-        this.ordersManager.queueEntry(params);
+    this.ordersManager.queueEntry(params);
+  }
 
+  getOpenOrder(symbol, timeframe, strategy) {
+    return this.ordersManager.getOpenOrder(symbol, timeframe, strategy);
+  }
+
+  getFlags() {
+    return this.flags;
+  }
+
+  /* parent box interface */
+
+  setCurrentCandleAndFlags(candle, flags) {
+    this.candle = candle;
+    this.flags = flags;
+  }
+
+  /* helpers */
+
+  // returns stopLoss
+  calcPrevSwingSL(orderType, stopLoss) {
+    const isLong = orderType == 'buy';
+    const sw = this.flags.get('prev_swing');
+    if (!sw) {
+      return null;
     }
 
-    getOpenOrder(symbol,timeframe,strategy) {
-        return this.ordersManager.getOpenOrder(symbol,timeframe,strategy);
+    if (isLong) {
+      const swCandleLow = sw.findLow(
+        AnalyzersIO.ENTRY_SWSL_FIND_MAX_CANDLES,
+        stopLoss
+      );
+      if (!swCandleLow) {
+        return stopLoss;
+      }
+      return swCandleLow.low;
     }
 
-    getFlags() {
-        return this.flags;
+    const swCandleHigh = sw.findHigh(
+      AnalyzersIO.ENTRY_SWSL_FIND_MAX_CANDLES,
+      stopLoss
+    );
+    if (!swCandleHigh) {
+      return stopLoss;
     }
-
-    /* parent box interface */
-
-    setCurrentCandleAndFlags(candle, flags) {
-        this.candle = candle;
-        this.flags = flags;
-    }
-
-    /* helpers */
-
-    // returns stopLoss
-    calcPrevSwingSL(orderType,stopLoss)
-    {
-        const isLong = (orderType == 'buy');
-        const sw = this.flags.get('prev_swing');
-        if (! sw) { return null; }
-       
-        if (isLong) { 
-            const swCandleLow = sw.findLow(AnalyzersIO.ENTRY_SWSL_FIND_MAX_CANDLES,stopLoss);
-            if (! swCandleLow ) { return stopLoss; } 
-            return swCandleLow.low;
-        }
-    
-        const swCandleHigh = sw.findHigh(AnalyzersIO.ENTRY_SWSL_FIND_MAX_CANDLES,stopLoss);
-        if (! swCandleHigh ) { return stopLoss; } 
-        return swCandleHigh.high;
- 
-    }
-
-
+    return swCandleHigh.high;
+  }
 }
 
 module.exports = AnalyzersIO;
