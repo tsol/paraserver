@@ -22,6 +22,7 @@ const HLT = require('./list_static/hlt.js');
 //const HOT = require('./list_static/hot.js');
 //const GD100 = require('./list_static/gd100.js');
 const MAXPRF = require('./list_static/maxprf.js');
+const LR = require('./list_static/lr.js');
 
 class TaggersStatic {
   constructor() {
@@ -31,7 +32,8 @@ class TaggersStatic {
       new MACDF(),
       new SESSIONS(),
       new RSI(),
-      new HLT(),
+      new LR(),
+      //new HLT(),
       //new GD100(),
       new MAXPRF(),
       //new HOT(),
