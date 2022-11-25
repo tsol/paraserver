@@ -148,9 +148,10 @@ class AnVLevels extends Analyzer {
           resistWeight: sum.resistWeight + level.resistWeight,
           supportWeight: sum.supportWeight + level.supportWeight,
           levelIds: [...sum.levelIds, level.getId()],
+          levels: [...sum.levels, level],
         };
       },
-      { resistWeight: 0, supportWeight: 0, levelIds: [] }
+      { resistWeight: 0, supportWeight: 0, levelIds: [], levels: [] }
     );
   }
 
