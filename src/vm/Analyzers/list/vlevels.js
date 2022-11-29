@@ -8,7 +8,9 @@ const Analyzer = require('../types/Analyzer');
 
 const { TF } = require('../../../types/Timeframes.js');
 
-class AnVLevels extends Analyzer {
+const L = require('../helpers/levels.js');
+
+class VLEVELS extends Analyzer {
   constructor() {
     super();
     this.levels = [];
@@ -141,35 +143,9 @@ class AnVLevels extends Analyzer {
       : this.levels;
   }
 
-  getLevelsInfo(levelsArray) {
-    return levelsArray.reduce(
-      (sum, level) => {
-        return {
-          resistWeight: sum.resistWeight + level.resistWeight,
-          supportWeight: sum.supportWeight + level.supportWeight,
-          levelIds: [...sum.levelIds, level.getId()],
-          levels: [...sum.levels, level],
-        };
-      },
-      { resistWeight: 0, supportWeight: 0, levelIds: [], levels: [] }
-    );
-  }
-
-  getInfoAtPrice(levelsArray, price) {
-    return this.getLevelsInfo(
-      levelsArray.filter((lvl) => lvl.isPriceInLevel(price))
-    );
-  }
-
-  getInfoAtRange(levelsArray, y0, y1) {
-    return this.getLevelsInfo(
-      levelsArray.filter((lvl) => lvl.isRangeIntersectsLevel(y0, y1))
-    );
-  }
-
   getBottomTouchWeights(candle, olderThan) {
     const levels = this.getLevelsOlderThan(olderThan);
-    const info = this.getInfoAtPrice(levels, candle.low);
+    const info = L.getLevelsInfoAtPrice(levels, candle.low);
 
     return {
       rw: info.resistWeight,
@@ -180,7 +156,7 @@ class AnVLevels extends Analyzer {
 
   getTopTouchWeights(candle, olderThan) {
     const levels = this.getLevelsOlderThan(olderThan);
-    const info = this.getInfoAtPrice(levels, candle.high);
+    const info = L.getLevelsInfoAtPrice(levels, candle.high);
 
     return {
       rw: info.resistWeight,
@@ -240,7 +216,7 @@ class Level {
     this.totalWeight = 0;
     this.supportWeight = 0;
     this.resistWeight = 0;
-    this.prices = []; // all prices forming level cached here
+    this.prices = []; // all prices forming level cached here, only for gerchik strategy!!
   }
 
   addPoint(time, level, bounceUp, height, weight, candle, io) {
@@ -374,4 +350,4 @@ class Level {
   }
 }
 
-module.exports = AnVLevels;
+module.exports = VLEVELS;

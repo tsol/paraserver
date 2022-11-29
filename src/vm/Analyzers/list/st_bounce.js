@@ -1,6 +1,34 @@
 /*
 Bounce of Levels My Own Strategy
 
+1. Определение отскока - добавить паттернов
+ * просто свеча у которой хвост 51% от всего тела отпрыгиывает
+ - OUTSIDE REVERSAL pattern - первая красная целиком внутри второй зеленой - вторая зеленая закрывается
+ выше открытия красной.
+ - три белых/черных солдата и прочая дребедень?
+
+2. Отскоком считать - если свеча отскокная и закрывается выше (ниже) середины уровня, при этом
+хвост может торчать за уровень. Точкой отсчета стоплоса считать хвост свечи. А начало "неба" считать
+с верхней границы уровня.
+
+
+TODO: Сделать уровни магниты:
+
+- уровни, которые были пересечены свечой с объемом в 3 раза больше чем предыдущие средние 3
+- gap несправедливого равенства в середине трех быстрорастущих свечей
+
+Уровень магнит для ШОРТОВ, если объемная свеча пробила снизу вверх.
+Значит ждем баунс от Жёлтого уровня, который находится вышеч
+
+Дополнительный сигналы для разворота:
+  - цена значительно выше/ниже закрытия прошлого дня/недели.
+  - Суммарный вес не погашенных магнитов > N
+  - Есть много локальных уровней с одним касанием (не оттестированные), количество > K
+
+
+Вообщем как у чувака в ПДФ, только с разворотом от уровня (баунс)
+
+
 *** Условия начала поиска
 
 1. Супертренд ВНИЗ (или вся свеча ниже emac21)
@@ -39,22 +67,42 @@ Bounce of Levels My Own Strategy
 */
 
 const Strategy = require('../types/Strategy');
+const L = require('../helpers/levels.js');
 
-function isCurrentCandleBouncy(isLong, candle, io) {
-  if (isLong) {
-    if (io.get('cdlpatts.new.ham') === candle) return true;
-  } else if (io.get('cdlpatts.new.shu') === candle) return true;
+class PARAMS {
+  static SKY_HEIGHT_PERCENT = 0.004; //0.0127;
+  static SKY_MAX_WEIGHT = 0;
+
+  static TREND_MA = 'emac21';
+  static RR_RATIO = 1.5;
+  static BOUNCE_TAIL_MIN_LEVEL = 1;
+  static BOUNCE_CLOSE_MAX_LEVEL = 0;
+  static MAX_SEARCH_LENGTH = 32;
+  static MIN_CANDLES_ABOVE_LEVEL = 3;
+}
+
+function ltop(candle, label, { isLong, io }) {
+  return isLong
+    ? io.cdb().labelTop(candle, label)
+    : io.cdb().labelBottom(candle, label);
+}
+
+function lbot(candle, label, { isLong, io }) {
+  return isLong
+    ? io.cdb().labelBottom(candle, label)
+    : io.cdb().labelTop(candle, label);
 }
 
 class Finder {
   constructor(io, id, { isLong, levelY0, levelY1, levelWeight, ma }) {
     this.io = io;
-
     this.id = id;
+
     this.isLong = isLong;
     this.levelY0 = levelY0;
     this.levelY1 = levelY1;
     this.levelWeight = levelWeight;
+
     this.firstCandleMA = ma;
 
     this.length = 0;
@@ -64,29 +112,40 @@ class Finder {
   }
 
   addCandle(candle) {
-    this.currentCandle = candle;
+    //
 
-    if (++this.length > BOUNCE.MAX_SEARCH_LENGTH) return null;
-    if (this.candleClosesBelowLevel(candle)) return null;
+    if (++this.length > PARAMS.MAX_SEARCH_LENGTH) return null;
+    if (L.isCandleClosesBelowLevel(candle, this)) return null;
 
-    if (this.candleFullyAboveLevel(candle)) this.countCandlesAboveLevel++;
+    if (L.isCandleFullyAboveLevel(candle, this)) this.countCandlesAboveLevel++;
 
     const newBounceExtremum = this.getBounceExtremum();
     if (newBounceExtremum) this.bounceExtremumCandle = newBounceExtremum;
 
     if (!this.allCriteriaMet) {
-      this.allCriteriaMet =
-        this.countCandlesAboveLevel > BOUNCE.MIN_CANDLES_ABOVE_LEVEL &&
-        this.bounceExtremumCandle !== null &&
-        this.isCandleBouncesOfLevel(candle) &&
-        this.isApproachingToLevel();
+      if (
+        this.countCandlesAboveLevel > PARAMS.MIN_CANDLES_ABOVE_LEVEL &&
+        this.bounceExtremumCandle !== null
+        // && this.isApproachingToLevel();
+      ) {
+        const patternCandle = L.isPatternAndBounce(this.io.getFlags(), this);
+        if (patternCandle !== null) {
+          this.allCriteriaMet = true;
+          lbot(patternCandle, this.isLong ? '^' : 'v', this);
+        }
+      }
     }
 
     if (this.allCriteriaMet) {
       // searching just entry point
       if (this.isEntryTriggered(candle)) {
         const isLong = this.isLong;
-        const stopLoss = isLong ? this.levelY0 : this.levelY1;
+        const atr = this.io.get('atr14');
+
+        const stopLoss = isLong
+          ? Math.min(this.levelY0, candle.low) - 1.5 * atr
+          : Math.max(this.levelY1, candle.high) + 1.5 * atr;
+        //const stopLoss = null;
 
         return { entry: { isLong, stopLoss } };
       }
@@ -97,16 +156,6 @@ class Finder {
 
   isEntryTriggered(candle) {
     return this.isLong ? candle.isGreen() : candle.isRed();
-  }
-
-  candleClosesBelowLevel(candle) {
-    return this.isLong
-      ? candle.bodyLow() < this.levelY0
-      : candle.bodyHigh() > this.levelY1;
-  }
-
-  candleFullyAboveLevel(candle) {
-    return this.isLong ? candle.low > this.levelY1 : candle.high < this.levelY0;
   }
 
   getBounceExtremum() {
@@ -121,47 +170,35 @@ class Finder {
   }
 
   isApproachingToLevel() {
-    const ma = this.io.get(BOUNCE.TREND_MA);
+    const ma = this.io.get(PARAMS.TREND_MA);
     return this.isLong ? ma < this.firstCandleMA : ma > this.firstCandleMA;
-  }
-
-  isCandleBouncesOfLevel(candle) {
-    if (!isCurrentCandleBouncy(this.isLong, candle, this.io)) return false;
-    if (!this.priceInLevel(this.isLong ? candle.low : candle.high))
-      return false;
-    if (!this.priceAboveLevel(candle.close)) return false;
-
-    return true;
-  }
-
-  priceAboveLevel(price) {
-    return this.isLong ? price > this.levelY1 : price < this.levelY0;
-  }
-
-  priceInLevel(price) {
-    return price >= this.levelY0 && price <= this.levelY1;
   }
 }
 
 class BOUNCE extends Strategy {
-  static SKY_CLEAN_PERCENT = 0.0127;
-  static TREND_MA = 'emac21';
-  static RR_RATIO = 1.5;
-  static BOUNCE_TAIL_MIN_LEVEL = 1;
-  static BOUNCE_CLOSE_MAX_LEVEL = 0;
-  static MAX_SEARCH_LENGTH = 25;
-  static MIN_CANDLES_ABOVE_LEVEL = 3;
-
   constructor() {
     super();
     this.finder = null;
+    this.name = 'bounce';
+
+    this.finders = [];
+    this.maxId = 0;
   }
 
   init(io) {
     io.require('vlevels');
-    io.require(BOUNCE.TREND_MA);
+    io.require(PARAMS.TREND_MA);
     io.require('cdlpatts');
     io.require('extremum');
+    io.require('atr14');
+  }
+
+  nextFinderId() {
+    this.maxId++;
+    if (this.maxId > 99) {
+      this.maxId = 1;
+    }
+    return this.maxId;
   }
 
   getId() {
@@ -170,6 +207,7 @@ class BOUNCE extends Strategy {
 
   addCandle(candle, io) {
     super.addCandle(candle, io);
+    io.cdb().setSource(this.getId());
 
     if (this.finder !== null) {
       const res = this.finder.addCandle(candle);
@@ -178,103 +216,82 @@ class BOUNCE extends Strategy {
       } else if (res.entry) {
         // found entry
         io.makeEntry(this, res.entry.isLong ? 'buy' : 'sell', {
-          rrRatio: BOUNCE.RR_RATIO,
+          rrRatio: PARAMS.RR_RATIO,
           stopLoss: res.entry.stopLoss,
         });
+        this.finder = null;
       }
     }
 
     // end for one find could be start of another search
 
+    if (this.finder !== null) return; // for now we only have one finder;
+
     const newSearchParams = this.getStartNewSearchParams(candle, io);
     if (newSearchParams) {
       this.finder = new Finder(io, 0, newSearchParams);
+      ltop(candle, 'b1', { isLong: newSearchParams.isLong, io });
     }
   }
 
-  getLevelsArray(io) {
-    const vlevels = io.get('vlevels');
-    const vlevels_high = io.get('vlevels_high');
-    let levelsArray = vlevels.getLevels();
-    if (vlevels_high)
-      levelsArray = [...levelsArray, ...vlevels_high.getLevels()];
-    return levelsArray;
-  }
-
-  isCandleBouncesOfLevel(isLong, levelsArray, candle, io) {
-    const infoFn = io.get('vlevels').getInfoAtPrice();
-    const closeInfo = infoFn(levelsArray, candle.close);
-    if (
-      closeInfo.resistWeight + closeInfo.supportWeight >
-      BOUNCE.BOUNCE_CLOSE_MAX_LEVEL
-    )
-      return false;
-
-    const tailInfo = infoFn(levelsArray, isLong ? candle.low : candle.high);
-    const tailTotalSupportWeight =
-      tailInfo.resistWeight + tailInfo.supportWeight;
-    if (tailTotalSupportWeight < BOUNCE.BOUNCE_TAIL_MIN_LEVEL) return false;
-
-    return tailInfo;
-  }
-
-  isClearTakeProfit(isLong, levelsArray, candle, io) {
-    const skyHeight = candle.close * BOUNCE.SKY_CLEAN_PERCENT;
-
-    const skyY0 = isLong ? candle.close : candle.close - skyHeight;
-    const skyY1 = isLong ? candle.close + skyHeight : candle.close;
-
-    const { supportWeight, resistWeight } = io
-      .get('vlevels')
-      .getInfoAtRange(levelsArray, skyY0, skyY1);
-
-    return supportWeight + resistWeight <= 0;
-  }
-
-  getStartNewSearchParams(candle, io) {
-    if (this.finder !== null) {
-      return null;
-    }
-
-    const ma = io.get(BOUNCE.TREND_MA);
+  getStartNewSearchParams(currentCandle, io) {
+    const ma = io.get(PARAMS.TREND_MA);
     let isLong = null;
 
-    if (candle.high < ma) {
+    if (currentCandle.high < ma) {
       isLong = true;
-    } else if (candle.low > ma) {
+    } else if (currentCandle.low > ma) {
       isLong = false;
     }
 
     if (isLong === null) return null;
 
-    if (!isCurrentCandleBouncy(isLong, candle, io)) return null;
+    const patternCandle = L.getBouncyCandle(isLong, io.getFlags());
+    if (!patternCandle) return null;
 
-    const levels = this.getLevelsArray();
-
-    const tailLevelsContactInfo = this.isCandleBouncesOfLevel(
+    const levelsArray = L.getLevelsArrayFromFlags(io.getFlags());
+    const levelsTouchInfo = L.getLevelsTouchInfo(
       isLong,
-      levels,
-      candle,
-      io
-    );
-    if (!tailLevelsContactInfo) return null;
-
-    if (!this.isClearTakeProfit(isLong, levels, candle, io)) return null;
-
-    const levelWeight =
-      tailLevelsContactInfo.resistWeight + tailLevelsContactInfo.supportWeight;
-
-    const levelY0 = tailLevelsContactInfo.levels.reduce(
-      (s, c) => (c < s ? c : s),
-      candle.close
+      patternCandle,
+      levelsArray
     );
 
-    const levelY1 = tailLevelsContactInfo.levels.reduce(
-      (s, c) => (c > s ? c : s),
-      0
+    if (!levelsTouchInfo) return null;
+
+    lbot(patternCandle, isLong ? '^' : 'v', { isLong, io });
+
+    const { totalWeight, levels: touchedLevelsArray } = levelsTouchInfo;
+
+    if (totalWeight < PARAMS.BOUNCE_TAIL_MIN_LEVEL) return null;
+
+    const { levelY0, levelY1 } = L.getLevelsYRange(touchedLevelsArray);
+
+    const skyStartsAt = isLong
+      ? Math.max(patternCandle.high, levelY1)
+      : Math.min(patternCandle.low, levelY0);
+
+    if (!this.isTakeProfitZoneClear(isLong, levelsArray, skyStartsAt)) {
+      ltop(patternCandle, 'xS', { isLong, io });
+    }
+
+    return { isLong, levelY0, levelY1, levelWeight: totalWeight, ma };
+  }
+
+  isTakeProfitZoneClear(isLong, levelsArray, topPrice) {
+    const skyHeight = topPrice * PARAMS.SKY_HEIGHT_PERCENT;
+
+    const skyY0 = isLong ? topPrice : topPrice - skyHeight;
+    const skyY1 = isLong ? topPrice + skyHeight : topPrice;
+
+    const { supportWeight, resistWeight } = L.getLevelsInfoAtRange(
+      levelsArray,
+      {
+        y0: skyY0,
+        y1: skyY1,
+      }
     );
 
-    return { isLong, levelY0, levelY1, levelWeight, ma };
+    return supportWeight + resistWeight <= PARAMS.SKY_MAX_WEIGHT;
   }
 }
 

@@ -19,6 +19,7 @@ class AnalyzersFactory {
 
       ['emac9', 'ema', { source: 'c', period: 9 }, null],
       ['emac20', 'ema', { source: 'c', period: 20 }, null],
+      ['emac21', 'ema', { source: 'c', period: 21 }, null],
       ['emac50', 'ema', { source: 'c', period: 50 }, null],
       ['emac100', 'ema', { source: 'c', period: 100 }, null],
       ['emac200', 'ema', { source: 'c', period: 200 }, null],

@@ -4,18 +4,8 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
         {
-            "type": "pwa-node",
-            "request": "launch",
-            "name": "Run pserver2.js",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}/pserver2.js"
-        },
-        {
-            "type": "pwa-node",
+            "type": "node",
             "request": "launch",
             "name": "Run pserver3.js",
             "skipFiles": [
@@ -24,7 +14,7 @@
             "program": "${workspaceFolder}/pserver3.js"
         },
         {
-            "type": "pwa-node",
+            "type": "node",
             "request": "launch",
             "name": "Run kotoserv.js",
             "skipFiles": [
@@ -33,7 +23,7 @@
             "program": "${workspaceFolder}/kotoserv.js"
         },
         {
-            "type": "pwa-node",
+            "type": "node",
             "request": "launch",
             "name": "Run test.js",
             "skipFiles": [

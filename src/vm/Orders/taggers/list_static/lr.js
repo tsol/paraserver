@@ -17,6 +17,8 @@
 
 */
 
+const L = require('../../../Analyzers/helpers/levels.js');
+
 const Tagger = require('../types/Tagger');
 
 class LR extends Tagger {
@@ -80,9 +82,18 @@ class LR extends Tagger {
       tpY0 = takeProfit;
     }
 
-    const takeInfo = vlevels.getInfoAtRange(levelsArray, tpY0, tpY1);
-    const stopInfo = vlevels.getInfoAtRange(levelsArray, slY0, slY1);
-    const midzoneInfo = vlevels.getInfoAtRange(levelsArray, spY0, spY1);
+    const takeInfo = L.getLevelsInfoAtRange(levelsArray, {
+      y0: tpY0,
+      y1: tpY1,
+    });
+    const stopInfo = L.getLevelsInfoAtRange(levelsArray, {
+      y0: slY0,
+      y1: slY1,
+    });
+    const midzoneInfo = L.getLevelsInfoAtRange(levelsArray, {
+      y0: spY0,
+      y1: spY1,
+    });
 
     const takeTotal = takeInfo.supportWeight + takeInfo.resistWeight;
     const stopTotal = stopInfo.supportWeight + stopInfo.resistWeight;
