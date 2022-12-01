@@ -1,5 +1,11 @@
 /*
  ** Impulse candle
+ **
+ ** returns  impulse.gap = { y0, y1, candle }           - price unfair gap inside of tall impulse candle
+ ** returns  impulse.tall = tallImpulseCandle
+ ** returns  impulse.candle = impulseCandle
+ **          impulse.start = startImpulseCandle
+ **          impulse.end = lastImpulseCandle
  */
 
 const RMA = require('../helpers/RMA');
@@ -32,6 +38,7 @@ class IMPULSE extends Analyzer {
   addCandle(candle, io) {
     super.addCandle(candle, io);
     io.cdb().setSource(this.getId());
+    const res = {};
 
     const prevAvg = this.rma.getRMA(candle.volume);
 
@@ -43,11 +50,15 @@ class IMPULSE extends Analyzer {
         io.cdb().labelBottom(candle, 'xS');
         this.isInImpulse = false;
       }
+      if (!this.isInImpulse) {
+        res['impulse.end'] = this.prevCandle;
+      }
     }
 
     if (!this.isInImpulse) {
       if (candle.volume / IMPULSE.START_MULT > prevAvg) {
         this.isInImpulse = true;
+        res['impulse.start'] = candle;
       }
     }
 
@@ -67,6 +78,14 @@ class IMPULSE extends Analyzer {
       }
     }
 
+    if (this.isInImpulse) {
+      res['impulse.candle'] = candle;
+    }
+
+    if (isTallCandle) {
+      res['impulse.tall'] = candle;
+    }
+
     // finding GAP of inequity
     if (this.prevCandleWasTall && this.prevPrevCandle) {
       let gapY0, gapY1;
@@ -79,11 +98,11 @@ class IMPULSE extends Analyzer {
       }
 
       if (gapY1 > gapY0) {
-        const gapCenter = gapY0 + (gapY1 - gapY0) / 2;
-        io.cdb().hline(this.prevCandle, gapCenter, {
-          x1: null,
-          color: 'purple',
-        });
+        res['impulse.gap'] = {
+          y0: gapY0,
+          y1: gapY1,
+          candle: this.prevCandle,
+        };
       }
     }
 
@@ -91,7 +110,9 @@ class IMPULSE extends Analyzer {
     this.prevCandle = candle;
     this.prevCandleWasTall = isTallCandle;
 
-    //io.set(this.getId(), res);
+    for (const [key, value] of Object.entries(res)) {
+      io.set(key, value);
+    }
   }
 }
 

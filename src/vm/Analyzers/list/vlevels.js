@@ -210,6 +210,7 @@ class Level {
     this.y1 = undefined;
     this.resY0 = undefined;
     this.resY1 = undefined;
+    this.middleY = undefined;
     this.countResist = 0;
     this.countSupport = 0;
     this.fromX = 0;
@@ -279,6 +280,7 @@ class Level {
 
     this.resY0 = yMiddle - avgHeight / 4;
     this.resY1 = yMiddle + avgHeight / 4;
+    this.middleY = yMiddle;
   }
 
   forgetBefore(time) {
@@ -343,6 +345,10 @@ class Level {
 
   getLowerEdge() {
     return this.resY0;
+  }
+
+  getMiddleY() {
+    return this.middleY;
   }
 
   getPrices() {

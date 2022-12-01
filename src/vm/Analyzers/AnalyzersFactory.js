@@ -61,6 +61,8 @@ class AnalyzersFactory {
       ['vlevels', 'vlevels', null, null],
       ['cdlpatts', 'cdlpatts', null, null],
 
+      ['magnets', 'magnets', null],
+
       ['prices', 'prices', { maxCandles: 100 }, null],
       ['prev_swing', 'prev_swing', null, null],
 
