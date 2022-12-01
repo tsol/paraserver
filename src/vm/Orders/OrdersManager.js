@@ -92,7 +92,6 @@ class OrdersManager {
     /* filter */
 
     this.candleDebug.setSource(params.strategy);
-    this.candleDebug.labelTop(params.candle, 'EN');
     this.candleDebug.circleMiddle(params.candle, {
       color: 'blue',
       radius: 5,

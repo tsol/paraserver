@@ -67,6 +67,8 @@ TODO: Сделать уровни магниты:
 */
 
 const Strategy = require('../types/Strategy');
+const EntryFinder = require('../types/EntryFinder');
+
 const L = require('../helpers/levels.js');
 
 class PARAMS {
@@ -76,46 +78,38 @@ class PARAMS {
   static TREND_MA = 'emac21';
   static RR_RATIO = 1.5;
   static BOUNCE_TAIL_MIN_LEVEL = 1;
-  static BOUNCE_CLOSE_MAX_LEVEL = 0;
-  static MAX_SEARCH_LENGTH = 32;
+  static MAX_SEARCH_LENGTH = 50;
   static MIN_CANDLES_ABOVE_LEVEL = 3;
 }
 
-function ltop(candle, label, { isLong, io }) {
-  return isLong
-    ? io.cdb().labelTop(candle, label)
-    : io.cdb().labelBottom(candle, label);
-}
+class BounceFinder extends EntryFinder {
+  constructor(id, startCandle, isLong, io, params) {
+    super(id, startCandle, isLong, io, params);
 
-function lbot(candle, label, { isLong, io }) {
-  return isLong
-    ? io.cdb().labelBottom(candle, label)
-    : io.cdb().labelTop(candle, label);
-}
-
-class Finder {
-  constructor(io, id, { isLong, levelY0, levelY1, levelWeight, ma }) {
-    this.io = io;
-    this.id = id;
-
-    this.isLong = isLong;
-    this.levelY0 = levelY0;
-    this.levelY1 = levelY1;
-    this.levelWeight = levelWeight;
-
-    this.firstCandleMA = ma;
+    this.levelY0 = params.levelY0;
+    this.levelY1 = params.levelY1;
+    this.levelWeight = params.levelWeight;
+    this.firstCandleMA = params.ma;
 
     this.length = 0;
     this.countCandlesAboveLevel = 0;
     this.bounceExtremumCandle = null;
     this.allCriteriaMet = false;
+
+    this.lbot(startCandle, this.isLong ? '^' : 'v');
   }
 
   addCandle(candle) {
     //
 
-    if (++this.length > PARAMS.MAX_SEARCH_LENGTH) return null;
-    if (L.isCandleClosesBelowLevel(candle, this)) return null;
+    if (++this.length > PARAMS.MAX_SEARCH_LENGTH) {
+      this.ltop(candle, 'xL');
+      return null;
+    }
+    if (L.isCandleClosesBelowLevel(candle, this)) {
+      this.ltop(candle, 'xB');
+      return null;
+    }
 
     if (L.isCandleFullyAboveLevel(candle, this)) this.countCandlesAboveLevel++;
 
@@ -131,7 +125,7 @@ class Finder {
         const patternCandle = L.isPatternAndBounce(this.io.getFlags(), this);
         if (patternCandle !== null) {
           this.allCriteriaMet = true;
-          lbot(patternCandle, this.isLong ? '^' : 'v', this);
+          this.lbot(patternCandle, this.isLong ? '^' : 'v');
         }
       }
     }
@@ -146,6 +140,8 @@ class Finder {
           ? Math.min(this.levelY0, candle.low) - 1.5 * atr
           : Math.max(this.levelY1, candle.high) + 1.5 * atr;
         //const stopLoss = null;
+
+        this.ltop(candle, 'E');
 
         return { entry: { isLong, stopLoss } };
       }
@@ -180,12 +176,10 @@ class BOUNCE extends Strategy {
     super();
     this.finder = null;
     this.name = 'bounce';
-
-    this.finders = [];
-    this.maxId = 0;
   }
 
   init(io) {
+    super.init(io);
     io.require('vlevels');
     io.require(PARAMS.TREND_MA);
     io.require('cdlpatts');
@@ -193,45 +187,35 @@ class BOUNCE extends Strategy {
     io.require('atr14');
   }
 
-  nextFinderId() {
-    this.maxId++;
-    if (this.maxId > 99) {
-      this.maxId = 1;
-    }
-    return this.maxId;
-  }
-
   getId() {
     return this.name;
+  }
+
+  finderFactory(id, startCandle, isLong, params) {
+    return new BounceFinder(id, startCandle, isLong, this.io, params);
   }
 
   addCandle(candle, io) {
     super.addCandle(candle, io);
     io.cdb().setSource(this.getId());
 
-    if (this.finder !== null) {
-      const res = this.finder.addCandle(candle);
-      if (res === null) {
-        this.finder = null;
-      } else if (res.entry) {
-        // found entry
-        io.makeEntry(this, res.entry.isLong ? 'buy' : 'sell', {
-          rrRatio: PARAMS.RR_RATIO,
-          stopLoss: res.entry.stopLoss,
-        });
-        this.finder = null;
-      }
-    }
-
-    // end for one find could be start of another search
-
-    if (this.finder !== null) return; // for now we only have one finder;
-
     const newSearchParams = this.getStartNewSearchParams(candle, io);
     if (newSearchParams) {
-      this.finder = new Finder(io, 0, newSearchParams);
-      ltop(candle, 'b1', { isLong: newSearchParams.isLong, io });
+      super.newFinder(
+        newSearchParams.isLong,
+        newSearchParams.startCandle,
+        candle,
+        newSearchParams
+      );
     }
+
+    const me = this;
+    super.runFinders(candle).forEach((entry) => {
+      io.makeEntry(me, entry.isLong ? 'buy' : 'sell', {
+        rrRatio: PARAMS.RR_RATIO,
+        ...entry,
+      });
+    });
   }
 
   getStartNewSearchParams(currentCandle, io) {
@@ -258,23 +242,30 @@ class BOUNCE extends Strategy {
 
     if (!levelsTouchInfo) return null;
 
-    lbot(patternCandle, isLong ? '^' : 'v', { isLong, io });
-
     const { totalWeight, levels: touchedLevelsArray } = levelsTouchInfo;
 
     if (totalWeight < PARAMS.BOUNCE_TAIL_MIN_LEVEL) return null;
 
     const { levelY0, levelY1 } = L.getLevelsYRange(touchedLevelsArray);
 
+    /* 
     const skyStartsAt = isLong
       ? Math.max(patternCandle.high, levelY1)
       : Math.min(patternCandle.low, levelY0);
 
     if (!this.isTakeProfitZoneClear(isLong, levelsArray, skyStartsAt)) {
-      ltop(patternCandle, 'xS', { isLong, io });
+      // ltop(patternCandle, 'xS', { isLong, io });
     }
+    */
 
-    return { isLong, levelY0, levelY1, levelWeight: totalWeight, ma };
+    return {
+      isLong,
+      startCandle: patternCandle,
+      levelY0,
+      levelY1,
+      levelWeight: totalWeight,
+      ma,
+    };
   }
 
   isTakeProfitZoneClear(isLong, levelsArray, topPrice) {
