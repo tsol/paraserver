@@ -8,7 +8,7 @@ class CandleDebug {
     this.storeCache = storeCache;
     this.source = 'none';
     this.items = [];
-    this.forgotBefore = 0;
+    this.forgotBefore = {};
   }
 
   getStoreCache() {
@@ -29,8 +29,16 @@ class CandleDebug {
   }
 
   addItemByCandle(candle, debugEntry) {
-    if (candle.openTime <= this.forgotBefore) {
-      console.log('WARN: CDB: request debug on very old candle', candle);
+    if (
+      candle.openTime <=
+        this.forgotBefore[candle.symbol + '-' + candle.timeframe] ||
+      0
+    ) {
+      console.log(
+        'WARN: CDB: request debug on very old candle',
+        debugEntry,
+        candle
+      );
       return false;
     }
 
@@ -53,7 +61,7 @@ class CandleDebug {
   }
 
   forgetBefore(symbol, timeframe, timestamp) {
-    this.forgotBefore = timestamp;
+    this.forgotBefore[symbol + '-' + timeframe] = timestamp;
     this.items = this.items.filter(
       (cd) =>
         cd.symbol !== symbol ||

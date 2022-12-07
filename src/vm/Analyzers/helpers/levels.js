@@ -31,10 +31,14 @@ function getCandleTouchRange(candle, isLong) {
 function getBouncyCandle(isLong, flags) {
   if (isLong) {
     const ham = flags.get('cdlpatts.new.ham');
-    return ham || null;
+    const egu = flags.get('cdlpatts.new.egu');
+    const rtu = flags.get('cdlpatts.new.rtu');
+    return ham || egu || rtu || null;
   }
   const shu = flags.get('cdlpatts.new.shu');
-  return shu || null;
+  const egd = flags.get('cdlpatts.new.egd');
+  const rtd = flags.get('cdlpatts.new.rtd');
+  return shu || egd || rtd || null;
 }
 
 function isPriceAboveLevel(price, { isLong, levelY0, levelY1 }) {
@@ -49,7 +53,10 @@ function getLevelsArrayFromFlags(flags) {
   const vlevels = flags.get('vlevels');
   const vlevels_high = flags.get('vlevels_high');
   let levelsArray = vlevels.getLevels();
-  if (vlevels_high) levelsArray = [...levelsArray, ...vlevels_high.getLevels()];
+  //if (vlevels_high) levelsArray = [...levelsArray, ...vlevels_high.getLevels()];
+
+  if (vlevels_high) levelsArray = vlevels_high.getLevels();
+
   return levelsArray;
 }
 

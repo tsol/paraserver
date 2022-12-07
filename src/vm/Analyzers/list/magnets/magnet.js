@@ -1,10 +1,14 @@
 class Magnet {
-  constructor(price, weight, candle) {
+  constructor(price, weight, candle, id) {
     this.price = price;
     this.weight = weight;
     this.candle = candle;
+    this.id = id;
   }
-  crossRange(y0, y1) {
+  getId() {
+    return this.id;
+  }
+  inRange(y0, y1) {
     return y0 <= this.price && y1 >= this.price;
   }
   getCandle() {

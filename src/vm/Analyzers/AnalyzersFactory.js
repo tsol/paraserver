@@ -13,6 +13,8 @@ class AnalyzersFactory {
       ['impulse', 'impulse', null],
 
       ['mac9', 'ma', { source: 'c', period: 9 }, null],
+      ['mac18', 'ma', { source: 'c', period: 18 }, null],
+
       ['mac20', 'ma', { source: 'c', period: 20 }, null],
       ['mac50', 'ma', { source: 'c', period: 50 }, null],
       ['mac100', 'ma', { source: 'c', period: 100 }, null],
@@ -78,6 +80,7 @@ class AnalyzersFactory {
       ['geroflvl', 'st_ger_oflvl', null, null],
       ['hoffman1', 'st_hoffman1', null, null],
       ['bounce', 'st_bounce', null, null],
+      ['volrev', 'st_volrev', null, null],
     ];
 
     this.reloadAll();

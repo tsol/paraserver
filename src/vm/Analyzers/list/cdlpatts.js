@@ -9,8 +9,9 @@
 **      cdlpatts.new.ham = candle object (hammer)
 **      cdlpatts.new.egd = candle object (engulfing candle down)
 **      cdlpatts.new.egu = candle object (engulfing candle up)
-**      cdlpatts.new.cla = candle object (close above)
-**      cdlpatts.new.clb = candle object (close below)
+**      cdlpatts.new.rtd = candle object (railway tracks up)
+**      cdlpatts.new.rtu = candle object (railway tracks down)
+**
 **
 ** also sets flag:
 **      cdlpatts.bias = up / down - last recognized pattern bias (including current candle) 
@@ -19,90 +20,100 @@
 ** 
 */
 
-const Analyzer = require("../types/Analyzer");
-
+const Analyzer = require('../types/Analyzer');
 
 class AnCandlePatterns extends Analyzer {
+  constructor() {
+    super();
+    this.prevCandle = undefined;
+    this.lastPatternBias = undefined;
+  }
 
-        constructor() {
-            super();
-            this.prevCandle = undefined;
-            this.lastPatternBias = undefined;
+  init(io) {
+    this.io = io;
+  }
+
+  getId() {
+    return 'cdlpatts';
+  }
+
+  addCandle(candle, io) {
+    super.addCandle(candle, io);
+    io.cdb().setSource(this.getId());
+
+    if (this.isShootingStar(candle)) {
+      this.setPattern(candle, 'shu', 'down');
+    } else if (this.isHammer(candle)) {
+      this.setPattern(candle, 'ham', 'up');
+    }
+
+    if (!this.prevCandle) return this.over(candle, io);
+
+    if (this.prevCandle.isGreen() && candle.isRed()) {
+      if (candle.closeBelow(this.prevCandle)) {
+        if (
+          candle.open === this.prevCandle.close &&
+          candle.upperTailSize() == 0 &&
+          this.prevCandle.upperTailSize() == 0
+        ) {
+          this.setPattern(candle, 'rtd', 'down'); // 'railway tracks' bearish
+        } else if (candle.open >= this.prevCandle.close) {
+          this.setPattern(candle, 'egd', 'down'); // engulfing body candle bearish
         }
+        // else just close below (dont register that)
+      }
+    }
 
-        init(io) {
-            this.io = io;
+    if (this.prevCandle.isRed() && candle.isGreen()) {
+      if (candle.closeAbove(this.prevCandle)) {
+        if (
+          candle.open === this.prevCandle.close &&
+          candle.lowerTailSize() == 0 &&
+          this.prevCandle.lowerTailSize() == 0
+        ) {
+          this.setPattern(candle, 'rtu', 'up'); // 'railway tracks' bullish
+        } else if (candle.open <= this.prevCandle.close) {
+          this.setPattern(candle, 'egu', 'up'); // engulfing body candle bullish
         }
+        // else just close above (dont register that)
+      }
+    }
 
-        getId() { return 'cdlpatts'; }
+    this.over(candle, io);
+  }
 
-        addCandle(candle,io) {
-            super.addCandle(candle,io);
-            io.cdb().setSource(this.getId());
+  over(candle, io) {
+    this.prevCandle = candle;
 
-            if (this.isShootingStar(candle)) {
-                this.setPattern(candle,'shu','down');
-            }
-            else if (this.isHammer(candle)) {
-                this.setPattern(candle,'ham','up');
-            }
+    if (this.lastPatternBias) {
+      io.set(this.getId() + '.bias', this.lastPatternBias);
+    }
+  }
 
-            if (this.prevCandle !== undefined) {
-                             
-                if ( this.prevCandle.isGreen() && candle.isRed() ) {
-                    if (candle.closeBelow(this.prevCandle)) {
-                        this.setPattern(candle,'clb','down'); // close below pattern
-                    }
-                    else if (candle.close < this.prevCandle.open) {
-                        this.setPattern(candle,'egd','down'); // engulfing body candle bearish
-                    }
-                    return;
-                }
-    
-                if ( this.prevCandle.isRed() && candle.isGreen() ) {
-                    if (candle.closeAbove(this.prevCandle)) {
-                        this.setPattern(candle,'cla','up'); // close above pattern
-                    }
-                    else if (candle.close > this.prevCandle.open) {
-                        this.setPattern(candle,'egu','up'); // engulfing body candle bullish
-                    }
-                    return;
-                }
-                    
+  isShootingStar(candle) {
+    const c = candle.close - candle.low;
+    const o = candle.open - candle.low;
+    const h = candle.high - candle.low;
+    const target = h * 0.382;
+    return o < target && c < target;
+  }
 
-            }
-            
-            this.prevCandle = candle;
+  isHammer(candle) {
+    const c = candle.close - candle.low;
+    const o = candle.open - candle.low;
+    const h = candle.high - candle.low;
+    const target = h * 0.618;
+    return o > target && c > target;
+  }
 
-            if (this.lastPatternBias) {
-                io.set(this.getId()+'.bias',this.lastPatternBias);
-            }
-
-        }
-
-        isShootingStar(candle) {
-            const c = candle.close - candle.low;
-            const o = candle.open - candle.low;
-            const h = candle.high - candle.low;
-            const target = h * 0.382;
-            return ( (o<target) && (c<target) );
-        }
-
-        isHammer(candle) {
-            const c = candle.close - candle.low;
-            const o = candle.open - candle.low;
-            const h = candle.high - candle.low;
-            const target = h * 0.618;
-            return ( (o>target) && (c>target) );
-        }
-
-        setPattern(candle,name,bias) {
-            this.io.cdb().circleMiddle(candle,{ color: 'cyan', radius: 3, alpha: 0.1 });
-            this.io.cdb().labelBottom(candle,name);
-            this.io.set(this.getId()+'.new.'+name,candle);
-            this.lastPatternBias = bias;
-        }
-
+  setPattern(candle, name, bias) {
+    this.io
+      .cdb()
+      .circleMiddle(candle, { color: 'cyan', radius: 3, alpha: 0.1 });
+    this.io.cdb().labelBottom(candle, name);
+    this.io.set(this.getId() + '.new.' + name, candle);
+    this.lastPatternBias = bias;
+  }
 }
 
 module.exports = AnCandlePatterns;

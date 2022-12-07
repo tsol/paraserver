@@ -28,7 +28,7 @@ class MAGNETS extends Analyzer {
     super.addCandle(candle, io);
     io.cdb().setSource(this.getId());
 
-    this.magnets.removeTouched(candle);
+    const removedCount = this.magnets.removeTouched(candle);
 
     const impulseGap = io.get('impulse.gap');
 
@@ -38,6 +38,7 @@ class MAGNETS extends Analyzer {
       this.magnets.add(gapCenterPrice, 1, impulseGap.candle);
     }
 
+    /*
     const impulseTallCandle = io.get('impulse.tall');
     if (impulseTallCandle) {
       const levelsArray = L.getLevelsArrayFromFlags(io.getFlags());
@@ -53,7 +54,9 @@ class MAGNETS extends Analyzer {
       }
     }
 
-    return null;
+    */
+
+    io.set(this.getId(), this.magnets);
   }
 }
 

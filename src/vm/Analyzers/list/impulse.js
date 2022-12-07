@@ -1,4 +1,5 @@
 /*
+import { rriskRatio } from '../helpers/common';
  ** Impulse candle
  **
  ** returns  impulse.gap = { y0, y1, candle }           - price unfair gap inside of tall impulse candle
@@ -6,6 +7,7 @@
  ** returns  impulse.candle = impulseCandle
  **          impulse.start = startImpulseCandle
  **          impulse.end = lastImpulseCandle
+ **          impulse.trend = current impulseCandle if direction of impulse is different from previous impulse
  */
 
 const RMA = require('../helpers/RMA');
@@ -25,6 +27,8 @@ class IMPULSE extends Analyzer {
     this.prevCandleWasTall = false;
     this.prevPrevCandle = null;
     this.prevCandle = null;
+
+    this.trendFirstCandle = null;
   }
 
   init(io) {
@@ -59,6 +63,16 @@ class IMPULSE extends Analyzer {
       if (candle.volume / IMPULSE.START_MULT > prevAvg) {
         this.isInImpulse = true;
         res['impulse.start'] = candle;
+
+        if (this.trendFirstCandle !== null) {
+          if (this.trendFirstCandle.isGreen() !== candle.isGreen()) {
+            res['impulse.trend'] = candle;
+            this.trendFirstCandle = candle;
+          }
+        } else {
+          res['impulse.trend'] = candle;
+          this.trendFirstCandle = candle;
+        }
       }
     }
 
