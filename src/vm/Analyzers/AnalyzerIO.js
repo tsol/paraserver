@@ -51,6 +51,17 @@ class AnalyzersIO {
     );
   }
 
+  findCandlesBack(periodEndTime, maxCandlesBack, maxCandlesTofind, handler) {
+    return this.candleProcessor.findCandlesBack(
+      this.candle.symbol,
+      this.candle.timeframe,
+      periodEndTime,
+      maxCandlesBack,
+      maxCandlesTofind,
+      handler
+    );
+  }
+
   getSymbolInfo(symbol) {
     return this.ordersManager.getSymbolInfo(symbol);
   }

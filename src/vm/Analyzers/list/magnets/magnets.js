@@ -11,14 +11,14 @@ class Magnets {
     return {
       x1,
       id: 'mgn' + magnet.getId(),
-      color: 'purple',
+      color: magnet.getType() == Magnet.TYPES.IMBALANCE ? 'purple' : 'cyan',
       alpha: 0.3 + 0.1 * magnet.getWeight(),
       width: 2 + 0.5 * magnet.getWeight(),
     };
   }
 
-  add(price, weight, candle) {
-    const newMagnet = new Magnet(price, weight, candle, ++this.maxId);
+  add(price, weight, candle, type) {
+    const newMagnet = new Magnet(price, weight, candle, ++this.maxId, type);
     this.magnets.push(newMagnet);
 
     this.cdb.hline(candle, price, this.dbgParams(null, newMagnet));

@@ -1,12 +1,12 @@
-class Timeframes
-{
+class Timeframes {
+  DAY_LENGTH = 24 * 60 * 60000;
+  MIN_LENGTH = 60000;
+  HOUR_LENGTH = this.MIN_LENGTH * 60;
 
-    DAY_LENGTH = 24 * 60 * 60000;
-    MIN_LENGTH = 60000;
-    HOUR_LENGTH = this.MIN_LENGTH * 60;
-
-    TFRAMES = [
-        { name: '1d',  htf: null,  levelDays: 365, limit: 300,  trade: false, levelsLimitTime: 0, length: this.DAY_LENGTH },
+  // prettier-ignore
+  TFRAMES = [
+        { name: '1w',  htf: null,  levelDays: 365, limit: 300,  trade: false, levelsLimitTime: 0, length: 7 * this.DAY_LENGTH },
+        { name: '1d',  htf: '1w',  levelDays: 365, limit: 300,  trade: false, levelsLimitTime: 0, length: this.DAY_LENGTH },
         { name: '4h',  htf: '1d',  levelDays: 122, limit: 300,  trade: false, levelsLimitTime: 0, length: 4 * this.HOUR_LENGTH },
         { name: '1h',  htf: '4h',  levelDays:  41, limit: 300,  trade: false, levelsLimitTime: 0, length: 1 * this.HOUR_LENGTH },
         { name: '30m', htf: '4h',  levelDays:  17, limit: 300,  trade: false, levelsLimitTime: 0, length: 30 * this.MIN_LENGTH },
@@ -16,110 +16,113 @@ class Timeframes
         { name: '1m',  htf: '1h',  levelDays:   1, limit: 300,  trade: false, levelsLimitTime: 0, length: 1 * this.MIN_LENGTH, pulseOnly: true },
     ];
 
-    constructor() {
-        this.TFRAMES.forEach( (tf) => {
-            //tf.limit = Math.floor( (tf.days * this.DAY_LENGTH) / tf.length );
-            tf.levelsLimitTime = tf.levelDays * this.DAY_LENGTH;
-        });
+  constructor() {
+    this.TFRAMES.forEach((tf) => {
+      //tf.limit = Math.floor( (tf.days * this.DAY_LENGTH) / tf.length );
+      tf.levelsLimitTime = tf.levelDays * this.DAY_LENGTH;
+    });
+  }
+
+  getSmallest() {
+    return this.TFRAMES[this.TFRAMES.length - 1];
+  }
+
+  get(timeframe) {
+    return this.TFRAMES.find((t) => t.name == timeframe);
+  }
+
+  getHigherTimeframe(timeframe) {
+    return this.get(timeframe).htf;
+  }
+
+  getLevelLimitTime(timeframe) {
+    return this.get(timeframe).levelsLimitTime;
+  }
+
+  getTimeframeLength(timeframe) {
+    return this.get(timeframe).length;
+  }
+
+  /* TODO: remove date functions from here, change all calls to helpers/time.js */
+
+  mysqlFormat(dateObject) {
+    const now = dateObject;
+    var year = now.getFullYear();
+    var month = now.getMonth() + 1;
+    var day = now.getDate();
+    var hour = now.getHours();
+    var minute = now.getMinutes();
+    var second = now.getSeconds();
+    if (month.toString().length == 1) {
+      month = '0' + month;
     }
-
-    getSmallest()
-    {
-        return this.TFRAMES[ this.TFRAMES.length-1 ];
+    if (day.toString().length == 1) {
+      day = '0' + day;
     }
-
-    get(timeframe) {
-        return this.TFRAMES.find( t => t.name == timeframe );
+    if (hour.toString().length == 1) {
+      hour = '0' + hour;
     }
-
-    getHigherTimeframe(timeframe) {
-        return this.get(timeframe).htf;
-    };
-
-    getLevelLimitTime(timeframe) {
-        return this.get(timeframe).levelsLimitTime;
+    if (minute.toString().length == 1) {
+      minute = '0' + minute;
     }
-
-    getTimeframeLength(timeframe) {
-        return this.get(timeframe).length;
+    if (second.toString().length == 1) {
+      second = '0' + second;
     }
+    var dateTime =
+      year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+    return dateTime;
+  }
 
+  currentDatetime() {
+    return this.mysqlFormat(new Date());
+  }
 
-    /* TODO: remove date functions from here, change all calls to helpers/time.js */
+  currentTimestamp() {
+    const date = new Date();
+    return date.getTime();
+  }
 
-    mysqlFormat(dateObject) {
-        const now     = dateObject;
-        var year    = now.getFullYear();
-        var month   = now.getMonth()+1; 
-        var day     = now.getDate();
-        var hour    = now.getHours();
-        var minute  = now.getMinutes();
-        var second  = now.getSeconds(); 
-        if(month.toString().length == 1) {
-             month = '0'+month;
-        }
-        if(day.toString().length == 1) {
-             day = '0'+day;
-        }   
-        if(hour.toString().length == 1) {
-             hour = '0'+hour;
-        }
-        if(minute.toString().length == 1) {
-             minute = '0'+minute;
-        }
-        if(second.toString().length == 1) {
-             second = '0'+second;
-        }   
-        var dateTime = year+'-'+month+'-'+day+' '+hour+':'+minute+':'+second;   
-        return dateTime;
+  dateToTimestamp(dateString) {
+    if (!dateString) {
+      return null;
     }
+    const date = new Date(dateString);
+    return date.getTime();
+  }
 
-    currentDatetime()
-    {
-        return this.mysqlFormat(new Date());
-    }
+  timestampDaysBack(days) {
+    var d = new Date();
+    d.setDate(d.getDate() - days);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }
 
-    currentTimestamp()
-    {
-        const date = new Date();
-        return date.getTime();
-    }
+  timestampToDate(timestamp) {
+    let od = new Date(timestamp);
+    return (
+      od.toLocaleDateString('ru-RU') + ' ' + od.toLocaleTimeString('ru-RU')
+    );
+  }
 
-    dateToTimestamp(dateString) {
-        if (! dateString ) { return null; }
-        const date = new Date(dateString);
-        return date.getTime();
-    }
+  timestampTime(timestamp) {
+    let od = new Date(timestamp);
+    return od.toLocaleTimeString('ru-RU');
+  }
 
-    timestampDaysBack(days) {
-        var d = new Date();
-        d.setDate(d.getDate() - days);
-        d.setHours(0,0,0,0);
-        return d.getTime();
-    }
+  getCandleTimeframeLength(candle) {
+    return this.TFRAMES.find((tf) => tf.name === candle.timeframe).length;
+  }
 
-    timestampToDate(timestamp) {
-        let od = new Date(timestamp);
-        return od.toLocaleDateString('ru-RU')+' '+od.toLocaleTimeString('ru-RU');
-    }
+  checkCandleShorter(candle) {
+    return (
+      candle.openTime + this.getCandleTimeframeLength(candle) >=
+      candle.closeTime - 1
+    );
+  }
 
-    timestampTime(timestamp) {
-        let od = new Date(timestamp);
-        return od.toLocaleTimeString('ru-RU');
-    }
-
-    getCandleTimeframeLength(candle) {
-        return this.TFRAMES.find( tf => tf.name === candle.timeframe).length;
-    }
-
-    checkCandleShorter(candle) {
-        return (candle.openTime + this.getCandleTimeframeLength(candle) >= candle.closeTime-1);
-    }
-
-    checkCandleCloseTimeInFuture(candle) {
-        return (candle.closeTime > this.currentTimestamp());
-    }
-
+  checkCandleCloseTimeInFuture(candle) {
+    return candle.closeTime > this.currentTimestamp();
+  }
 }
 
 const TF = new Timeframes();

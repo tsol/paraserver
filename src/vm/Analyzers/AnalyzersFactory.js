@@ -44,7 +44,7 @@ class AnalyzersFactory {
       [
         'mat1',
         'matrend',
-        { ma1: 'emac20', ma2: 'emac50', ma3: 'emac200', name: '1' },
+        { ma1: 'emac20', ma2: 'emac50', ma3: 'emac100', name: '1' },
         null,
       ],
 

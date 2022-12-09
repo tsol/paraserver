@@ -1,8 +1,11 @@
 class Magnet {
-  constructor(price, weight, candle, id) {
+  static TYPES = Object.freeze({ IMBALANCE: 'im', ORDERBLOCK: 'ob' });
+
+  constructor(price, weight, candle, id, type) {
     this.price = price;
     this.weight = weight;
     this.candle = candle;
+    this.type = type;
     this.id = id;
   }
   getId() {
@@ -19,6 +22,9 @@ class Magnet {
   }
   getWeight() {
     return this.weight;
+  }
+  getType() {
+    return this.type;
   }
 }
 

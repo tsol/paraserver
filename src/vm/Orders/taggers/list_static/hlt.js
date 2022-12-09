@@ -7,7 +7,7 @@ const { TF } = require('../../../../types/Timeframes.js');
 const Tagger = require('../types/Tagger');
 
 class HLT extends Tagger {
-  static MA_TIMEFRAMES = ['15m', '1h'];
+  static MA_TIMEFRAMES = ['15m', '1h', '1d'];
 
   getTagsDescription() {
     let tags = [];
@@ -45,6 +45,8 @@ class HLT extends Tagger {
       entry.symbol + '-' + timeframe,
       'hl_trend'
     );
+
+    if (!hlTrend) return null;
 
     /*
         ** hl_trend: {
