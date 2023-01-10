@@ -63,6 +63,17 @@ When new VM object is being created - it goes the following loop:
 12. All updates in broker state are passed to Telegram bot using HandleBrokerAccountEvents interface events.
 
 
+## TODO
+
+Lots of stuff todo, however we are on a verge of total refactoring of order management (see TOrdersManager mockup file).
+Most of stuff starting from Ticker->addCandle should be remade. 
+
+Possibly its time to convert everything to Typescript and ES modules.
+
+But the main problem is to solve order flow to make it more clean and sane and allowing
+whole system to implement partial orders closure and trailing stops without ugly workarounds!
+
+
 
 
 
