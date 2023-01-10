@@ -18,7 +18,7 @@ const ClientsEventHandler = require('./src/clients/ClientsEventHandler.js');
 const brokerCandles = new BinanceUSDMCandles(
   SETTINGS.users.harry.brokers.binance
 );
-const brokerUser = new BinanceUSDMUser(SETTINGS.users.utah.brokers.binance);
+const brokerUser = new BinanceUSDMUser(SETTINGS.users.harry.brokers.binance);
 const dbCandles = new MysqlCandles();
 const dbAccessFactory = new DBAccessFactory(new MysqlProvider());
 
