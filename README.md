@@ -28,6 +28,7 @@ defined trading plan (which is mostly an entries signal filter).
 
 ### Analyzers
 Javascript modules dynamicly loaded upon VM creation providing Indicators and Strategies logic. Reside in /src/vm/Analyzers/list/
+This is the core trading logic. Indicators form FLAG state, strategies triggers Entries upon those flags.
 
 ### Taggers
 A list of modules providing Entries tagging for future conditional Entries filtering. Reside in /src/vm/Orders/taggers/
