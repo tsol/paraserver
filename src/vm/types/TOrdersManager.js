@@ -1,4 +1,9 @@
 
+/*
+** This is mock up of future general structure REFACTORING.
+**
+**
+*/
 
 OrderState = 'wait','active','closed','canceled','error';
 
