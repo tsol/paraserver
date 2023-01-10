@@ -9,7 +9,7 @@ The main purpose of this software is to allow user to run different market strat
 ## Entry point - pserver3.js
 
 Currently the set up of the server is done in pserver3.js file, which creates only one instance of user-worker (called vm).
-So its one user mode at this stage. However the core supports any number of VMs to be created - so potensially serving many users
+So its one user mode at this stage. However the core supports any number of VMs to be created - so potentially serving many users
 on single instance. All processor intensive operations are broked down into chunks to allow smooth loop operation.
 In future some logic might be transfered to separate workers.
 
