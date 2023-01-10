@@ -4,7 +4,7 @@
  ** It stores retreived candles in database, and the ones missing -
  ** requests from broker
  **
- ** Once retreived from broker those candles a stored in database
+ ** Once retreived from broker those candles are stored in database
  ** for future cached access.
  **
  ** This class allows much quicker data reload debug when developing strategies
@@ -12,6 +12,7 @@
  */
 
 const { TF } = require('../types/Timeframes.js');
+const TH = require('../helpers/time');
 
 class CandleProxy {
   // Type: DBCandlesInterface, BrokerCandlesInterface
@@ -31,7 +32,7 @@ class CandleProxy {
   }
 
   async getClosedCandlesSince(symbol, timeframe, sinceTimestamp, doUseBroker) {
-    const currentTimestamp = TF.currentTimestamp();
+    const currentTimestamp = TH.currentTimestamp();
     return await this.getCandlesPeriod(
       symbol,
       timeframe,
@@ -101,9 +102,9 @@ class CandleProxy {
             '-' +
             timeframe +
             ') ' +
-            TF.timestampToDate(sinceTimestamp) +
+            TH.ls(sinceTimestamp) +
             ' <- DB -> ' +
-            TF.timestampToDate(toTimestamp)
+            TH.ls(toTimestamp)
         );
         return dbCandles;
       }
@@ -118,11 +119,11 @@ class CandleProxy {
           '-' +
           timeframe +
           ') ' +
-          TF.timestampToDate(sinceTimestamp) +
+          TH.ls(sinceTimestamp) +
           ' <- DB -> ' +
-          TF.timestampToDate(needBrokerSince) +
+          TH.ls(needBrokerSince) +
           ' <- BROKER -> ' +
-          TF.timestampToDate(needBrokerTo)
+          TH.ls(needBrokerTo)
       );
 
       let brokerCandles = await broker.loadCandlesPeriod(
@@ -151,13 +152,13 @@ class CandleProxy {
         '-' +
         timeframe +
         ') ' +
-        TF.timestampToDate(needBrokerSince) +
+        TH.ls(needBrokerSince) +
         ' <- BROKER -> ' +
-        TF.timestampToDate(needBrokerTo) +
+        TH.ls(needBrokerTo) +
         ' <- DB -> ' +
-        TF.timestampToDate(lastCandle.closeTime - 1) +
+        TH.ls(lastCandle.closeTime - 1) +
         ' <- ? -> ' +
-        TF.timestampToDate(toTimestamp)
+        TH.ls(toTimestamp)
     );
 
     brokerCandlesBeforeDb = await broker.loadCandlesPeriod(
@@ -179,11 +180,11 @@ class CandleProxy {
           '-' +
           timeframe +
           ') ' +
-          TF.timestampToDate(sinceTimestamp) +
+          TH.ls(sinceTimestamp) +
           ' <- DB-BROKER1 -> ' +
-          TF.timestampToDate(needBrokerSince) +
+          TH.ls(needBrokerSince) +
           ' <- BROKER -> ' +
-          TF.timestampToDate(needBrokerTo)
+          TH.ls(needBrokerTo)
       );
 
       brokerCandlesAfterDb = await broker.loadCandlesPeriod(
@@ -274,9 +275,9 @@ class PIO {
           '-' +
           lc.timeframe +
           ' open: ' +
-          TF.timestampToDate(lc.openTime) +
+          TH.ls(lc.openTime) +
           ' close: ' +
-          TF.timestampToDate(lc.closeTime)
+          TH.ls(lc.closeTime)
       );
       candlesArray.pop();
     }

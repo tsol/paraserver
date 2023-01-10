@@ -112,8 +112,7 @@ class VMCandleProcessor extends CandleProcessor {
       ticker.addCandle(closedCandle, this.flags, this.isLive);
     }
 
-    // todo: if running live: start gathering candles on phase start
-    // dump them to database upon ending
+    // todo: ticker must return orders to init
   }
 
   processPhaseEnd(pulseEndTime) {

@@ -6,10 +6,16 @@ const Strategy = require('../types/Strategy');
 
 const L = require('../helpers/levels.js');
 const { rriskRatio } = require('../helpers/common');
+const {
+  getLevelsArrayFromFlags,
+  getLevelsInfoAtCandleArray,
+  getLevelsYRange,
+} = require('../helpers/levels.js');
 
 class PARAMS {
   static MIN_RRISK = 1.35;
   static STOP_ADD_ATR = 1.1;
+  static STOP_MIN_ATR = 0.1;
 }
 
 class VOLREV extends Strategy {
@@ -30,6 +36,7 @@ class VOLREV extends Strategy {
     io.require('impulse');
     io.require('magnets');
     io.require('atr14');
+    io.require('mat1');
   }
 
   getId() {
@@ -66,8 +73,45 @@ class VOLREV extends Strategy {
     const impulseLastCandle = io.get('impulse.end');
     if (!impulseLastCandle) return;
 
-    const entryPrice = candle.close;
+    // ETHUSDT-15m-volrev-1655268299999
+    //ETHUSDT-15m-volrev-1670398199999
+    let test = 0;
+
     const isLong = !this.impulseUp;
+
+    const mat = io.get('mat1');
+
+    if (mat) {
+      if ((isLong && mat == 'UP') || (!isLong && mat == 'DN')) {
+        return this.impulseOver();
+      }
+    }
+
+    const bounceInfo = this.findBounceOffLevel(
+      isLong,
+      [impulseLastCandle, candle],
+      io.getFlags()
+    );
+
+    if (!bounceInfo) return this.impulseOver();
+
+    this.makeEntry(isLong, candle, io, bounceInfo);
+
+    this.impulseOver();
+  }
+
+  findBounceOffLevel(isLong, candles, flags) {
+    const levels = getLevelsArrayFromFlags(flags);
+
+    const levelsInfo = getLevelsInfoAtCandleArray(levels, candles, isLong);
+    if (levelsInfo.levels.length === 0) return null;
+
+    const rangeInfo = getLevelsYRange(levelsInfo.levels);
+    return rangeInfo;
+  }
+
+  makeEntry(isLong, candle, io, bounceInfo) {
+    const entryPrice = candle.close;
 
     const magnets = io.get('magnets');
 
@@ -88,14 +132,15 @@ class VOLREV extends Strategy {
       ? recentMagnetsInfo.maxPrice
       : recentMagnetsInfo.minPrice;
 
-    /*
-      const takeProfit =
-      (recentMagnetsInfo.maxPrice + recentMagnetsInfo.minPrice) / 2;
-    */
-
     const stopLoss =
-      this.maxFrontImpulseTail +
+      (isLong
+        ? Math.min(this.maxFrontImpulseTail, bounceInfo.levelY0)
+        : Math.max(this.maxFrontImpulseTail, bounceInfo.levelY1)) +
       io.get('atr14') * PARAMS.STOP_ADD_ATR * (isLong ? -1 : 1);
+
+    // const stopLoss =
+    //   (isLong ? candle.low : candle.high) +
+    //   io.get('atr14') * PARAMS.STOP_MIN_ATR * (isLong ? -1 : 1);
 
     if (rriskRatio(entryPrice, takeProfit, stopLoss) >= PARAMS.MIN_RRISK) {
       io.makeEntry(this, isLong ? 'buy' : 'sell', {
@@ -103,8 +148,6 @@ class VOLREV extends Strategy {
         stopLoss,
       });
     }
-
-    this.impulseOver();
   }
 
   impulseOver() {

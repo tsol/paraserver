@@ -1,6 +1,5 @@
 const SETTINGS = require('../../../private/private.js');
 const { TF } = require('../../types/Timeframes.js');
-const { TH } = require('../../helpers/time.js');
 
 class TickerProcessor {
   constructor(symbol, timeframe, analyzersBox, candleDebug) {

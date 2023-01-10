@@ -3,12 +3,12 @@
  **
  */
 
-const BrokerEventsCandlesInterface = require('../../brokers/types/BrokerEventsCandlesInterface.js');
+const HandleBrokerCandlesEvents = require('../../brokers/types/HandleBrokerCandlesEvents.js');
 
 const { TF } = require('../../types/Timeframes.js');
 const TH = require('../../helpers/time.js');
 
-class LivePulser extends BrokerEventsCandlesInterface {
+class LivePulser extends HandleBrokerCandlesEvents {
   static PULSE_WAIT_TIMEOUT = 10000;
 
   constructor(symbols, timeframes, pulseTF, candleSequencer) {

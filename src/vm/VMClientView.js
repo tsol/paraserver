@@ -4,7 +4,7 @@
  ** interface to the system.
  */
 
-class ClientIO {
+class VMClientView {
   constructor(vm) {
     this.vm = vm;
   }
@@ -116,4 +116,4 @@ class ClientIO {
   }
 }
 
-module.exports = ClientIO;
+module.exports = VMClientView;

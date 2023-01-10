@@ -1,9 +1,9 @@
 // todo: should accept manipulate RealOrder class
 
-const UserEventsInterface = require('../../brokers/types/BrokerEventsUserInterface.js');
+const HandleBrokerAccountEvents = require('../../brokers/types/HandleBrokerAccountEvents.js');
 const OrderReal = require('../../types/OrderReal');
 
-class OrdersReal extends UserEventsInterface {
+class OrdersReal extends HandleBrokerAccountEvents {
   constructor(brokerUser, clients) {
     super();
     this.broker = brokerUser;

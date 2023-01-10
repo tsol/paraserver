@@ -43,72 +43,6 @@ class Timeframes {
     return this.get(timeframe).length;
   }
 
-  /* TODO: remove date functions from here, change all calls to helpers/time.js */
-
-  mysqlFormat(dateObject) {
-    const now = dateObject;
-    var year = now.getFullYear();
-    var month = now.getMonth() + 1;
-    var day = now.getDate();
-    var hour = now.getHours();
-    var minute = now.getMinutes();
-    var second = now.getSeconds();
-    if (month.toString().length == 1) {
-      month = '0' + month;
-    }
-    if (day.toString().length == 1) {
-      day = '0' + day;
-    }
-    if (hour.toString().length == 1) {
-      hour = '0' + hour;
-    }
-    if (minute.toString().length == 1) {
-      minute = '0' + minute;
-    }
-    if (second.toString().length == 1) {
-      second = '0' + second;
-    }
-    var dateTime =
-      year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
-    return dateTime;
-  }
-
-  currentDatetime() {
-    return this.mysqlFormat(new Date());
-  }
-
-  currentTimestamp() {
-    const date = new Date();
-    return date.getTime();
-  }
-
-  dateToTimestamp(dateString) {
-    if (!dateString) {
-      return null;
-    }
-    const date = new Date(dateString);
-    return date.getTime();
-  }
-
-  timestampDaysBack(days) {
-    var d = new Date();
-    d.setDate(d.getDate() - days);
-    d.setHours(0, 0, 0, 0);
-    return d.getTime();
-  }
-
-  timestampToDate(timestamp) {
-    let od = new Date(timestamp);
-    return (
-      od.toLocaleDateString('ru-RU') + ' ' + od.toLocaleTimeString('ru-RU')
-    );
-  }
-
-  timestampTime(timestamp) {
-    let od = new Date(timestamp);
-    return od.toLocaleTimeString('ru-RU');
-  }
-
   getCandleTimeframeLength(candle) {
     return this.TFRAMES.find((tf) => tf.name === candle.timeframe).length;
   }
@@ -118,10 +52,6 @@ class Timeframes {
       candle.openTime + this.getCandleTimeframeLength(candle) >=
       candle.closeTime - 1
     );
-  }
-
-  checkCandleCloseTimeInFuture(candle) {
-    return candle.closeTime > this.currentTimestamp();
   }
 }
 

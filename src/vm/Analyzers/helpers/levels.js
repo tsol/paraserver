@@ -113,6 +113,18 @@ function getLevelsInfoAtRange(levelsArray, { y0, y1 }) {
   );
 }
 
+function getLevelsInfoAtCandleArray(levelsArray, candleArray, isLong) {
+  const res = { y0: Number.MAX_SAFE_INTEGER, y1: 0 };
+
+  candleArray.forEach((candle) => {
+    const { y0, y1 } = getCandleTouchRange(candle, isLong);
+    res.y0 = Math.min(res.y0, y0);
+    res.y1 = Math.max(res.y1, y1);
+  });
+
+  return getLevelsInfoAtRange(levelsArray, res);
+}
+
 module.exports = Object.freeze({
   isPatternAndBounce,
   isCandleBouncesOfLevel,
@@ -128,4 +140,5 @@ module.exports = Object.freeze({
   getLevelsInfo,
   getLevelsInfoAtPrice,
   getLevelsInfoAtRange,
+  getLevelsInfoAtCandleArray,
 });
