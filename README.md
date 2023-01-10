@@ -33,7 +33,18 @@ Javascript modules dynamicly loaded upon VM creation providing Indicators and St
 A list of modules providing Entries tagging for future conditional Entries filtering. Reside in /src/vm/Orders/taggers/
 
 ### Broker Interface
-Connection to any broker is done by implementing 
+Connection to any broker is done by implementing BrokerAccountInterface and BrokerCandlesInterface Interfaces. Currently only BINANCE implemented.
+
+### Data storage
+Data storage is used to store massive amount of Candles data, user settings and results of candle processing through VM. To implement data storage you need to implement DBCandlesInterface and DBProviderInterface (later Candles interface will be removed in favor of DBProviderInterface approach).
+
+### CandleProxy
+Is a caching proxy between candle users in application and the broker. It stores candles in DB and fetches only missing candles from BrokerCandleInterface object.
+
+### CandleSequencer
+Is an ordering tool which takes in sequential array of candles (either form storage or newly arrived), joins them into bunches, waits for
+every candle expected at current iteration (phase) to arrive and then passes them to CandleProcessor in correct order (higher timeframes go first,
+BITCOIN comes before other pairs, etc).
 
 ## Booting up VM and business logic operation
 
