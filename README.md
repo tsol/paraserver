@@ -2,7 +2,7 @@
 
 ## Description
 
-This is the server part of the PARAYOK (Trading Helper Bot). For client part see [paraclient](https://github.com/tsol/paraclient). 
+This is the server part of the **PARAYOK** (Trading Helper Bot). For client part see [paraclient](https://github.com/tsol/paraclient). 
 
 The main purpose of this software is to allow user to run different market strategies implemented as javascript modules, combine them, filter entry points, create an optimal trading plan - and then the system trades automaticly on any broker (currently only BINANCE-USDM implemented)
 
@@ -31,6 +31,9 @@ Javascript modules dynamicly loaded upon VM creation providing Indicators and St
 
 ### Taggers
 A list of modules providing Entries tagging for future conditional Entries filtering. Reside in /src/vm/Orders/taggers/
+
+### Broker Interface
+Connection to any broker is done by implementing 
 
 ## Booting up VM and business logic operation
 
