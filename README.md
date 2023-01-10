@@ -56,10 +56,10 @@ When new VM object is being created - it goes the following loop:
 3. AnalyzerFactory creates (dynamicly loads .js and initializes instances) a set of ANALYZERS for each Ticker.
 4. Global FLAG storage is created (global flags state for each iteration).
 5. CandleSequencer is initialized and run - its goal is to fetch and EXECUTE candles in orderly fashion (we always want higher timeframe candles to be processed first EVERY TIME, so that ANALYZERS can do their job)
-6. CandleSequencer feeds candles by phases to OrderManager, which in turn runs all Tickers->analyzers against these new closed candles, generating updates to FLAGS object (for indicator) and new Entries (for strategies)
+6. CandleSequencer feeds candles by phases to CandleProcessor, which in turn runs all Tickers->analyzers against these new closed candles, generating updates to FLAGS object (indicators) and new Entries (strategies) to OrdersManager class.
 7. Once all history candles were processed Sequencer triggers switchLive() for ordersManager indicating that REAL BROKER ORDERS can take place now.
-8. When a strategy fires up an Entry - new Entry object is added to emulated orders list.
-10. If users filters (entryPlan) applies to this Entry - new Order is created and stored in Orders array.
+8. When a strategy fires up an Entry - new Entry object is added to emulated orders list (OrderManager).
+10. If users filters (entryPlan) applies to this Entry - new Order is created and stored in Orders array (entryPlan).
 11. If we are online (not loading up history candles) - the Order is being passed to RealOrders.js module, which operates real BROKER using APIs defined in BrokerAccount Interface.
 12. All updates in broker state are passed to Telegram bot using HandleBrokerAccountEvents interface events.
 
@@ -71,8 +71,7 @@ Most of stuff starting from Ticker->addCandle should be remade.
 
 Possibly its time to convert everything to Typescript and ES modules.
 
-But the main problem is to solve order flow to make it more clean and sane and allowing
-whole system to implement partial orders closure and trailing stops without ugly workarounds!
+But the main problem is to solve order flow to make it more clean and sane and allowing whole system to implement partial orders closure and trailing stops without ugly workarounds!
 
 
 
