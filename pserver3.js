@@ -22,65 +22,39 @@ const brokerUser = new BinanceUSDMUser(SETTINGS.users.harry.brokers.binance);
 const dbCandles = new MysqlCandles();
 const dbAccessFactory = new DBAccessFactory(new MysqlProvider());
 
-dbAccessFactory.connect(SETTINGS.databases.mysqlData).then(() => {
-  dbCandles.connect(SETTINGS.databases.mysqlCandles).then(() => {
-    brokerCandles.init().then(() => {
-      brokerUser.init().then(() => {
-        const candleProxy = new CandleProxy(dbCandles, brokerCandles);
+(async function main() {
+  await dbAccessFactory.connect(SETTINGS.databases.mysqlData);
+  await dbCandles.connect(SETTINGS.databases.mysqlCandles);
 
-        const clients = new ClientsEventHandler();
+  await brokerCandles.init();
+  await brokerUser.init();
 
-        const vm = new VM(1, dbAccessFactory, candleProxy, brokerUser, clients);
+  const candleProxy = new CandleProxy(dbCandles, brokerCandles);
+  const clients = new ClientsEventHandler();
 
-        clients.start(new VMClientView(vm));
+  const vm = new VM(1, dbAccessFactory, candleProxy, brokerUser, clients);
+  clients.start(new VMClientView(vm));
 
-        // ['BTCUSDT','ETHUSDT','ANCUSDT','LUNAUSDT','WAVESUSDT','ARUSDT','ATOMUSDT','UNIUSDT','FILUSDT','AVAXUSDT','SOLUSDT','SRMUSDT', 'ZRXUSDT'];
+  let symbols = null;
+  let timeframes = ['1h'];
+  let strategies = [];
+  let fromTime = TH.utcDaysBack(92);
+  let toTime = null;
 
-        let symbols = null;
-        let timeframes = ['1h'];
-        let strategies = [];
-        let fromTime = TH.utcDaysBack(92);
-        let toTime = null;
+  if (SETTINGS.debugSymbols) symbols = SETTINGS.debugSymbols;
+  if (SETTINGS.debugTimeframes) timeframes = SETTINGS.debugTimeframes;
+  if (SETTINGS.debugStrategies) strategies = SETTINGS.debugStrategies;
+  if (SETTINGS.debugFrom) fromTime = TH.dateToTimestamp(SETTINGS.debugFrom);
+  if (SETTINGS.debugTo) toTime = TH.dateToTimestamp(SETTINGS.debugTo);
+  if (SETTINGS.debugDays) fromTime = TH.utcDaysBack(SETTINGS.debugDays);
+  if (SETTINGS.notLive) toTime = new Date().getTime();
 
-        if (SETTINGS.debugSymbols) {
-          symbols = SETTINGS.debugSymbols;
-        }
-        if (SETTINGS.debugTimeframes) {
-          timeframes = SETTINGS.debugTimeframes;
-        }
-        if (SETTINGS.debugStrategies) {
-          strategies = SETTINGS.debugStrategies;
-        }
-        if (SETTINGS.debugFrom) {
-          fromTime = TH.dateToTimestamp(SETTINGS.debugFrom);
-        }
-        if (SETTINGS.debugTo) {
-          toTime = TH.dateToTimestamp(SETTINGS.debugTo);
-        }
+  if (!symbols) symbols = await brokerCandles.getTradableSymbols();
 
-        if (SETTINGS.debugDays) {
-          fromTime = TH.utcDaysBack(SETTINGS.debugDays);
-        }
+  symbols = symbols.filter((c) => c !== 'BTCUSDT'); // BTC always first )
+  symbols.unshift('BTCUSDT');
 
-        if (SETTINGS.notLive) {
-          toTime = new Date().getTime();
-        }
+  await vm.init(symbols, timeframes, strategies, fromTime, toTime, {});
 
-        brokerCandles.getTradableSymbols().then((allSymbols) => {
-          if (!symbols) {
-            symbols = allSymbols;
-          }
-
-          symbols = symbols.filter((c) => c !== 'BTCUSDT');
-          symbols.unshift('BTCUSDT');
-
-          vm.init(symbols, timeframes, strategies, fromTime, toTime, {}).then(
-            () => {
-              console.log('VM initialized');
-            }
-          );
-        });
-      });
-    });
-  });
-});
+  console.log('VM initialized');
+})();
