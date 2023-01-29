@@ -30,11 +30,13 @@ class VM {
     this.clients = clients;
     this.analyzersFactory = new AnalyzersFactory();
 
-    this.candleDebugDb = dataDb.makeCandleDebugIO(vmId);
     this.ordersDb = dataDb.makeOrdersIO(vmId);
     this.ordersDb.reset();
 
-    this.candleDebug = new CandleDebug(new StoreCache(this.candleDebugDb));
+    this.candleDebug = new CandleDebug(
+      new StoreCache(dataDb.makeCandleDebugIO(vmId))
+    );
+
     this.ordersManager = new OrdersManager(
       brokerUser,
       candleProxy.getBroker(),
@@ -61,7 +63,7 @@ class VM {
   }
 
   getCandleDebugDb() {
-    return this.candleDebugDb;
+    return this.candleDebug.getDb();
   }
   getCandleDebug() {
     return this.candleDebug;

@@ -15,99 +15,92 @@ DO not trade candles > 300 pips
 
 */
 
-const Strategy = require("../types/Strategy");
-
+const Strategy = require('../types/Strategy');
 
 class TTCWOFF extends Strategy {
+  static MIN_LENGTH = 2; /* minumum candles to close above ma20 */
 
-        static MIN_LENGTH = 2; /* minumum candles to close above ma20 */
+  constructor() {
+    super();
+    this.aboveCnt = 0;
+    this.belowCnt = 0;
+  }
 
-        constructor() {
-            super();
-            this.aboveCnt = 0;
-            this.belowCnt = 0;
+  getId() {
+    return 'ttcwoff';
+  }
+
+  init(io) {
+    io.require('atr14');
+    io.require('emac20');
+    io.require('cdlpatts');
+  }
+
+  addCandle(candle, io) {
+    super.addCandle(candle, io);
+    io.cdb().setSource(this.getId());
+
+    const atr = io.get('atr14');
+    const ma = io.get('emac20');
+
+    if (!ma || !atr) {
+      return false;
+    }
+
+    if (candle.low > ma) {
+      return this.aboveCnt++;
+    }
+
+    if (candle.high < ma) {
+      return this.belowCnt++;
+    }
+
+    const pip = io.getSymbolInfo(candle.symbol).tickSize;
+
+    //console.log('PIP: '+candle.symbol+' '+pip);
+
+    const tooBig = candle.bodySize() > 2 * atr || candle.bodySize() > 300 * pip;
+
+    if (candle.low <= ma) {
+      if (candle.bodyLow() > ma && this.aboveCnt >= TTCWOFF.MIN_LENGTH) {
+        if (!tooBig && io.get('cdlpatts.new.ham')) {
+          this.makeEntry(true, candle, io);
         }
+      }
 
-        getId() { return 'ttcwoff'; }
+      this.aboveCnt = 0;
+    }
 
-        init(io)
-        {
-            io.require('atr14');
-            io.require('emac20');
-            io.require('cdlpatts');
+    if (candle.high >= ma) {
+      if (candle.bodyHigh() < ma && this.belowCnt >= TTCWOFF.MIN_LENGTH) {
+        if (!tooBig && io.get('cdlpatts.new.shu')) {
+          this.makeEntry(false, candle, io);
         }
+      }
 
-        addCandle(candle,io) {
-            super.addCandle(candle,io);
-            io.cdb().setSource(this.getId());
+      this.belowCnt = 0;
+    }
+  }
 
-            const atr = io.get('atr14');
-            const ma = io.get('emac20');
+  makeEntry(isBuy, candle, io) {
+    const pip = io.getSymbolInfo(candle.symbol).tickSize;
+    const atr = io.get('atr14');
 
-            if (! ma || ! atr ) { return false; }
+    let slMargin = pip * (atr > 100 ? 50 : 20);
 
-            if (candle.low > ma)
-                { return this.aboveCnt++; }
+    //if (slMargin > atr*0.5) { slMargin = 0.5*atr; };
+    //if (slMargin < atr*0.1) { slMargin = 0.1*atr; }
 
-            if (candle.high < ma)
-                { return this.belowCnt++; }
- 
-            const pip = io.getSymbolInfo(candle.symbol).tickSize; 
+    //slMargin = atr;
+    //if (slMargin > atr ) { slMargin = atr; }
 
-            //console.log('PIP: '+candle.symbol+' '+pip);
+    let stopLoss = isBuy ? candle.low - slMargin : candle.high + slMargin;
 
-            const tooBig = (candle.bodySize() > 2 * atr) || (candle.bodySize() > 300 * pip);
-            
-            if (candle.low <= ma) {
-
-                if ( (candle.bodyLow() > ma) && (this.aboveCnt >= TTCWOFF.MIN_LENGTH))
-                {
-                    if (!tooBig && io.get('cdlpatts.new.ham')) {
-                        this.makeEntry(true,candle,io);
-                    }
-                }
-
-                this.aboveCnt = 0;
-            }
-
-
-            if (candle.high >= ma) {
-
-                if ( (candle.bodyHigh() < ma) && (this.belowCnt >= TTCWOFF.MIN_LENGTH))
-                {
-                    if (!tooBig && io.get('cdlpatts.new.shu')) {
-                        this.makeEntry(false,candle,io);   
-                    }
-                }
-
-                this.belowCnt = 0;
-            }
- 
-        }
-
-
-        makeEntry(isBuy,candle,io) {
-         
-            const pip = io.getSymbolInfo(candle.symbol).tickSize; 
-            const atr = io.get('atr14');
-            
-            let slMargin = pip *
-                    ( atr > 100 ? 50 : 20 );
-            
-            //if (slMargin > atr*0.5) { slMargin = 0.5*atr; };
-            //if (slMargin < atr*0.1) { slMargin = 0.1*atr; }
-
-            //slMargin = atr;
-            //if (slMargin > atr ) { slMargin = atr; }
-
-            let stopLoss = ( isBuy ? candle.low-slMargin : candle.high+slMargin );
-
-            io.makeEntry(this, ( isBuy ? 'buy' : 'sell'), { 
-                rrRatio: 1,
-                stopLoss: stopLoss 
-            }); 
-        }
-    
+    io.makeEntry(this, isBuy ? 'buy' : 'sell', {
+      rrRatio: 1,
+      stopLoss: stopLoss,
+    });
+  }
 }
 
 module.exports = TTCWOFF;

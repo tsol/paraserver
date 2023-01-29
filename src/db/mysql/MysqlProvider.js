@@ -11,7 +11,6 @@ const {
   saveCandleDebugs,
   resetCandleDebug,
   loadCandleDebugs,
-  prepareCandleDebug,
 } = require('./entities/mysql-CandleDebug');
 
 const {
@@ -19,7 +18,6 @@ const {
   saveOrders,
   resetOrders,
   loadOrders,
-  prepareOrders,
 } = require('./entities/mysql-Order');
 
 class MysqlProvider extends DBProviderInterface {
@@ -56,8 +54,8 @@ class MysqlProvider extends DBProviderInterface {
 
     this.connection = con;
 
-    await prepareCandleDebug(con);
-    await prepareOrders(con);
+    // await prepareCandleDebug(con);
+    // await prepareOrders(con);
 
     return con;
   }

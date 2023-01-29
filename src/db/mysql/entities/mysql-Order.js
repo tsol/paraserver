@@ -4,8 +4,7 @@ const Order = require('../../../types/Entry.js');
 const TABLE_NAME = 'orders';
 
 const CREATE_LINES = [
-  'id char(80) PRIMARY KEY',
-  'vmid int(11) DEFAULT NULL',
+  'id char(80) NOT NULL PRIMARY KEY',
   `time BIGINT NOT NULL DEFAULT 0`,
   `type enum('buy','sell') DEFAULT null`,
   `symbol CHAR(28) NOT NULL DEFAULT ''`,
@@ -31,14 +30,15 @@ const CREATE_LINES = [
   'KEY (time, symbol, timeframe)',
 ];
 
-async function prepareOrders(con) {
-  const resExists = await con.query(`SHOW TABLES LIKE '${TABLE_NAME}'`);
+async function prepareOrders(con, vmId) {
+  const table = TABLE_NAME + '_' + vmId;
+
+  const resExists = await con.query(`SHOW TABLES LIKE '${table}'`);
   if (resExists[0].length > 0) {
     return true;
   }
 
-  const sqlQuery =
-    `CREATE TABLE ${TABLE_NAME} (` + CREATE_LINES.join(', ') + ')';
+  const sqlQuery = `CREATE TABLE ${table} (` + CREATE_LINES.join(', ') + ')';
 
   console.log(sqlQuery);
 
@@ -51,7 +51,9 @@ async function loadOrders(
   vmId,
   { symbol, timeframe, timeFrom, timeTo, strategy, type }
 ) {
-  let sql = `SELECT * FROM ${TABLE_NAME} WHERE vmid = ${vmId}`;
+  const table = TABLE_NAME + '_' + vmId;
+
+  let sql = `SELECT * FROM ${table} WHERE 1=1`;
 
   if (symbol) {
     sql += ` AND symbol='${symbol}'`;
@@ -79,10 +81,10 @@ async function loadOrders(
 
 async function saveOrders(con, vmId, orders) {
   if (!orders || orders.length == 0) return;
+  const table = TABLE_NAME + '_' + vmId;
 
-  const sqlQuery = `INSERT INTO orders (
+  const sqlQuery = `INSERT INTO ${table} (
                 id,
-                vmid,
                 time,
                 type,
                 symbol,
@@ -113,7 +115,6 @@ async function saveOrders(con, vmId, orders) {
     let o = order.toSTORE();
     values.push([
       o.id,
-      vmId,
       o.time,
       o.type,
       o.symbol,
@@ -149,7 +150,9 @@ async function saveOrders(con, vmId, orders) {
 }
 
 async function updateOrder(con, vmId, obj) {
-  const sqlQuery = `UPDATE ${TABLE_NAME} SET 
+  const table = TABLE_NAME + '_' + vmId;
+
+  const sqlQuery = `UPDATE ${table} SET 
     active = ?,
     result = ?,
     closeTime = ?,
@@ -160,7 +163,7 @@ async function updateOrder(con, vmId, obj) {
     takePercentReached = ?,
     lossPriceReached = ?,
     lossPercentReached = ?
-  WHERE vmid = ? AND id = ?`;
+  WHERE id = ?`;
 
   const f = obj.toSTORE();
 
@@ -175,7 +178,6 @@ async function updateOrder(con, vmId, obj) {
     f.takePercentReached,
     f.lossPriceReached,
     f.lossPercentReached,
-    vmId,
     f.id,
   ];
 
@@ -188,7 +190,9 @@ async function updateOrder(con, vmId, obj) {
 }
 
 async function resetOrders(con, vmId) {
-  const sqlQuery = `DELETE FROM ${TABLE_NAME} WHERE vmid = ${vmId}`;
+  const table = TABLE_NAME + '_' + vmId;
+  await prepareOrders(con, vmId);
+  const sqlQuery = `DELETE FROM ${table}`;
   await con.query(sqlQuery);
   return true;
 }
@@ -198,5 +202,4 @@ module.exports = {
   loadOrders,
   saveOrders,
   resetOrders,
-  prepareOrders,
 };

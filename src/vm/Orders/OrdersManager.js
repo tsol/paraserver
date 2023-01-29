@@ -384,6 +384,12 @@ class OrdersManager {
   }
 
   closeEntry(entry, isWin, updatePrice) {
+    if (entry.id === 'BTCUSDT-5m-ttcwoff-1643026199999') {
+      console.log('FOUND: entry', entry);
+    }
+
+    if (!entry.isActive()) return;
+
     if (updatePrice !== null) {
       entry.updateCurrentPrice(updatePrice);
     }

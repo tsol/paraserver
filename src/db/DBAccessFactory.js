@@ -25,9 +25,8 @@ class DBAccessFactory {
 
   makeOrdersIO(vmId) {
     const con = this.connection;
-    const { save, update, reset, load } = this.db.getOrdersIO();
+    const { prepare, save, update, reset, load } = this.db.getOrdersIO();
     return {
-      // todo: change o.toSTORE from here to just o
       update: (obj) => update(con, vmId, obj),
       save: (objArray) => save(con, vmId, objArray),
       load: (params) => load(con, vmId, params),

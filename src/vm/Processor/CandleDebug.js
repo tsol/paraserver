@@ -11,6 +11,10 @@ class CandleDebug {
     this.forgotBefore = {};
   }
 
+  getDb() {
+    this.storeCache.getDb();
+  }
+
   getStoreCache() {
     return this.storeCache;
   }

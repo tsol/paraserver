@@ -32,7 +32,13 @@ const dbAccessFactory = new DBAccessFactory(new MysqlProvider());
   const candleProxy = new CandleProxy(dbCandles, brokerCandles);
   const clients = new ClientsEventHandler();
 
-  const vm = new VM(1, dbAccessFactory, candleProxy, brokerUser, clients);
+  const vm = new VM(
+    SETTINGS.vmid,
+    dbAccessFactory,
+    candleProxy,
+    brokerUser,
+    clients
+  );
   clients.start(new VMClientView(vm));
 
   let symbols = null;
