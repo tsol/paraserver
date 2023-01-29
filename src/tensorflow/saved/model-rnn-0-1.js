@@ -1,27 +1,16 @@
 const tf = require('@tensorflow/tfjs');
-const { entryStats, fobj } = require('../reports/helper');
+const { entryStats, fobj, fnum } = require('../reports/helper');
 
 class Model {
-  epochs = 90;
+  epochs = 150;
   validationSplit = 0.2;
   adamRate = 0.001;
-  batchSize = 64;
-  logEvery = 5;
-
-  loss = 'categoricalCrossentropy';
-  metrics = ['accuracy']; //  ['mae'], ['mse'], ['mape'], ['cosine']
-  labelFn = (order) => (order.result === 'won' ? [1, 0] : [0, 1]);
-  outLayer = { units: 2, activation: 'softmax' };
-
-  // loss = 'meanSquaredError';
-  // metrics = ['mae'];
-  // labelFn = (order) => order.gainPercent;
-  // outLayer = { units: 1, activation: 'relu' };
+  batchSize = 32;
 
   layers = [
     { type: 'dense', units: 24, activation: 'relu' },
     { type: 'dense', units: 48, activation: 'relu' },
-    { type: 'dropout', rate: 0.2 },
+    { type: 'dropout', rate: 0.4 },
     { type: 'dense', units: 12, activation: 'relu' },
   ];
 
@@ -92,7 +81,7 @@ class Model {
   }
 
   createOneLabelTensor(order) {
-    return tf.tensor(this.labelFn(order));
+    return tf.tensor(order.result === 'won' ? [1, 0] : [0, 1]);
   }
 
   createBatchLabelTensor(ordersArray) {
@@ -124,13 +113,15 @@ class Model {
       }
     });
 
-    this.model.add(tf.layers.dense(this.outLayer));
+    this.model.add(tf.layers.dense({ units: 2, activation: 'softmax' }));
 
     this.model.compile({
       optimizer: tf.train.adam(this.adamRate),
-      loss: this.loss,
-      metrics: this.metrics,
+      loss: 'categoricalCrossentropy',
+      metrics: ['accuracy'],
     });
+    //    loss: 'meanSquaredError',
+    // metrics: ['mae'],
 
     return this.train(ordersArray);
   }
@@ -141,25 +132,22 @@ class Model {
 
     console.log('Training model...');
 
-    const earlyStopping = tf.callbacks.earlyStopping({
-      monitor: 'val_acc',
-      minDelta: 0.01,
-      patience: 5,
-      mode: 'max',
-      verbose: 1000,
-    });
-
-    // const onEpochEnd = (epoch, log) => {
-    //   if (epoch % this.logEvery !== 0) return;
-    //   console.log(`epoch ${epoch}`, fobj(logs, 5));
-    // };
-
     const history = await this.model.fit(input, labels, {
       epochs: this.epochs,
       batchSize: this.batchSize,
       validationSplit: this.validationSplit,
-      shuffle: true,
-      callbacks: [earlyStopping],
+      verbose: false,
+      callbacks: {
+        onEpochEnd: async (epoch, logs) => {
+          if (epoch % 20 !== 0) return;
+          console.log(
+            `Epoch ${epoch}: loss = ${logs.loss.toFixed(3)}; ` +
+              `accuracy = ${logs.acc.toFixed(3)}; ` +
+              `val_loss = ${logs.val_loss.toFixed(3)}; ` +
+              `val_accuracy = ${logs.val_acc.toFixed(3)}`
+          );
+        },
+      },
     });
 
     return history;
@@ -169,11 +157,13 @@ class Model {
     const testData = this.createBatchInputTensor(testOrders);
     const testLabels = this.createBatchLabelTensor(testOrders);
 
-    // console.log('Test data: ');
-    // testData.print();
+    /*
+    console.log('Test data: ');
+    testData.print();
 
-    // console.log('Test labels: ');
-    // testLabels.print();
+    console.log('Test labels: ');
+    testLabels.print();
+    */
 
     const evalOutput = this.model.evaluate(testData, testLabels);
 
@@ -197,8 +187,6 @@ class Model {
     const testResultScores = testResult
       .sort((a, b) => b[0] - a[0])
       .map(([score, order]) => score);
-
-    // console.log('testResultScores: ', testResultScores);
 
     const totalStats = entryStats(testResultOrders);
     const topStats = entryStats(

@@ -12,7 +12,7 @@ class CandleDebug {
   }
 
   getDb() {
-    this.storeCache.getDb();
+    return this.storeCache.getDb();
   }
 
   getStoreCache() {

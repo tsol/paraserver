@@ -25,9 +25,8 @@ async function load(
   );
 
   const ordersIO = dbAccessFactory.makeOrdersIO(opts.vmid);
-  const orders = (await ordersIO.load(opts))
-    .filter((o) => o.active !== 'Y')
-    .filter((o) => o.tags.MAXPRF.value > 0.5);
+  const orders = (await ordersIO.load(opts)).filter((o) => o.active !== 'Y');
+
   return { orders, candles };
 }
 

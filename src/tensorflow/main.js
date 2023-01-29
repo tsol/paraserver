@@ -1,38 +1,59 @@
 const { load } = require('./data.js');
 const Model = require('./model');
 const TH = require('../helpers/time');
+const CandleReadCache = require('./CandleReadCache');
+
+const candleReadCache = new CandleReadCache({ limit: Infinity });
+
+const filterMinProfit = 0.0;
+const testSplit = 0.2;
 
 (async () => {
   const data = await load({
-    vmid: 1,
-    symbol: 'BTCUSDT',
+    vmid: 2,
+    //symbol: 'BTCUSDT',
     timeframe: '5m',
-    timeFrom: TH.timestampDaysBack(365),
+    timeFrom: TH.timestampDaysBack(365 * 2),
     timeTo: TH.currentTimestamp(),
-    strategy: 'volrev',
+    //strategy: 'ttcwoff',
     //type: 'buy',
   });
 
-  // for (let i = 0; i < 4; i++) {
-  //   console.log(data.orders[i * 3]);
-  // }
+  const orders = data.orders.filter(
+    (o) => o.tags.MAXPRF.value >= filterMinProfit
+  );
+  data.candles.forEach((c) => candleReadCache.addCandle(c));
 
-  const model = new Model();
-  const t = model.createOneInputTensor(data.orders[0], data.candles);
+  const model = new Model(candleReadCache);
 
+  const t = model.createOneInputTensor(orders[0]);
+  const o = model.createOneLabelTensor(orders[0]);
+
+  //console.log('Order:', orders[0]);
   console.log('Tensor shape: ', t.shape);
+  //console.log('Label:', o.dataSync());
+
+  const trainOrders = orders.slice(
+    0,
+    Math.floor(orders.length * (1 - testSplit))
+  );
 
   console.time();
-  await model.createAndTrainModel(t.size, data.orders, data.candles);
+  await model.createAndTrainModel(t.size, trainOrders);
   console.log('Done!');
   console.timeEnd();
 
   console.log(
-    'Loaded data: orders=',
-    data.orders.length,
-    ' candles=',
+    'Loaded data: orders =',
+    orders.length,
+    ' candles =',
     data.candles.length
   );
 
-  //await model.saveModel('./model');
+  const testOrders = orders.slice(
+    Math.floor(orders.length * (1 - testSplit)),
+    orders.length
+  );
+
+  await model.testModel(testOrders);
 })();

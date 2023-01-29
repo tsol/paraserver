@@ -1,3 +1,5 @@
+// todo: remove cache storage from here move it to CandleReadCache
+
 const SETTINGS = require('../../../private/private.js');
 const { TF } = require('../../types/Timeframes.js');
 
