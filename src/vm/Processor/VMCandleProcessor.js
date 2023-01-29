@@ -5,14 +5,13 @@ const CandleProcessor = require('../types/CandleProcessor.js');
 const TickerProcessor = require('./TickerProcessor.js');
 
 class VMCandleProcessor extends CandleProcessor {
-  constructor(ordersManager, analyzersFactory, candleDebug, dataDb) {
+  constructor(ordersManager, analyzersFactory, candleDebug) {
     super();
     this.isLive = false;
     this.ordersManager = ordersManager;
     this.flags = new Flags();
     this.analyzersFactory = analyzersFactory;
     this.candleDebug = candleDebug;
-    this.dataDb = dataDb;
     this.tickers = {};
     this.lastPrice = {};
   }

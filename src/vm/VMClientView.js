@@ -27,7 +27,7 @@ class VMClientView {
 
   async getTickerChart({ symbol, timeframe, limit, timestamp }) {
     const candlesDB = this.vm.getCandleProxy();
-    const cdebugDB = this.vm.getCandleDebugDB();
+    const cdebugDB = this.vm.getCandleDebugDb();
 
     const borders = await candlesDB.getPeriodBordersFromDB(
       symbol,

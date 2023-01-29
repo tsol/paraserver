@@ -208,6 +208,8 @@ class Entry {
       takePercentReached: this.takePercentReached,
       lossPriceReached: this.lossPriceReached,
       lossPercentReached: this.lossPercentReached,
+      quantity: 0,
+      gain: 0,
       comment: this.comment,
       flags: JSON.stringify(this.flags),
       tags: JSON.stringify(this.tags),
@@ -227,7 +229,6 @@ class Entry {
     });
 
     entry.active = data.active == 'Y';
-    entry.broker = data.broker == 'Y';
     entry.result = data.result;
     entry.closePrice = data.closePrice;
     entry.gainPercent = data.gainPercent;

@@ -107,6 +107,20 @@ class Order {
 
   toGUI() {
     return {
+      ...this.toSTORE(),
+      wallet: fnum(this.wallet, 3),
+      stake: fnum(this.stake, 3),
+      comment: [
+        this.comment,
+        this.entry.comment,
+        this.entry.tagsStringify(),
+        this.tagsStringify(),
+      ].join(', '),
+    };
+  }
+
+  toSTORE() {
+    return {
       id: this.getId(),
       time: this.entry.time,
       type: this.entry.getType(),
@@ -125,18 +139,10 @@ class Order {
       takePercentReached: this.entry.takePercentReached,
       lossPriceReached: this.entry.lossPriceReached,
       lossPercentReached: this.entry.lossPercentReached,
-
       quantity: this.quantity,
       gain: fnum(this.gain, 3),
-      wallet: fnum(this.wallet, 3),
-      stake: fnum(this.stake, 3),
-
-      comment: [
-        this.comment,
-        this.entry.comment,
-        this.entry.tagsStringify(),
-        this.tagsStringify(),
-      ].join(', '),
+      flags: this.entry.flags,
+      tags: this.tags,
     };
   }
 }

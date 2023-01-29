@@ -13,12 +13,13 @@ const ArbitrageTagger = require('./taggers/ArbitrageTagger');
 class OrdersManager {
   static LIMIT_ORDER_TIMEOUT_CANDLES = 1;
 
-  constructor(brokerUser, brokerCandles, clients, candleDebug) {
+  constructor(brokerUser, brokerCandles, clients, candleDebug, ordersDb) {
     this.clients = clients;
     this.brokerCandles = brokerCandles;
     this.real = new OrdersReal(brokerUser, clients);
     this.report = new ReportIntervals();
     this.candleDebug = candleDebug;
+    this.ordersDb = ordersDb;
 
     this.entriesQueue = [];
     this.entries = [];
@@ -390,6 +391,8 @@ class OrdersManager {
     entry.doClose(isWin, this.lastUpdateTime);
     this.activeEntries = this.activeEntries.filter((o) => o !== entry);
     this.entryPlan.closeEntry(entry);
+
+    this.ordersDb.save([entry]);
   }
 
   toGUI() {
