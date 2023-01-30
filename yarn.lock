@@ -1362,6 +1362,11 @@ https-proxy-agent@^5.0.0:
     agent-base "6"
     debug "4"
 
+hyperparameters@^0.25.6:
+  version "0.25.6"
+  resolved "https://registry.yarnpkg.com/hyperparameters/-/hyperparameters-0.25.6.tgz#339c9d001f8f267d1a20ed2c5cf71e15c8d2e8b6"
+  integrity sha512-++Deqsl14gZb/ukDGMOxtSquKFaDw5EQnpMFmAV+tXgjkLPnJm4at+WQPl+a104kseKnUnyJ8hsjL6oRD5/ssw==
+
 iconv-lite@^0.6.3:
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.6.3.tgz#a52f80bf38da1952eb5c681790719871a1a72501"
@@ -1622,7 +1627,7 @@ lodash.merge@^4.6.2:
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
   integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==
 
-lodash@^4.17.19:
+lodash@^4.17.19, lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==

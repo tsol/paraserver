@@ -1,12 +1,13 @@
 
 Todo Next:
 
+0. Change trainee into modelBuilder with hyper parameters
+to create layers
+
+0. Learn how to maximize with Hyperparameters
+
 0. Create ModelOptimizer class that runs model several times (wrapped in tidy()) and
  - tweaks number of epochsMin / epochsMax
- - checks for diffq parameter
- - saves all models in tmp folder
- - selects best model based on top10 / top50 gain or ratio
- - allows to set different symbols for fit and evaluation
 
 0. Add higher timeframe emac9 emac20 (1d)
 

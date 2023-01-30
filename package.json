@@ -15,6 +15,8 @@
     "axios": "^1.2.0",
     "binance": "^2.0.27",
     "hotload": "^0.0.5",
+    "hyperparameters": "^0.25.6",
+    "lodash": "^4.17.21",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
     "node-telegram-bot-api": "^0.57.0",

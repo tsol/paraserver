@@ -1,17 +1,17 @@
 const tf = require('@tensorflow/tfjs');
-const { entryStats, fobj, fnum } = require('../reports/helper');
+const { entryStats, fobj } = require('../reports/helper');
 
 class Model {
   inputsSize = null;
 
   params = {
     epochsMin: 14,
-    epochsMax: 30,
+    epochsMax: 50,
 
     validationSplit: 0.2,
     adamRate: 0.001,
     batchSize: 64,
-    logEveryEpoch: 5,
+    logEveryEpoch: 10,
 
     loss: 'categoricalCrossentropy', // 'meanSquaredError'
     metrics: ['accuracy'], //  ['mae'], ['mse'], ['mape'], ['cosine']
@@ -47,13 +47,13 @@ class Model {
 
     esMonitor: 'val_loss',
     esDelta: 0.001,
-    esPatience: 5,
+    esPatience: 1,
     esMode: 'min',
   };
 
   constructor(setParams) {
     this.model = null;
-    Object.entries(setParams).forEach((key, value) => {
+    Object.entries(setParams).forEach(([key, value]) => {
       this.params[key] = value;
     });
   }
@@ -147,18 +147,12 @@ class Model {
       metrics: this.params.metrics,
     });
 
-    console.log('After create, before tain tensors', tf.memory().numTensors);
-
     return this.train(ordersArray);
   }
 
   async train(ordersArray) {
-    console.log('Train before:', tf.memory().numTensors);
-
     const input = this.createBatchInputTensor(ordersArray);
     const labels = this.createBatchLabelTensor(ordersArray);
-
-    console.log('Train after created tensors:', tf.memory().numTensors);
 
     console.log('Training model...');
 
@@ -213,15 +207,8 @@ class Model {
       });
     }
 
-    console.log('Train after fits:', tf.memory().numTensors);
-
-    console.log('Min loss: ', minLoss, 'at epoch', minLossEpoch);
-    console.log('Max acc: ', maxAcc, 'at epoch', maxAccEpoch);
-
     tf.dispose(input);
     tf.dispose(labels);
-
-    console.log('Train after dispose:', tf.memory().numTensors);
 
     return { minLoss, minLossEpoch, maxAcc, maxAccEpoch };
   }
@@ -237,8 +224,6 @@ class Model {
 
       const loss = evalOutput[0].dataSync()[0];
       const acc = evalOutput[1].dataSync()[0];
-
-      console.log('Loss:', fnum(loss, 5), 'Accuracy:', fnum(acc, 5));
 
       tf.dispose(testData);
       tf.dispose(testLabels);
@@ -274,19 +259,12 @@ class Model {
         testResultOrders.slice(0, Math.floor(testResultOrders.length * 0.1))
       );
 
-      console.log('total:     ', fobj(totalStats));
-      console.log('bottom 50: ', fobj(bottomStats));
-      console.log('top 50:    ', fobj(topStats));
-      console.log('top 10:    ', fobj(top10));
-
       const differentScores = {};
       for (const score of testResultScores) {
         differentScores[score] = true;
       }
 
       const diffq = Object.keys(differentScores).length / testOrders.length;
-
-      console.log('Diffferential quality:', diffq);
 
       return {
         loss,
