@@ -4,14 +4,16 @@ import _ from 'lodash';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
-const trainNewModel = require('./trainee');
+const buildNewModel = require('./modelBuilder');
 
 async function optimize(path, space, attempts, trainData, testData) {
+  console.log('*** OPTIMIZING FOR:', path);
+
   const modelOpt = async (space, { trainData, testData }) => {
-    const res = await trainNewModel(space, trainData, testData);
+    const res = await buildNewModel(space, trainData, testData);
     if (res.diffq < 0.5) return { res, loss: 100, status: hpjs.STATUS_FAIL };
     const loss = _.get(res, path);
-    console.log('**** VALUE:', loss, space);
+    console.log('*** OPTIM:', loss.toFixed(4), space);
     return { res, loss, status: hpjs.STATUS_OK };
   };
 

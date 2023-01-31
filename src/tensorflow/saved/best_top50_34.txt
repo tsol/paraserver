@@ -1,0 +1,4 @@
+**** VALUE: 34.23913043478261 { epochsMin: 39, batchSize: 112 }
+**** VALUE: 33.8768115942029 { epochsMin: 15, batchSize: 24 }
+**** VALUE: 33.15217391304348 { epochsMin: 15, batchSize: 88 }
+**** VALUE: 33.69565217391305 { epochsMin: 6, batchSize: 48 }

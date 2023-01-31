@@ -1,3 +1,6 @@
+// todo: this module should also replace candle storage
+// and retrieve in Tickers in main core
+
 const { TF } = require('../types/Timeframes');
 
 class CandleReadCache {

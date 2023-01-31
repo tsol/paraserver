@@ -1,113 +1,15 @@
 MYSQL-CANDLES: connected
-Orders: 3678 Candles: 0
-*** NEW OPTIMIZATION { epochsMin: 30, batchSize: 96 }
-Training model...
-epoch 0 { val_loss: 0.57242, val_acc: 0.74175, loss: 0.63141, acc: 0.70374 }
-epoch 10 { val_loss: 0.57614, val_acc: 0.74175, loss: 0.58371, acc: 0.72754 }
-epoch 20 { val_loss: 0.57649, val_acc: 0.74175, loss: 0.5786, acc: 0.72851 }
-Epoch 2: early stopping.
-Training: 7.728s
-Min loss: 0.571 at 3 Max acc: 0.742 at 0
-Loss: 0.6 Accurancy: 0.712 Diffq: 1
-total:      { gp: -88.084, win: 317, lost: 787, num: 1104, ratio: 28.714 }
-bottom 50:  { gp: -20.923, win: 151, lost: 401, num: 552, ratio: 27.355 }
-top 50:     { gp: -67.161, win: 166, lost: 386, num: 552, ratio: 30.072 }
-top 10:     { gp: 18.452, win: 37, lost: 73, num: 110, ratio: 33.636 }
-Leaked Tensors: 5148 Kb: 140.765625
-**** VALUE: 30.07246376811594 { epochsMin: 30, batchSize: 96 }
-*** NEW OPTIMIZATION { epochsMin: 6, batchSize: 120 }
-Training model...
-epoch 0 { val_loss: 0.61328, val_acc: 0.74175, loss: 0.66463, acc: 0.64303 }
-Epoch 1: early stopping.
-Training: 1.709s
-Min loss: 0.574 at 3 Max acc: 0.742 at 0
-Loss: 0.599 Accurancy: 0.713 Diffq: 0.999
-total:      { gp: -88.084, win: 317, lost: 787, num: 1104, ratio: 28.714 }
-bottom 50:  { gp: -43.051, win: 145, lost: 407, num: 552, ratio: 26.268 }
-top 50:     { gp: -45.033, win: 172, lost: 380, num: 552, ratio: 31.159 }
-top 10:     { gp: 11.911, win: 39, lost: 71, num: 110, ratio: 35.455 }
-Leaked Tensors: 10296 Kb: 281.53125
-**** VALUE: 31.15942028985507 { epochsMin: 6, batchSize: 120 }
-*** NEW OPTIMIZATION { epochsMin: 27, batchSize: 16 }
-Training model...
-epoch 0 { val_loss: 0.57961, val_acc: 0.74175, loss: 0.60386, acc: 0.72171 }
-epoch 10 { val_loss: 0.57406, val_acc: 0.74175, loss: 0.58057, acc: 0.72754 }
-epoch 20 { val_loss: 0.57426, val_acc: 0.74175, loss: 0.57998, acc: 0.72754 }
-Epoch 2: early stopping.
-Training: 17.944s
-Min loss: 0.568 at 11 Max acc: 0.744 at 22
-Loss: 0.6 Accurancy: 0.709 Diffq: 1
-total:      { gp: -88.084, win: 317, lost: 787, num: 1104, ratio: 28.714 }
-bottom 50:  { gp: -66.272, win: 146, lost: 406, num: 552, ratio: 26.449 }
-top 50:     { gp: -21.812, win: 171, lost: 381, num: 552, ratio: 30.978 }
-top 10:     { gp: 16.434, win: 40, lost: 70, num: 110, ratio: 36.364 }
-Leaked Tensors: 15444 Kb: 422.296875
-**** VALUE: 30.978260869565215 { epochsMin: 27, batchSize: 16 }
-*** NEW OPTIMIZATION { epochsMin: 45, batchSize: 112 }
-Training model...
-epoch 0 { val_loss: 0.64566, val_acc: 0.74175, loss: 0.6782, acc: 0.61875 }
-epoch 10 { val_loss: 0.57474, val_acc: 0.74175, loss: 0.58731, acc: 0.72754 }
-epoch 20 { val_loss: 0.57201, val_acc: 0.74175, loss: 0.58051, acc: 0.72754 }
-epoch 30 { val_loss: 0.56968, val_acc: 0.74175, loss: 0.57853, acc: 0.72754 }
-epoch 40 { val_loss: 0.57147, val_acc: 0.74175, loss: 0.57408, acc: 0.72754 }
-Epoch 1: early stopping.
-Training: 9.802s
-Min loss: 0.568 at 37 Max acc: 0.744 at 44
-Loss: 0.601 Accurancy: 0.711 Diffq: 1
-total:      { gp: -88.084, win: 317, lost: 787, num: 1104, ratio: 28.714 }
-bottom 50:  { gp: -32.073, win: 153, lost: 399, num: 552, ratio: 27.717 }
-top 50:     { gp: -56.012, win: 164, lost: 388, num: 552, ratio: 29.71 }
-top 10:     { gp: 12.715, win: 37, lost: 73, num: 110, ratio: 33.636 }
-Leaked Tensors: 20592 Kb: 563.0625
-**** VALUE: 29.71014492753623 { epochsMin: 45, batchSize: 112 }
-*** NEW OPTIMIZATION { epochsMin: 21, batchSize: 24 }
-Training model...
-epoch 0 { val_loss: 0.57359, val_acc: 0.74175, loss: 0.60434, acc: 0.72122 }
-epoch 10 { val_loss: 0.57072, val_acc: 0.74175, loss: 0.57838, acc: 0.72802 }
-epoch 20 { val_loss: 0.57486, val_acc: 0.74369, loss: 0.57734, acc: 0.72657 }
-Epoch 1: early stopping.
-Training: 10.861s
-Min loss: 0.569 at 3 Max acc: 0.744 at 18
-Loss: 0.602 Accurancy: 0.707 Diffq: 1
-total:      { gp: -88.084, win: 317, lost: 787, num: 1104, ratio: 28.714 }
-bottom 50:  { gp: -45.997, win: 152, lost: 400, num: 552, ratio: 27.536 }
-top 50:     { gp: -42.088, win: 165, lost: 387, num: 552, ratio: 29.891 }
-top 10:     { gp: 11.854, win: 36, lost: 74, num: 110, ratio: 32.727 }
-Leaked Tensors: 25740 Kb: 703.828125
-**** VALUE: 29.891304347826086 { epochsMin: 21, batchSize: 24 }
-*** NEW OPTIMIZATION { epochsMin: 12, batchSize: 112 }
-Training model...
-epoch 0 { val_loss: 0.57361, val_acc: 0.74175, loss: 0.61336, acc: 0.71005 }
-epoch 10 { val_loss: 0.57101, val_acc: 0.74175, loss: 0.58844, acc: 0.72754 }
-Epoch 2: early stopping.
-Training: 3.106s
-Min loss: 0.571 at 10 Max acc: 0.742 at 0
-Loss: 0.597 Accurancy: 0.713 Diffq: 1
-total:      { gp: -88.084, win: 317, lost: 787, num: 1104, ratio: 28.714 }
-bottom 50:  { gp: -34.467, win: 146, lost: 406, num: 552, ratio: 26.449 }
-top 50:     { gp: -53.617, win: 171, lost: 381, num: 552, ratio: 30.978 }
-top 10:     { gp: 10.067, win: 40, lost: 70, num: 110, ratio: 36.364 }
-Leaked Tensors: 30888 Kb: 844.59375
-**** VALUE: 30.978260869565215 { epochsMin: 12, batchSize: 112 }
-*** NEW OPTIMIZATION { epochsMin: 39, batchSize: 104 }
-Training model...
-epoch 0 { val_loss: 0.57642, val_acc: 0.74175, loss: 0.62396, acc: 0.72754 }
-epoch 10 { val_loss: 0.57665, val_acc: 0.74175, loss: 0.58844, acc: 0.72754 }
-epoch 20 { val_loss: 0.57739, val_acc: 0.74175, loss: 0.57558, acc: 0.72754 }
-epoch 30 { val_loss: 0.57295, val_acc: 0.74175, loss: 0.57711, acc: 0.72754 }
-Epoch 2: early stopping.
-Training: 8.968s
-Min loss: 0.569 at 36 Max acc: 0.742 at 0
-Loss: 0.599 Accurancy: 0.713 Diffq: 1
-total:      { gp: -88.084, win: 317, lost: 787, num: 1104, ratio: 28.714 }
-bottom 50:  { gp: -50.61, win: 148, lost: 404, num: 552, ratio: 26.812 }
-top 50:     { gp: -37.474, win: 169, lost: 383, num: 552, ratio: 30.616 }
-top 10:     { gp: 10.006, win: 36, lost: 74, num: 110, ratio: 32.727 }
-Leaked Tensors: 36036 Kb: 985.359375
-**** VALUE: 30.61594202898551 { epochsMin: 39, batchSize: 104 }
-*** NEW OPTIMIZATION { epochsMin: 33, batchSize: 88 }
-Training model...
-epoch 0 { val_loss: 0.67792, val_acc: 0.74175, loss: 0.6954, acc: 0.55707 }
-epoch 10 { val_loss: 0.57592, val_acc: 0.74175, loss: 0.59041, acc: 0.72754 }
-epoch 20 { val_loss: 0.57671, val_acc: 0.74175, loss: 0.58775, acc: 0.72754 }
-epoch 30 { val_loss: 0.57319, val_acc: 0.74175, loss: 0.57869, acc: 0.72754 }
+*** OPTIMIZING FOR: topStats.ratio
+*** OPTIM: 30.2632 { epochsMin: 30, batchSize: 96 }
+*** OPTIM: 25.0000 { epochsMin: 6, batchSize: 120 }
+*** OPTIM: 30.2632 { epochsMin: 27, batchSize: 16 }
+*** OPTIM: 28.9474 { epochsMin: 45, batchSize: 112 }
+*** OPTIM: 28.9474 { epochsMin: 21, batchSize: 24 }
+*** OPTIM: 25.0000 { epochsMin: 12, batchSize: 112 }
+*** OPTIM: 28.9474 { epochsMin: 39, batchSize: 104 }
+*** OPTIM: 31.5789 { epochsMin: 33, batchSize: 88 }
+*** OPTIM: 30.2632 { epochsMin: 36, batchSize: 64 }
+*** OPTIM: 30.2632 { epochsMin: 15, batchSize: 40 }
+Optimizing: 12.376s
+Max: { epochsMin: 33, batchSize: 88 }
+Min: { epochsMin: 6, batchSize: 120 }

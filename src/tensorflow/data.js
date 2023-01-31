@@ -4,30 +4,82 @@ const MysqlCandles = require('../db/mysql/MysqlCandles.js');
 const MysqlProvider = require('../db/mysql/MysqlProvider.js');
 const DBAccessFactory = require('../db/DBAccessFactory.js');
 
-async function load(
-  opts = { vmid, symbol, timeframe, strategy, timeFrom, timeTo }
-) {
-  if (!opts?.vmid) throw new Error('vmid is required');
+const CandleReadCache = require('../services/CandleReadCache');
+const { dataSplit } = require('./helpers');
 
-  const dbCandles = new MysqlCandles();
-  const dbAccessFactory = new DBAccessFactory(new MysqlProvider());
+const TH = require('../helpers/time');
 
-  await dbAccessFactory.connect(SETTINGS.databases.mysqlData);
+const dbAccessFactory = new DBAccessFactory(new MysqlProvider());
+const dbCandles = new MysqlCandles();
+
+async function dataConnect() {
   await dbCandles.connect(SETTINGS.databases.mysqlCandles);
-
-  // async loadCandlesPeriod(symbol, timeframe, startTimestamp, endTimestamp) {
-
-  const candles = await dbCandles.loadCandlesPeriod(
-    opts.symbol,
-    opts.timeframe,
-    opts.timeFrom,
-    opts.timeTo
-  );
-
-  const ordersIO = dbAccessFactory.makeOrdersIO(opts.vmid);
-  const orders = (await ordersIO.load(opts)).filter((o) => o.active !== 'Y');
-
-  return { orders, candles };
+  await dbAccessFactory.connect(SETTINGS.databases.mysqlData);
 }
 
-module.exports = { load };
+async function loadOrders({
+  vmid,
+  symbols,
+  timeframes,
+  strategies,
+  backDays,
+  split,
+  minProfit,
+}) {
+  const ordersIO = dbAccessFactory.makeOrdersIO(vmid);
+
+  const loaderOpts = {
+    timeFrom: TH.timestampDaysBack(backDays),
+    timeTo: TH.currentTimestamp(),
+  };
+
+  let orders = [];
+
+  for (const symbol of symbols) {
+    for (const timeframe of timeframes) {
+      for (const strategy of strategies) {
+        const addOrders = await ordersIO.load({
+          ...loaderOpts,
+          symbol,
+          timeframe,
+          strategy,
+        });
+        orders = orders.concat(addOrders.filter((o) => o.active !== 'Y'));
+      }
+    }
+  }
+
+  if (minProfit > 0) {
+    orders = orders.filter((o) => o.tags.MAXPRF.value >= minProfit);
+  }
+
+  const [trainOrders, testOrders] = dataSplit(orders, split);
+  return [trainOrders, testOrders];
+}
+
+async function loadCandles({ symbols, timeframes, backDays }) {
+  const loaderOpts = {
+    timeFrom: TH.timestampDaysBack(backDays),
+    timeTo: TH.currentTimestamp(),
+  };
+
+  let candles = [];
+
+  for (const symbol of symbols) {
+    for (const timeframe of timeframes) {
+      const moreCandles = await dbCandles.loadCandlesPeriod({
+        ...loaderOpts,
+        symbol,
+        timeframe,
+      });
+      candles = candles.concat(moreCandles);
+    }
+  }
+
+  const candleReadCache = new CandleReadCache({ limit: Infinity });
+  candles.forEach((c) => candleReadCache.addCandle(c));
+
+  return candleReadCache;
+}
+
+module.exports = { dataConnect, loadOrders, loadCandles };

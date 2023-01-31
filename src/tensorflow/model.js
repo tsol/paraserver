@@ -5,6 +5,7 @@ class Model {
   inputsSize = null;
 
   params = {
+    verbose: 1,
     epochsMin: 14,
     epochsMax: 50,
 
@@ -151,24 +152,24 @@ class Model {
   }
 
   async train(ordersArray) {
-    const input = this.createBatchInputTensor(ordersArray);
-    const labels = this.createBatchLabelTensor(ordersArray);
-
-    console.log('Training model...');
-
-    const earlyStopping = tf.callbacks.earlyStopping({
-      monitor: this.params.esMonitor,
-      minDelta: this.params.esDelta,
-      patience: this.params.esPatience,
-      mode: this.params.esMode,
-      verbose: 1000,
-    });
+    tf.engine().startScope();
 
     let minLoss = Infinity;
     let minLossEpoch = 0;
 
     let maxAcc = 0;
     let maxAccEpoch = 0;
+
+    const input = this.createBatchInputTensor(ordersArray);
+    const labels = this.createBatchLabelTensor(ordersArray);
+
+    const earlyStopping = tf.callbacks.earlyStopping({
+      monitor: this.params.esMonitor,
+      minDelta: this.params.esDelta,
+      patience: this.params.esPatience,
+      mode: this.params.esMode,
+      verbose: this.params.verbose,
+    });
 
     const onEpochEnd = (epoch, logs) => {
       if (logs.val_loss < minLoss) {
@@ -181,7 +182,8 @@ class Model {
         maxAccEpoch = epoch;
       }
 
-      if (epoch % this.params.logEveryEpoch !== 0) return;
+      if (!this.params.verbose || epoch % this.params.logEveryEpoch !== 0)
+        return;
       console.log(`epoch ${epoch}`, fobj(logs, 5));
     };
 
@@ -193,7 +195,7 @@ class Model {
       validationSplit: this.params.validationSplit,
       shuffle: true,
       callbacks: { onEpochEnd },
-      verbose: 0,
+      verbose: this.params.verbose,
     });
 
     if (this.params.esMonitor) {
@@ -203,12 +205,14 @@ class Model {
         validationSplit: this.params.validationSplit,
         shuffle: true,
         callbacks: [earlyStopping],
-        verbose: 1,
+        verbose: this.params.verbose,
       });
     }
 
     tf.dispose(input);
     tf.dispose(labels);
+
+    tf.engine().endScope();
 
     return { minLoss, minLossEpoch, maxAcc, maxAccEpoch };
   }
@@ -241,8 +245,6 @@ class Model {
       const testResultScores = testResult
         .sort((a, b) => b[0] - a[0])
         .map(([score, order]) => score);
-
-      // console.log('testResultScores: ', testResultScores);
 
       const totalStats = entryStats(testResultOrders);
       const topStats = entryStats(
