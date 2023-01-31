@@ -1,23 +1,35 @@
-const SETTINGS = require('../../private/private.js');
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
-const MysqlCandles = require('../db/mysql/MysqlCandles.js');
-const MysqlProvider = require('../db/mysql/MysqlProvider.js');
-const DBAccessFactory = require('../db/DBAccessFactory.js');
+// const path = require('path');
+// const root = path.resolve(__dirname, '..', '..', '..', '..');
+// const someModule = require(path.join(root, 'lib', 'someModule'));
 
-const CandleReadCache = require('../services/CandleReadCache');
+const SETTINGS = require('../../../private/private.js');
+
+const MysqlCandles = require('../../db/mysql/MysqlCandles.js');
+const MysqlProvider = require('../../db/mysql/MysqlProvider.js');
+const DBAccessFactory = require('../../db/DBAccessFactory.js');
+
+const CandleReadCache = require('../../services/CandleReadCache');
 const { dataSplit } = require('./helpers');
 
-const TH = require('../helpers/time');
+const TH = require('../../helpers/time');
 
 const dbAccessFactory = new DBAccessFactory(new MysqlProvider());
 const dbCandles = new MysqlCandles();
 
-async function dataConnect() {
+export async function dataConnect() {
   await dbCandles.connect(SETTINGS.databases.mysqlCandles);
   await dbAccessFactory.connect(SETTINGS.databases.mysqlData);
 }
 
-async function loadOrders({
+export async function dataDisconnect() {
+  await dbCandles.disconnect();
+  await dbAccessFactory.disconnect();
+}
+
+export async function loadOrders({
   vmid,
   symbols,
   timeframes,
@@ -57,7 +69,7 @@ async function loadOrders({
   return [trainOrders, testOrders];
 }
 
-async function loadCandles({ symbols, timeframes, backDays }) {
+export async function loadCandles({ symbols, timeframes, backDays }) {
   const loaderOpts = {
     timeFrom: TH.timestampDaysBack(backDays),
     timeTo: TH.currentTimestamp(),
@@ -81,5 +93,3 @@ async function loadCandles({ symbols, timeframes, backDays }) {
 
   return candleReadCache;
 }
-
-module.exports = { dataConnect, loadOrders, loadCandles };

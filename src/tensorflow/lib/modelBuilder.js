@@ -2,7 +2,7 @@ const Model = require('./model');
 
 const tf = require('@tensorflow/tfjs');
 
-const { fobj, fnum } = require('../reports/helper');
+const { fobj, fnum } = require('../../reports/helper');
 
 async function buildNewModel(opts, trainOrders, testOrders) {
   const model = new Model({ verbose: 0, ...opts });

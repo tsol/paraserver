@@ -6,7 +6,7 @@ const require = createRequire(import.meta.url);
 
 const buildNewModel = require('./modelBuilder');
 
-async function optimize(path, space, attempts, trainData, testData) {
+async function runOptimize(path, space, attempts, trainData, testData) {
   console.log('*** OPTIMIZING FOR:', path);
 
   const modelOpt = async (space, { trainData, testData }) => {
@@ -24,4 +24,4 @@ async function optimize(path, space, attempts, trainData, testData) {
   });
 }
 
-export default optimize;
+export default runOptimize;

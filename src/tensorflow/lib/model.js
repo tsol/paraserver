@@ -1,5 +1,5 @@
 const tf = require('@tensorflow/tfjs');
-const { entryStats, fobj } = require('../reports/helper');
+const { entryStats, fobj } = require('../../reports/helper');
 
 class Model {
   inputsSize = null;

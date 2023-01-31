@@ -1,15 +1,25 @@
 MYSQL-CANDLES: connected
-*** OPTIMIZING FOR: topStats.ratio
-*** OPTIM: 30.2632 { epochsMin: 30, batchSize: 96 }
-*** OPTIM: 25.0000 { epochsMin: 6, batchSize: 120 }
-*** OPTIM: 30.2632 { epochsMin: 27, batchSize: 16 }
-*** OPTIM: 28.9474 { epochsMin: 45, batchSize: 112 }
-*** OPTIM: 28.9474 { epochsMin: 21, batchSize: 24 }
-*** OPTIM: 25.0000 { epochsMin: 12, batchSize: 112 }
-*** OPTIM: 28.9474 { epochsMin: 39, batchSize: 104 }
-*** OPTIM: 31.5789 { epochsMin: 33, batchSize: 88 }
-*** OPTIM: 30.2632 { epochsMin: 36, batchSize: 64 }
-*** OPTIM: 30.2632 { epochsMin: 15, batchSize: 40 }
-Optimizing: 12.376s
-Max: { epochsMin: 33, batchSize: 88 }
-Min: { epochsMin: 6, batchSize: 120 }
+*** OPTIMIZING FOR: topStats.gp
+*** OPTIM: 9.0973 { epochsMin: 30, batchSize: 96 }
+*** OPTIM: 24.9448 { epochsMin: 6, batchSize: 120 }
+*** OPTIM: 19.5478 { epochsMin: 27, batchSize: 16 }
+*** OPTIM: -0.2535 { epochsMin: 45, batchSize: 112 }
+*** OPTIM: 19.9969 { epochsMin: 21, batchSize: 24 }
+*** OPTIM: -21.8460 { epochsMin: 12, batchSize: 112 }
+*** OPTIM: 19.6116 { epochsMin: 39, batchSize: 104 }
+*** OPTIM: -3.5573 { epochsMin: 33, batchSize: 88 }
+*** OPTIM: 17.5645 { epochsMin: 36, batchSize: 64 }
+*** OPTIM: 9.3894 { epochsMin: 15, batchSize: 40 }
+*** OPTIM: 39.0404 { epochsMin: 48, batchSize: 96 }
+*** OPTIM: -2.5495 { epochsMin: 30, batchSize: 88 }
+*** OPTIM: 9.3708 { epochsMin: 42, batchSize: 72 }
+*** OPTIM: 17.0927 { epochsMin: 36, batchSize: 40 }
+*** OPTIM: 0.5541 { epochsMin: 36, batchSize: 80 }
+*** OPTIM: 4.3527 { epochsMin: 9, batchSize: 16 }
+*** OPTIM: 21.4973 { epochsMin: 30, batchSize: 24 }
+*** OPTIM: 15.0410 { epochsMin: 42, batchSize: 120 }
+*** OPTIM: 20.7522 { epochsMin: 33, batchSize: 80 }
+*** OPTIM: 9.2020 { epochsMin: 45, batchSize: 56 }
+Optimizing: 1:11.432 (m:ss.mmm)
+Max: { epochsMin: 48, batchSize: 96 }
+Min: { epochsMin: 12, batchSize: 112 }
