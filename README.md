@@ -4,7 +4,16 @@
 
 This is the server part of the **PARAYOK** (Trading Laboratory and Bot). For client part see [paraclient](https://github.com/tsol/paraclient).
 
-The main purpose of this software is to allow user to run different market strategies implemented as javascript modules, combine them, filter entry points, create an optimal trading plan - and then the system trades automaticly on any broker (currently only BINANCE-USDM implemented)
+The main purpose of this software is to allow user to run different market strategies implemented as javascript modules, combine them, filter entry points, create an optimal trading plan - and then the system trades automaticly on any broker (currently only BINANCE-USDM implemented).
+
+System desing of PARAYOK is based upon not distinguishing history emulation from realtime trading. You specify starting date - the server
+loads up candles from local cache, missing candles from the broker and starts processing them in order. Once all candles are processed (and
+system is setup to go live) it goes live and from this moment all entries (filtered out by entryPlan filter) go to a real broker as well as
+to local state.
+
+Unlike trading view's Pine script system - PARAYOK is not heavily bound to a single SYMBOL while executing strategies, nut rather handles everything
+bulk. You can run any number of strategies on any number of SYMBOLS on any number of timeframes simultaniously. Then you use filtering to allow only best of the generated entries to become Orders. You can either explore and create such meta-strategies or execute them on live broker all with same interface and same instances by a click of a mouse (and some hardcore console work at the moment :)
+
 
 ### Latest news: tensorflow.js
 
@@ -50,15 +59,14 @@ for the first iteration of the project - graphical interface (paraclient - vue) 
 ### Business logic core module VM
 
 VM.js represents a working environment with one Broker connection, a list of symbols, timeframes and strategies to be trades and also a user
-defined trading plan (which is mostly an entries signal filter).
+defined trading plan (which is mostly an entries filter).
 
 ### Analyzers
 
-Javascript modules dynamicly loaded upon VM creation providing Indicators and Strategies logic. Reside in /src/vm/Analyzers/list/
-This is the core trading logic. Indicators form FLAG state, strategies triggers Entries upon those flags.
+Analyzers are javascript modules dynamicly loaded upon VM creation providing Indicators and Strategies. Reside in /src/vm/Analyzers/list/
+This is the core trading logic. Indicators update FLAGs state at every closed candle received (live or history), strategies create Entries based on those flags.
 
-And then taggers use FLAGS and current active entries/account state to assign tags
-to each entry.
+And then taggers use FLAGS and current active entries/account state to assign tags to each entry.
 
 ### Taggers
 
