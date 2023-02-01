@@ -5,4 +5,11 @@ function dataSplit(data, split) {
   return [trainData, testData];
 }
 
-module.exports = { dataSplit };
+function obj2str(obj) {
+  return JSON.stringify(obj)
+    .replace(/,/g, ', ')
+    .replace(/:/g, ': ')
+    .replace(/"/g, '');
+}
+
+module.exports = { dataSplit, obj2str };

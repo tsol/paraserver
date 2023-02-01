@@ -3,6 +3,7 @@ import _ from 'lodash';
 
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
+const { obj2str } = require('./helpers');
 
 const buildNewModel = require('./modelBuilder');
 
@@ -21,7 +22,7 @@ async function runOptimize(
     const res = await buildNewModel(buildParams, trainData, testData);
     if (res.diffq < 0.5) return { res, loss: 100, status: hpjs.STATUS_FAIL };
     const loss = _.get(res, path);
-    console.log('*** OPTIM:', loss.toFixed(4), space);
+    console.log('*** OPTIM:', loss.toFixed(4), obj2str(space));
     return { res, loss, status: hpjs.STATUS_OK };
   };
 

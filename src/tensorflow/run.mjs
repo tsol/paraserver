@@ -3,6 +3,7 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const buildNewModel = require('./lib/modelBuilder');
 const yargs = require('yargs');
+const { obj2str } = require('./lib/helpers');
 
 import runOptimize from './lib/optimizer.mjs';
 
@@ -65,8 +66,8 @@ async function cmdOptimize(params, argv, trainOrders, testOrders) {
   );
   console.timeEnd('Optimizing');
 
-  console.log('Max:', opt.argmax);
-  console.log('Min:', opt.argmin);
+  console.log('Max:', obj2str(opt.argmax));
+  console.log('Min:', obj2str(opt.argmin));
 }
 
 function commandLineParams() {

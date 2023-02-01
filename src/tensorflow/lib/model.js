@@ -59,6 +59,15 @@ class Model {
     });
   }
 
+  getInputsSize() {
+    return this.inputsSize;
+  }
+
+  setLayers(layers) {
+    this.params.layers = layers;
+    console.log('Set layers:', layers);
+  }
+
   verifyData(orders) {
     if (orders.length < 1) {
       console.error('No orders to train on!');

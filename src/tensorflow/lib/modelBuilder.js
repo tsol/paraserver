@@ -1,43 +1,25 @@
 const Model = require('./model');
 
 const tf = require('@tensorflow/tfjs');
-
+const layersComposer = require('./layersComposer');
 const { fobj, fnum } = require('../../reports/helper');
 
-// schemaType [1, 2]
-
-// dense1 [1-4]
-// drop2  [1-4]
-// dense3 [1-4]
-// drop4  [1-4]
-// dense5 [1-4]
-// drop6  [1-4]
-// dense7 [1-4]
-
-/*
-
-  const schema1 = {
-    drop: [
-      [
-    ]
-
-  }
-
-  schema 1
-  drop_schema = 
-  D1,   D2,    d1, D3, D4
-  [2]   [1.5]
-  [2.5] 
-  [3]
-  [4]
-
-*/
-
 async function buildNewModel(opts, trainOrders, testOrders) {
-  const model = new Model({ verbose: 0, ...opts });
+  const model = new Model({ verbose: 0, logEveryEpoch: 100, ...opts });
 
   if (!model.verifyData(trainOrders)) {
     throw new Exception('Data verification failed!');
+  }
+
+  const { layersComposerIndex } = opts;
+
+  if (layersComposerIndex !== undefined && layersComposerIndex !== null) {
+    const { lc_m, lc_dp, lc_dr, lc_l1, lc_l2, lc_l3, lc_l4 } = opts;
+    const layers = layersComposer.composers[layersComposerIndex](
+      model.getInputsSize(),
+      [lc_m, lc_dp, lc_dr, lc_l1, lc_l2, lc_l3, lc_l4]
+    );
+    model.setLayers(layers);
   }
 
   if (opts.verbose > 0) console.time('Training');
