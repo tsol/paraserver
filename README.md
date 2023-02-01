@@ -6,6 +6,16 @@ This is the server part of the **PARAYOK** (Trading Helper Bot). For client part
 
 The main purpose of this software is to allow user to run different market strategies implemented as javascript modules, combine them, filter entry points, create an optimal trading plan - and then the system trades automaticly on any broker (currently only BINANCE-USDM implemented)
 
+### Latest news: tensorflow.js
+
+Tightly involved in adding **tensorflow.js** based entries tagging. Already implemented command line tool to create / train and hyper-optimize models.
+Don't want do give myself false hopes, but allready using simple ANN network with just bunch of EMAs, RSI and Level weights it gives up to 5% increase in win/loose ratio in some circumstances.
+
+And thats just basic ANN based primaraly on EMA's. Next step is ANN model taking relative candle and volume changes, and also a convolutional
+network to process relative candle images, along with nearest levels of interest rendered to the picture.
+
+It's not ready to use yet - there is no tagger to include model predictions in the bot, im just working on infrastructure and proof-of-concept.
+
 ## Entry point - pserver3.js
 
 Currently the set up of the server is done in pserver3.js file, which creates only one instance of user-worker (called vm).
