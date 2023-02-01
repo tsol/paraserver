@@ -6,11 +6,19 @@ const require = createRequire(import.meta.url);
 
 const buildNewModel = require('./modelBuilder');
 
-async function runOptimize(path, space, attempts, trainData, testData) {
+async function runOptimize(
+  path,
+  space,
+  attempts,
+  defaultParams,
+  trainData,
+  testData
+) {
   console.log('*** OPTIMIZING FOR:', path);
 
-  const modelOpt = async (space, { trainData, testData }) => {
-    const res = await buildNewModel(space, trainData, testData);
+  const modelOpt = async (space, { defaultParams, trainData, testData }) => {
+    const buildParams = { ...defaultParams, ...space };
+    const res = await buildNewModel(buildParams, trainData, testData);
     if (res.diffq < 0.5) return { res, loss: 100, status: hpjs.STATUS_FAIL };
     const loss = _.get(res, path);
     console.log('*** OPTIM:', loss.toFixed(4), space);
@@ -19,6 +27,7 @@ async function runOptimize(path, space, attempts, trainData, testData) {
 
   return hpjs.fmin(modelOpt, space, hpjs.search.randomSearch, attempts, {
     rng: new hpjs.RandomState(654321),
+    defaultParams,
     trainData,
     testData,
   });

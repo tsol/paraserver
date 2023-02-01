@@ -8,13 +8,19 @@ import runOptimize from './lib/optimizer.mjs';
 
 const argv = commandLineParams();
 
-console.log(argv);
+//console.log(argv);
 
 (async () => {
   const module = await import(argv.file);
   const params = module.default;
 
   const [trainOrders, testOrders] = await params.getData();
+  console.log(
+    'Orders: TRAIN =',
+    trainOrders.length,
+    'TEST =',
+    testOrders.length
+  );
 
   switch (argv['_'][0]) {
     case 'opt':
@@ -27,19 +33,20 @@ console.log(argv);
 })();
 
 async function cmdBuild(params, argv, trainOrders, testOrders) {
-  let buildParams = {};
+  let buildParams = params.build ?? {};
 
   if (argv.param) {
     let correctJson = argv.param.replace(
       /(['"])?([a-z0-9A-Z_]+)(['"])?:/g,
       '"$2": '
     );
-    buildParams = JSON.parse(correctJson);
+    const argvParams = JSON.parse(correctJson);
+    buildParams = { ...buildParams, ...argvParams };
+    console.log('Building with params:', argvParams);
   }
 
   buildParams.verbose = 1;
 
-  console.log('Building with params:', buildParams);
   const res = await buildNewModel(buildParams, trainOrders, testOrders);
 }
 
@@ -52,6 +59,7 @@ async function cmdOptimize(params, argv, trainOrders, testOrders) {
     params.optimize.for,
     params.optimize.space,
     params.optimize.iterations,
+    params.build ?? {},
     trainOrders,
     testOrders
   );

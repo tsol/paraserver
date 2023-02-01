@@ -4,6 +4,35 @@ const tf = require('@tensorflow/tfjs');
 
 const { fobj, fnum } = require('../../reports/helper');
 
+// schemaType [1, 2]
+
+// dense1 [1-4]
+// drop2  [1-4]
+// dense3 [1-4]
+// drop4  [1-4]
+// dense5 [1-4]
+// drop6  [1-4]
+// dense7 [1-4]
+
+/*
+
+  const schema1 = {
+    drop: [
+      [
+    ]
+
+  }
+
+  schema 1
+  drop_schema = 
+  D1,   D2,    d1, D3, D4
+  [2]   [1.5]
+  [2.5] 
+  [3]
+  [4]
+
+*/
+
 async function buildNewModel(opts, trainOrders, testOrders) {
   const model = new Model({ verbose: 0, ...opts });
 

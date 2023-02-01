@@ -27,7 +27,7 @@ class Model {
       { type: 'dense', units: 12, activation: 'relu' },
     ],
 
-    inputsFn: (order, candleReadCache) => [
+    inputsFn: (order) => [
       [order.isLong ? 1 : 0],
       [
         Number(order.entryPrice),
