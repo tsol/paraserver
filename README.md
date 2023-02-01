@@ -6,12 +6,12 @@ This is the server part of the **PARAYOK** (Trading Laboratory and Bot). For cli
 
 The main purpose of this software is to allow user to run different market strategies implemented as javascript modules, combine them, filter entry points, create an optimal trading plan - and then the system trades automaticly on any broker (currently only BINANCE-USDM implemented).
 
-System desing of PARAYOK is based upon not distinguishing history emulation from realtime trading. You specify starting date - the server
+System desing of PARAYOK is based upon specifically not distinguishing history emulation from realtime trading. You specify starting date - the server
 loads up candles from local cache, missing candles from the broker and starts processing them in order. Once all candles are processed (and
 system is setup to go live) it goes live and from this moment all entries (filtered out by entryPlan filter) go to a real broker as well as
 to local state.
 
-Unlike trading view's Pine script system - PARAYOK is not heavily bound to a single SYMBOL while executing strategies, nut rather handles everything
+Unlike trading view's Pine script system - PARAYOK is not heavily bound to a single SYMBOL while executing strategies, but rather handles everything in
 bulk. You can run any number of strategies on any number of SYMBOLS on any number of timeframes simultaniously. Then you use filtering to allow only best of the generated entries to become Orders. You can either explore and create such meta-strategies or execute them on live broker all with same interface and same instances by a click of a mouse (and some hardcore console work at the moment :)
 
 
