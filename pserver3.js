@@ -16,9 +16,9 @@ const VM = require('./src/vm/VM.js');
 const ClientsEventHandler = require('./src/clients/ClientsEventHandler.js');
 
 const brokerCandles = new BinanceUSDMCandles(
-  SETTINGS.users.harry.brokers.binance
+  SETTINGS.users.trader.brokers.binance
 );
-const brokerUser = new BinanceUSDMUser(SETTINGS.users.harry.brokers.binance);
+const brokerUser = new BinanceUSDMUser(SETTINGS.users.trader.brokers.binance);
 const dbCandles = new MysqlCandles();
 const dbAccessFactory = new DBAccessFactory(new MysqlProvider());
 
