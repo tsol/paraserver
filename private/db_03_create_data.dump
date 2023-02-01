@@ -3,37 +3,3 @@ DROP DATABASE IF EXISTS paradata;
 CREATE DATABASE paradata;
 GRANT ALL PRIVILEGES ON paradata.* TO 'para'@localhost;
 FLUSH PRIVILEGES;
-
-CONNECT paradata;
-
-DROP TABLE IF EXISTS `orders`;
-
-CREATE TABLE `orders` (
-  `id`		char(64) NOT NULL DEFAULT '',
-  `time`	BIGINT NOT NULL,
-  `type`	enum('buy','sell') NOT NULL DEFAULT 'buy',
-  `symbol`	varchar(32) NOT NULL DEFAULT '',
-  `timeframe`	char(3) NOT NULL DEFAULT '1m',
-  `strategy`	varchar(32) NOT NULL DEFAULT '',
-  `entryPrice`	DECIMAL(24,12) NOT NULL DEFAULT 0,
-  `closeTime`	BIGINT NOT NULL,
-  `takeProfit`	DECIMAL(24,12) NOT NULL DEFAULT 0,
-  `stopLoss`	DECIMAL(24,12) NOT NULL DEFAULT 0,
-  `quantity`	DECIMAL(24,12) NOT NULL DEFAULT 0,
-  `active`	enum('Y','N') NOT NULL DEFAULT 'Y',
-  `broker`	enum('Y','N') NOT NULL DEFAULT 'N',
-  `result`	enum('active','won','lost') NOT NULL DEFAULT 'active',
-  `closePrice`	DECIMAL(24,12) NOT NULL DEFAULT 0,
-  `gain`	DECIMAL(24,12) NOT NULL DEFAULT 0,
-  `takePriceReached` DECIMAL(24,12) NOT NULL DEFAULT 0,
-  `takePercentReached` float DEFAULT 0,
-  `lossPriceReached` DECIMAL(24,12) NOT NULL DEFAULT 0,
-  `lossPercentReached` float DEFAULT 0,
-  `comment`	varchar(1024) NOT NULL DEFAULT '',
-  `flags`	MEDIUMTEXT,
-  `tags`	MEDIUMTEXT,
-  `brokerORID`	varchar(64) DEFAULT NULL,
-  `brokerSLID`	varchar(64) DEFAULT NULL,
-  `brokerTPID`	varchar(64) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-);
