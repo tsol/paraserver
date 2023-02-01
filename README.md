@@ -2,7 +2,7 @@
 
 ## Description
 
-This is the server part of the **PARAYOK** (Trading Helper Bot). For client part see [paraclient](https://github.com/tsol/paraclient).
+This is the server part of the **PARAYOK** (Trading Laboratory and Bot). For client part see [paraclient](https://github.com/tsol/paraclient).
 
 The main purpose of this software is to allow user to run different market strategies implemented as javascript modules, combine them, filter entry points, create an optimal trading plan - and then the system trades automaticly on any broker (currently only BINANCE-USDM implemented)
 
