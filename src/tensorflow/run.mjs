@@ -4,6 +4,7 @@ const require = createRequire(import.meta.url);
 const buildNewModel = require('./lib/modelBuilder');
 const yargs = require('yargs');
 const { obj2str } = require('./lib/helpers');
+const TH = require('../helpers/time');
 
 import runOptimize from './lib/optimizer.mjs';
 
@@ -20,7 +21,9 @@ const argv = commandLineParams();
     'Orders: TRAIN =',
     trainOrders.length,
     'TEST =',
-    testOrders.length
+    testOrders.length,
+    'TEST since =',
+    TH.ls(testOrders[0].time)
   );
 
   switch (argv['_'][0]) {
@@ -60,6 +63,7 @@ async function cmdOptimize(params, argv, trainOrders, testOrders) {
     params.optimize.for,
     params.optimize.space,
     params.optimize.iterations,
+    params.optimize.builds,
     params.build ?? {},
     trainOrders,
     testOrders

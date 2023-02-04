@@ -14,7 +14,6 @@ to local state.
 Unlike trading view's Pine script system - PARAYOK is not heavily bound to a single SYMBOL while executing strategies, but rather handles everything in
 bulk. You can run any number of strategies on any number of SYMBOLS on any number of timeframes simultaniously. Then you use filtering to allow only best of the generated entries to become Orders. You can either explore and create such meta-strategies or execute them on live broker all with same interface and same instances by a click of a mouse (and some hardcore console work at the moment :)
 
-
 ### Latest news: tensorflow.js
 
 Tightly involved in adding **tensorflow.js** based entries tagging. Already implemented command line tool to create / train and hyper-optimize models.
@@ -128,6 +127,23 @@ When new VM object is being created - it goes the following loop:
 11. All updates in broker state are passed to Telegram bot using HandleBrokerAccountEvents interface events.
 
 ## TODO
+
+1. Store Cache for orders (like CandleDebug)
+
+- fixed flag / function for cached entities
+
+2. Global State store for every Analyzer / Tag
+
+- store state to db every N pulses in history mode, every phaseEnd when live
+  (crash safe/continue)
+
+3. Allow live adding / removing of SYMBOL/TIMEFRAME/STRATEGY to VM ?
+
+- Split candle debug to different symbol-timeframe-strategy DB entries
+- Remove BTC dependent TAGS/FLAGS ? Or leave as dependancy?
+- When higher timeframes needed by strategy/indicator add dependency ?
+
+=
 
 Lots of stuff todo, however we are on a verge of total refactoring of order management (see TOrdersManager mockup file).
 Most of stuff starting from Ticker->addCandle should be remade.

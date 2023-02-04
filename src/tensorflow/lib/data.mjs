@@ -65,6 +65,9 @@ export async function loadOrders({
     orders = orders.filter((o) => o.tags.MAXPRF.value >= minProfit);
   }
 
+  // since we loading different symbols/timeframes one ofter another
+  orders.sort((a, b) => a.time - b.time);
+
   const [trainOrders, testOrders] = dataSplit(orders, split);
   return [trainOrders, testOrders];
 }

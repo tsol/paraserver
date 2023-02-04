@@ -1,9 +1,43 @@
 
 Todo Next:
 
-0. modelBuilder with hyper parameters to create layers
+=== Proove of concept ===
 
-0. Add higher timeframe emac9 emac20 (1d)
+Find good source of entries wit at least 1000 test set (> 5000 total)
+(better if 5m and above)
+
+- write strategy for approaching / touching level
+( entries both for long and short - puncture and rejection )
+
+- run it with existing ANN model (ma based)
+- add candles and run with candles
+
+If consistent accurancy, wr Boost and vialable GP increase can be found,
+proceed with tag filter based on model.
+
+If not - try running optimizer via WEB to see if speed is better.
+
+Make convolution network.
+
+
+=== FIRST PHASE, ANN indicator based ===
+
+1. Save model / load model
+
+2. Saving top model after optimization
+ - probably store parameters of top 10 performing configuration
+ - run each 10 times saving weights to memory
+ - amongst those pick top 3 and save them as files
+
+3. parameter for optimization based on increasing rate between ratio of 
+total < bottom50 < top50 < top10
+average difference is the value for maximisation
+
+4. create static TAGGER that uses saved models to tag entries
+
+6. Add higher timeframe emac9 emac20 (1d) to model
+
+==== SECOND PHASE ====
 
 1. Функция преобразования свечей в инпуты
  - начиная от текущей - назад - процентное изменение цены

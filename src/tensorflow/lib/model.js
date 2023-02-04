@@ -11,7 +11,7 @@ class Model {
 
     validationSplit: 0.2,
     adamRate: 0.001,
-    batchSize: 64,
+    batchSize: 32,
     logEveryEpoch: 10,
 
     loss: 'categoricalCrossentropy', // 'meanSquaredError'
@@ -65,7 +65,7 @@ class Model {
 
   setLayers(layers) {
     this.params.layers = layers;
-    console.log('Set layers:', layers);
+    if (this.params.verbose > 0) console.log('Composed layers:', layers);
   }
 
   verifyData(orders) {
