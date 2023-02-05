@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const buildNewModel = require('./lib/modelBuilder');
+import { modelDefaults } from './lib/model.mjs';
+import buildNewModel from './lib/modelBuilder.mjs';
+import { createTensors, cleanupTensors } from './lib/modelTensors.mjs';
+
 const yargs = require('yargs');
 const { obj2str } = require('./lib/helpers');
 const TH = require('../helpers/time');
@@ -26,17 +29,28 @@ const argv = commandLineParams();
     TH.ls(testOrders[0].time)
   );
 
+  const modelParams = { ...modelDefaults, ...params.build };
+
+  const tensors = createTensors(
+    trainOrders,
+    testOrders,
+    modelParams.inputsFn,
+    modelParams.labelFn
+  );
+
   switch (argv['_'][0]) {
     case 'opt':
-      await cmdOptimize(params, argv, trainOrders, testOrders);
+      await cmdOptimize(params, argv, tensors, testOrders);
       break;
     case 'build':
-      await cmdBuild(params, argv, trainOrders, testOrders);
+      await cmdBuild(params, argv, tensors, testOrders);
       break;
   }
+
+  cleanupTensors(tensors);
 })();
 
-async function cmdBuild(params, argv, trainOrders, testOrders) {
+async function cmdBuild(params, argv, tensors, testOrders) {
   let buildParams = params.build ?? {};
 
   if (argv.param) {
@@ -51,10 +65,12 @@ async function cmdBuild(params, argv, trainOrders, testOrders) {
 
   buildParams.verbose = 1;
 
-  const res = await buildNewModel(buildParams, trainOrders, testOrders);
+  const res = await buildNewModel(buildParams, tensors, testOrders);
+
+  return res;
 }
 
-async function cmdOptimize(params, argv, trainOrders, testOrders) {
+async function cmdOptimize(params, argv, tensors, testOrders) {
   if (argv.iterations) params.optimize.iterations = argv.iterations;
 
   console.time('Optimizing');
@@ -65,9 +81,10 @@ async function cmdOptimize(params, argv, trainOrders, testOrders) {
     params.optimize.iterations,
     params.optimize.builds,
     params.build ?? {},
-    trainOrders,
+    tensors,
     testOrders
   );
+
   console.timeEnd('Optimizing');
 
   console.log('Max:', obj2str(opt.argmax));

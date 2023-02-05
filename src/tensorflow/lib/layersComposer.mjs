@@ -43,4 +43,4 @@ const composers = [
   },
 ];
 
-module.exports = { maxParams, maxIndexes, composers };
+export default { maxParams, maxIndexes, composers };

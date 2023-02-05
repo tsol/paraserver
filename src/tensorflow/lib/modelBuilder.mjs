@@ -1,10 +1,12 @@
-const Model = require('./model');
+import Model, { modelDefaults } from './model.mjs';
+import layersComposer from './layersComposer.mjs';
 
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 const tf = require('@tensorflow/tfjs');
-const layersComposer = require('./layersComposer');
 const { fobj, fnum } = require('../../reports/helper');
 
-const modelDefaults = {
+const buildDefaults = {
   verbose: 0,
   logEveryEpoch: 10,
 };
@@ -20,15 +22,13 @@ const builderDefaults = {
   lc_l4: 0, // layer 4 index
 };
 
-async function buildNewModel(opts, trainOrders, testOrders) {
-  const model = new Model({ ...modelDefaults, ...opts });
+export default async function buildNewModel(opts, tensors, trainOrders) {
+  const inputsSize = tensors.trainInputs.shape[1];
 
-  if (!model.verifyData(trainOrders)) {
-    throw new Exception('Data verification failed!');
-  }
+  const model = new Model({ ...modelDefaults, ...buildDefaults, ...opts });
+  model.setInputsSize(inputsSize);
 
   opts = { ...builderDefaults, ...opts };
-
   const { layersComposerIndex } = opts;
 
   if (layersComposerIndex !== undefined && layersComposerIndex !== null) {
@@ -42,8 +42,12 @@ async function buildNewModel(opts, trainOrders, testOrders) {
 
   if (opts.verbose > 0) console.time('Training');
 
-  const { minLoss, minLossEpoch, maxAcc, maxAccEpoch } =
-    await model.createAndTrainModel(trainOrders);
+  model.createModel();
+
+  const { minLoss, minLossEpoch, maxAcc, maxAccEpoch } = await model.trainModel(
+    tensors.trainInputs,
+    tensors.trainLabels
+  );
 
   if (opts.verbose > 0) console.timeEnd('Training');
 
@@ -51,7 +55,7 @@ async function buildNewModel(opts, trainOrders, testOrders) {
     displayTrainStats({ minLoss, minLossEpoch, maxAcc, maxAccEpoch });
 
   const { loss, acc, totalStats, bottomStats, topStats, top10, diffq } =
-    model.testModel(testOrders);
+    model.testModel(tensors.testInputs, tensors.testLabels, trainOrders);
 
   const wrBoost = calcWinrateImprovement({
     totalStats,
@@ -72,19 +76,7 @@ async function buildNewModel(opts, trainOrders, testOrders) {
       wrBoost,
     });
 
-  tf.disposeVariables();
-  tf.dispose(model.model);
-
-  const leak = tf.memory();
-
-  if (leak.numTensors > 10)
-    console.log(
-      '   leak:',
-      leak.numTensors,
-      'tns, ',
-      fnum(leak.numBytes / 1024, 3),
-      'kb'
-    );
+  model.dispose();
 
   return {
     minLoss,
@@ -154,5 +146,3 @@ function displayTestStats({
     fnum(wrBoost, 3)
   );
 }
-
-module.exports = buildNewModel;

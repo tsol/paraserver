@@ -1,7 +1,18 @@
 
 Todo Next:
 
+=== Speedup and better management ===
+
+1. perform validation (in JS) before creating those tensors to check
+that every input has some diversity over train inputs and
+labels (and also for test data).
+
+2. Re-arrange to use from GUI - do not include data calls form setup files,
+rather pass them data-interface object.
+
 === Proove of concept ===
+
+Why macfwma generates 0.6 accuracy from the start?
 
 Find good source of entries wit at least 1000 test set (> 5000 total)
 (better if 5m and above)
